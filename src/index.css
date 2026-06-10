@@ -1,9 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #138275;
+  --color-secondary: #033f47;
+  --color-accent: #e43b18;
+  --color-accent-dark: #9d2710;
+  --color-surface: #e9fcf9;
+  --color-surface-alt: #e7fbfe;
+  --color-dark: #011e22;
+}
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-brand-dark text-brand-light antialiased font-sans m-0 p-0;
+    @apply bg-surface text-dark antialiased font-sans m-0 p-0;
   }
 }

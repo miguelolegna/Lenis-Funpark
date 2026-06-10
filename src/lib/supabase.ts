@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Usar placeholders provisórios para o cliente não dar crash
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('As variáveis de ambiente do Supabase estão em falta. Verifica o teu ficheiro .env');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
