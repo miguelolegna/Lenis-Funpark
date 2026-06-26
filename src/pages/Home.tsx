@@ -1,23 +1,13 @@
-import { motion, type Transition } from 'framer-motion';
-import { Ticket, CheckCircle2 } from 'lucide-react';
-
-// Assumindo que criaste estes componentes em ficheiros separados.
-// O código para estes foi fornecido na versão consolidada anterior.
-// import SemaforoWidget from '../components/SemaforoWidget';
-// import BookingModule from '../components/BookingModule';
-// import FAQSection from '../components/FAQSection';
-
-const pageVariants = {
-  initial: { opacity: 0, y: 40, scale: 0.98 },
-  in: { opacity: 1, y: 0, scale: 1 },
-  out: { opacity: 0, y: -40, scale: 1.02 }
-};
-
-const pageTransition: Transition = {
-  type: "spring",
-  stiffness: 260,
-  damping: 20
-};
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Calendar, 
+  ChevronDown, 
+  Ticket,
+  CheckCircle2,
+  Smartphone
+} from 'lucide-react';
+import { pageVariants, pageTransition } from '../utils/animations';
 
 export default function Home() {
   return (
@@ -29,12 +19,12 @@ export default function Home() {
       transition={pageTransition}
       className="w-full"
     >
-      {/* HERO SECTION */}
+      {/* HERO SECTION - Com física de Salto (Bounce) no botão para simular trampolim */}
       <section className="relative bg-secondary overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         <div className="absolute inset-0 bg-primary opacity-20 mix-blend-multiply"></div>
         <div className="absolute inset-0 opacity-10">
-           <svg className="w-full h-full" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
              <defs>
                <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
                  <circle fill="#ffffff" cx="10" cy="10" r="2"></circle>
@@ -50,7 +40,7 @@ export default function Home() {
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             className="inline-block py-1 px-3 rounded-full bg-accent text-white text-sm font-bold uppercase tracking-widest mb-6 shadow-lg"
           >
-            Aberto na Covilhã
+            Agora Aberto no Tortosendo!
           </motion.span>
           <motion.h1 
             initial={{ scale: 0.8, opacity: 0 }}
@@ -58,11 +48,11 @@ export default function Home() {
             transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
             className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight drop-shadow-xl"
           >
-            O 1º Parque de Diversão <br className="hidden md:block"/> 
-            <span className="text-primary bg-white px-4 py-1 rounded-xl inline-block -rotate-2 mt-2">Indoor</span>
+            O Melhor Parque de Diversão Indoor <br className="hidden md:block"/> 
+            <span className="text-accent bg-white px-4 py-1 rounded-xl inline-block -rotate-2 mt-2">da Covilhã</span>
           </motion.h1>
           <p className="text-xl md:text-2xl text-white/90 mb-10 max-w-2xl font-medium drop-shadow-md">
-            400m² de aventura, saltos e pura alegria onde a segurança é a nossa prioridade.
+            400m² de aventura, saltos e pura alegria onde a segurança e os sorrisos são a nossa prioridade.
           </p>
           
           <motion.button 
@@ -77,8 +67,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* COMPONENTES DE CONTEÚDO (Requer importação correta) */}
-      {/* <SemaforoWidget /> */}
+      <SemaforoWidget />
       
       {/* SOBRE PREVIEW */}
       <section className="py-20 bg-white">
@@ -108,18 +97,212 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-200 aspect-square rounded-3xl overflow-hidden shadow-lg">
-                <img src="[https://images.unsplash.com/photo-1566450653303-2614cbb292ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80](https://images.unsplash.com/photo-1566450653303-2614cbb292ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80)" alt="Crianças" className="w-full h-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1566450653303-2614cbb292ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Crianças" className="w-full h-full object-cover" />
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-200 aspect-square rounded-3xl overflow-hidden shadow-lg mt-8">
-                <img src="[https://images.unsplash.com/photo-1545558014-8692077e9b5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80](https://images.unsplash.com/photo-1545558014-8692077e9b5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80)" alt="Parque" className="w-full h-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1545558014-8692077e9b5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Parque" className="w-full h-full object-cover" />
               </motion.div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* <BookingModule /> */}
-      {/* <FAQSection /> */}
+      <ConvitesDigitais />
+      <BookingModule />
+      <FAQSection />
     </motion.div>
+  );
+}
+
+function SemaforoWidget() {
+  return (
+    <div className="relative -mt-10 z-30 flex justify-center px-4">
+      <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center space-x-6 border-2 border-gray-100">
+        <div className="flex flex-col items-center">
+          <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Lotação Atual</span>
+          <div className="flex space-x-2 bg-gray-100 p-2 rounded-full">
+            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-8 h-8 rounded-full bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]" />
+            <div className="w-8 h-8 rounded-full bg-gray-300" />
+            <div className="w-8 h-8 rounded-full bg-gray-300" />
+          </div>
+        </div>
+        <div className="hidden sm:block border-l-2 border-gray-100 pl-6">
+          <p className="text-2xl font-black text-green-500">Livre</p>
+          <p className="text-gray-500 text-sm font-medium">Venha brincar! Temos muito espaço.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConvitesDigitais() {
+  return (
+    <section className="py-20 bg-primary text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Esquerda: Visual Mockup */}
+          <div className="relative mx-auto w-full max-w-[300px]">
+            <div className="relative bg-white rounded-[3rem] border-[14px] border-dark aspect-[9/19] shadow-2xl overflow-hidden p-4 flex flex-col justify-end">
+              {/* Status Bar Mockup */}
+              <div className="absolute top-0 inset-x-0 h-6 bg-dark rounded-b-xl mx-16"></div>
+              
+              {/* Chat Bubbles */}
+              <div className="space-y-4 mb-4">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="bg-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-sm text-sm font-medium"
+                >
+                  Vais à festa do Tomás no Leni's FunPark? 🎈
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-[#dcf8c6] text-gray-800 p-3 rounded-2xl rounded-tr-sm text-sm font-medium ml-8"
+                >
+                  Sim! Já recebi o convite digital, muito fixe! 🥳
+                </motion.div>
+              </div>
+            </div>
+          </div>
+
+          {/* Direita: Copy */}
+          <div>
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+              <Smartphone className="text-white" size={32} />
+            </div>
+            <h2 className="text-4xl font-black mb-6">Convites Digitais Prontos a Enviar</h2>
+            <p className="text-lg text-white/90 leading-relaxed">
+              Sabemos que organizar uma festa dá trabalho. Por isso, ao reservar a sua festa no Leni's FunPark, disponibilizamos convites digitais personalizados e otimizados para WhatsApp. É só reencaminhar para o seu grupo!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BookingModule() {
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const daysInMonth = Array.from({length: 30}, (_, i) => i + 1);
+  const occupiedDays = [5, 12, 18, 19, 25];
+
+  const handleDayClick = (day: number) => {
+    if (!occupiedDays.includes(day)) setSelectedDate(day);
+  };
+
+  if (submitted) {
+    return (
+      <section id="reservas" className="py-24 bg-surface">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <motion.div 
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-[2rem] p-12 shadow-2xl border-4 border-primary"
+          >
+            <CheckCircle2 className="w-24 h-24 text-primary mx-auto mb-6" />
+            <h2 className="text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
+            <button onClick={() => setSubmitted(false)} className="px-8 py-4 bg-secondary text-white font-bold rounded-xl mt-4">Novo pedido</button>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="reservas" className="py-24 bg-surface">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-black text-secondary mb-4">
+            Faça a sua <span className="text-accent">Marcação</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-white rounded-[3rem] p-8 shadow-2xl">
+          <div className="lg:col-span-2">
+            <h3 className="text-2xl font-black text-secondary flex items-center mb-6"><Calendar className="mr-2 text-primary" /> Junho 2026</h3>
+            <div className="grid grid-cols-7 gap-2">
+              {daysInMonth.map(day => {
+                const isOccupied = occupiedDays.includes(day);
+                const isSelected = selectedDate === day;
+                return (
+                  <motion.button
+                    key={day}
+                    whileHover={!isOccupied && !isSelected ? { scale: 1.1 } : {}}
+                    whileTap={!isOccupied ? { scale: 0.9 } : {}}
+                    onClick={() => handleDayClick(day)}
+                    disabled={isOccupied}
+                    className={`aspect-square rounded-xl font-bold text-lg 
+                      ${isOccupied ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50' 
+                        : isSelected ? 'bg-primary text-white shadow-lg'
+                        : 'bg-surface-alt text-secondary'}
+                    `}
+                  >
+                    {day}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="lg:col-span-3 lg:border-l-2 lg:border-gray-100 lg:pl-12">
+            <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-6">
+               <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-6">
+                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Nome *</label><input required className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
+                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Telemóvel *</label><input required type="tel" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
+                 </div>
+                 <div>
+                   <label className="block text-sm font-bold text-gray-700 mb-2">Turno *</label>
+                   <select required defaultValue="" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3">
+                     <option value="" disabled>Selecione um turno...</option>
+                     <option value="manha">Manhã</option>
+                     <option value="tarde">Tarde</option>
+                   </select>
+                 </div>
+               </div>
+              <motion.button 
+                whileTap={{ scale: 0.98 }}
+                type="submit" disabled={!selectedDate}
+                className={`w-full py-4 rounded-xl font-bold text-lg ${selectedDate ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              >
+                {selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data'}
+              </motion.button>
+              
+              <div className="mt-4 p-4 bg-blue-50 text-blue-800 text-sm rounded-xl text-center font-medium border border-blue-100">
+                A nossa equipa irá contactá-lo para confirmar os detalhes.
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const faqs = [{q: "É obrigatório o uso de meias?", a: "Sim, por questões de higiene."}];
+
+  return (
+    <section className="py-20 bg-white max-w-3xl mx-auto px-4">
+      <h2 className="text-3xl font-black text-center text-secondary mb-12">Perguntas Frequentes</h2>
+      {faqs.map((faq, idx) => (
+        <div key={idx} className="border-2 rounded-2xl overflow-hidden mb-4 border-gray-100">
+          <button onClick={() => setOpenIndex(openIndex === idx ? null : idx)} className="w-full px-6 py-5 text-left flex justify-between font-bold text-secondary">
+            {faq.q} <ChevronDown className={openIndex === idx ? "rotate-180 transition-transform" : "transition-transform"} />
+          </button>
+          <AnimatePresence>
+            {openIndex === idx && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-6 overflow-hidden">
+                <p className="pb-5 text-gray-600">{faq.a}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </section>
   );
 }
