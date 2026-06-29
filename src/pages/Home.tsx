@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
@@ -188,11 +189,40 @@ function ConvitesDigitais() {
 function BookingModule() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const daysInMonth = Array.from({length: 30}, (_, i) => i + 1);
   const occupiedDays = [5, 12, 18, 19, 25];
 
   const handleDayClick = (day: number) => {
     if (!occupiedDays.includes(day)) setSelectedDate(day);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedDate) return;
+    
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const client_name = formData.get('client_name') as string;
+    const client_phone = formData.get('client_phone') as string;
+    const shift = formData.get('shift') as string;
+    const target_date = `2026-06-${selectedDate.toString().padStart(2, '0')}`;
+
+    try {
+      const { error } = await supabase.from('bookings').insert([{
+        client_name,
+        client_phone,
+        target_date,
+        shift
+      }]);
+      
+      if (error) throw error;
+      setSubmitted(true);
+    } catch (error: any) {
+      alert('Ocorreu um erro ao registar o seu pedido: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -248,15 +278,15 @@ function BookingModule() {
             </div>
           </div>
           <div className="lg:col-span-3 lg:border-l-2 lg:border-gray-100 lg:pl-12">
-            <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                <div className="space-y-6">
                  <div className="grid grid-cols-2 gap-6">
-                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Nome *</label><input required className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
-                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Telemóvel *</label><input required type="tel" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
+                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Nome *</label><input name="client_name" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
+                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Telemóvel *</label><input name="client_phone" required type="tel" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
                  </div>
                  <div>
                    <label className="block text-sm font-bold text-gray-700 mb-2">Turno *</label>
-                   <select required defaultValue="" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3">
+                   <select name="shift" required defaultValue="" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3">
                      <option value="" disabled>Selecione um turno...</option>
                      <option value="manha">Manhã</option>
                      <option value="tarde">Tarde</option>
@@ -265,10 +295,10 @@ function BookingModule() {
                </div>
               <motion.button 
                 whileTap={{ scale: 0.98 }}
-                type="submit" disabled={!selectedDate}
-                className={`w-full py-4 rounded-xl font-bold text-lg ${selectedDate ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                type="submit" disabled={!selectedDate || isSubmitting}
+                className={`w-full py-4 rounded-xl font-bold text-lg ${(selectedDate && !isSubmitting) ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
               >
-                {selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data'}
+                {isSubmitting ? 'A enviar...' : selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data'}
               </motion.button>
               
               <div className="mt-4 p-4 bg-blue-50 text-blue-800 text-sm rounded-xl text-center font-medium border border-blue-100">
