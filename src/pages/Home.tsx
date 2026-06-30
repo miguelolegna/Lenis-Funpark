@@ -22,18 +22,15 @@ export default function Home() {
     >
       {/* HERO SECTION - Com física de Salto (Bounce) no botão para simular trampolim */}
       <section className="relative bg-secondary overflow-hidden">
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
-        <div className="absolute inset-0 bg-primary opacity-20 mix-blend-multiply"></div>
-        <div className="absolute inset-0 opacity-10">
-           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-             <defs>
-               <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                 <circle fill="#ffffff" cx="10" cy="10" r="2"></circle>
-               </pattern>
-             </defs>
-             <rect x="0" y="0" width="100%" height="100%" fill="url(#dots)"></rect>
-           </svg>
-        </div>
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/videos lennis/lenis fun park siite.mp4"
+        />
+        <div className="absolute inset-0 bg-black/60 z-10"></div>
 
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-48 flex flex-col items-center text-center">
           <motion.span 
@@ -76,7 +73,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl font-black text-secondary mb-6">Criamos momentos de <span className="text-primary">alegria inesquecível</span></h2>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-lg text-secondary/70 mb-8 leading-relaxed">
                 Mais do que um parque, somos o ponto de encontro perfeito para as famílias da Cova da Beira. Um espaço seguro, 100% climatizado e desenhado para que as crianças gastem energia enquanto os pais relaxam.
               </p>
               <ul className="space-y-4">
@@ -97,11 +94,11 @@ export default function Home() {
               </ul>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-200 aspect-square rounded-3xl overflow-hidden shadow-lg">
-                <img src="https://images.unsplash.com/photo-1566450653303-2614cbb292ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Crianças" className="w-full h-full object-cover" />
+              <motion.div whileHover={{ scale: 1.05 }} className="bg-surface-alt aspect-square rounded-3xl overflow-hidden shadow-lg">
+                <img src="/Fotos/trampolins.jpg" loading="lazy" alt="Crianças" className="w-full h-full object-cover" />
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-gray-200 aspect-square rounded-3xl overflow-hidden shadow-lg mt-8">
-                <img src="https://images.unsplash.com/photo-1545558014-8692077e9b5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Parque" className="w-full h-full object-cover" />
+              <motion.div whileHover={{ scale: 1.05 }} className="bg-surface-alt aspect-square rounded-3xl overflow-hidden shadow-lg mt-8">
+                <img src="/Fotos/matraquilos.jpg" loading="lazy" alt="Parque" className="w-full h-full object-cover" />
               </motion.div>
             </div>
           </div>
@@ -118,18 +115,18 @@ export default function Home() {
 function SemaforoWidget() {
   return (
     <div className="relative -mt-10 z-30 flex justify-center px-4">
-      <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center space-x-6 border-2 border-gray-100">
+      <div className="bg-white rounded-3xl shadow-xl p-6 flex items-center space-x-6 border-2 border-surface-alt">
         <div className="flex flex-col items-center">
-          <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Lotação Atual</span>
-          <div className="flex space-x-2 bg-gray-100 p-2 rounded-full">
-            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-8 h-8 rounded-full bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]" />
-            <div className="w-8 h-8 rounded-full bg-gray-300" />
-            <div className="w-8 h-8 rounded-full bg-gray-300" />
+          <span className="text-sm font-bold text-secondary/50 uppercase tracking-wider mb-2">Lotação Atual</span>
+          <div className="flex space-x-2 bg-surface-alt p-2 rounded-full">
+            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-8 h-8 rounded-full bg-primary shadow-[0_0_15px_var(--color-primary)]" />
+            <div className="w-8 h-8 rounded-full bg-surface-alt/50" />
+            <div className="w-8 h-8 rounded-full bg-surface-alt/50" />
           </div>
         </div>
-        <div className="hidden sm:block border-l-2 border-gray-100 pl-6">
-          <p className="text-2xl font-black text-green-500">Livre</p>
-          <p className="text-gray-500 text-sm font-medium">Venha brincar! Temos muito espaço.</p>
+        <div className="hidden sm:block border-l-2 border-surface-alt pl-6">
+          <p className="text-2xl font-black text-primary">Livre</p>
+          <p className="text-secondary/70 text-sm font-medium">Venha brincar! Temos muito espaço.</p>
         </div>
       </div>
     </div>
@@ -153,7 +150,7 @@ function ConvitesDigitais() {
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  className="bg-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-sm text-sm font-medium"
+                  className="bg-surface-alt text-dark p-3 rounded-2xl rounded-tl-sm text-sm font-medium"
                 >
                   Vais à festa do Tomás no Leni's FunPark? 🎈
                 </motion.div>
@@ -162,7 +159,7 @@ function ConvitesDigitais() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.5 }}
-                  className="bg-[#dcf8c6] text-gray-800 p-3 rounded-2xl rounded-tr-sm text-sm font-medium ml-8"
+                  className="bg-primary/20 text-dark p-3 rounded-2xl rounded-tr-sm text-sm font-medium ml-8"
                 >
                   Sim! Já recebi o convite digital, muito fixe! 🥳
                 </motion.div>
@@ -266,7 +263,7 @@ function BookingModule() {
                     onClick={() => handleDayClick(day)}
                     disabled={isOccupied}
                     className={`aspect-square rounded-xl font-bold text-lg 
-                      ${isOccupied ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50' 
+                      ${isOccupied ? 'bg-surface-alt text-secondary/40 cursor-not-allowed opacity-50' 
                         : isSelected ? 'bg-primary text-white shadow-lg'
                         : 'bg-surface-alt text-secondary'}
                     `}
@@ -277,16 +274,16 @@ function BookingModule() {
               })}
             </div>
           </div>
-          <div className="lg:col-span-3 lg:border-l-2 lg:border-gray-100 lg:pl-12">
+          <div className="lg:col-span-3 lg:border-l-2 lg:border-surface-alt lg:pl-12">
             <form onSubmit={handleSubmit} className="space-y-6">
                <div className="space-y-6">
                  <div className="grid grid-cols-2 gap-6">
-                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Nome *</label><input name="client_name" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
-                  <div><label className="block text-sm font-bold text-gray-700 mb-2">Telemóvel *</label><input name="client_phone" required type="tel" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3" /></div>
+                  <div><label className="block text-sm font-bold text-secondary mb-2">Nome *</label><input name="client_name" required className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" /></div>
+                  <div><label className="block text-sm font-bold text-secondary mb-2">Telemóvel *</label><input name="client_phone" required type="tel" className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" /></div>
                  </div>
                  <div>
-                   <label className="block text-sm font-bold text-gray-700 mb-2">Turno *</label>
-                   <select name="shift" required defaultValue="" className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3">
+                   <label className="block text-sm font-bold text-secondary mb-2">Turno *</label>
+                   <select name="shift" required defaultValue="" className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3">
                      <option value="" disabled>Selecione um turno...</option>
                      <option value="manha">Manhã</option>
                      <option value="tarde">Tarde</option>
@@ -296,12 +293,12 @@ function BookingModule() {
               <motion.button 
                 whileTap={{ scale: 0.98 }}
                 type="submit" disabled={!selectedDate || isSubmitting}
-                className={`w-full py-4 rounded-xl font-bold text-lg ${(selectedDate && !isSubmitting) ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                className={`w-full py-4 rounded-xl font-bold text-lg ${(selectedDate && !isSubmitting) ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-surface-alt text-secondary/50 cursor-not-allowed'}`}
               >
                 {isSubmitting ? 'A enviar...' : selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data'}
               </motion.button>
               
-              <div className="mt-4 p-4 bg-blue-50 text-blue-800 text-sm rounded-xl text-center font-medium border border-blue-100">
+              <div className="mt-4 p-4 bg-surface-alt text-secondary text-sm rounded-xl text-center font-medium border border-surface">
                 A nossa equipa irá contactá-lo para confirmar os detalhes.
               </div>
             </form>
@@ -320,14 +317,14 @@ function FAQSection() {
     <section className="py-20 bg-white max-w-3xl mx-auto px-4">
       <h2 className="text-3xl font-black text-center text-secondary mb-12">Perguntas Frequentes</h2>
       {faqs.map((faq, idx) => (
-        <div key={idx} className="border-2 rounded-2xl overflow-hidden mb-4 border-gray-100">
+        <div key={idx} className="border-2 rounded-2xl overflow-hidden mb-4 border-surface-alt">
           <button onClick={() => setOpenIndex(openIndex === idx ? null : idx)} className="w-full px-6 py-5 text-left flex justify-between font-bold text-secondary">
             {faq.q} <ChevronDown className={openIndex === idx ? "rotate-180 transition-transform" : "transition-transform"} />
           </button>
           <AnimatePresence>
             {openIndex === idx && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-6 overflow-hidden">
-                <p className="pb-5 text-gray-600">{faq.a}</p>
+                <p className="pb-5 text-secondary/80">{faq.a}</p>
               </motion.div>
             )}
           </AnimatePresence>

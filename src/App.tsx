@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
+import ScrollToTop from './components/layout/ScrollToTop';
 import { AnimatePresence, motion } from 'framer-motion';
 import Home from './pages/Home';
 import OParque from './pages/OParque';
@@ -21,7 +22,7 @@ function PagePlaceholder({ title }: { title: string }) {
       className="p-32 text-center"
     >
       <h1 className="text-4xl font-black text-secondary">{title}</h1>
-      <p className="mt-4 text-gray-600">Página em desenvolvimento estrutural.</p>
+      <p className="mt-4 text-secondary/60">Página em desenvolvimento estrutural.</p>
     </motion.div>
   );
 }
@@ -49,6 +50,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <MainLayout>
         <AppRoutes />
       </MainLayout>

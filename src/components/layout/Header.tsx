@@ -51,7 +51,7 @@ export default function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden bg-white border-t border-gray-100 overflow-hidden"
+            className="md:hidden bg-white border-t border-surface-alt overflow-hidden"
           >
             <nav className="flex flex-col px-4 pt-2 pb-6 space-y-4 shadow-inner">
               {links.map((link) => (

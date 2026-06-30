@@ -60,7 +60,6 @@ export default function Festas() {
         <img 
           src="https://images.unsplash.com/photo-1530103862676-de88924370a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
           alt="Festas e Eventos" 
-          loading="lazy"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="relative z-20 text-center px-4 max-w-4xl">
@@ -75,7 +74,7 @@ export default function Festas() {
              initial={{ y: 50, opacity: 0 }}
              animate={{ y: 0, opacity: 1 }}
              transition={{ delay: 0.1 }}
-            className="text-xl md:text-2xl text-gray-200 font-medium"
+            className="text-xl md:text-2xl text-surface font-medium"
           >
             O nosso serviço chave-na-mão para aniversários e eventos de grupo.
           </motion.p>
@@ -93,60 +92,66 @@ export default function Festas() {
             {/* Pacote 1: Aniversários */}
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white rounded-[2rem] p-8 shadow-xl border-4 border-primary flex flex-col"
+              className="bg-white rounded-[2rem] shadow-xl border-4 border-primary flex flex-col overflow-hidden"
             >
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-                <PartyPopper className="text-primary" size={32} />
+              <img src="/Fotos/feliz_aniversário.jpg" loading="lazy" alt="Aniversários" className="w-full h-48 object-cover rounded-t-xl" />
+              <div className="p-8 flex flex-col flex-1">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+                  <PartyPopper className="text-primary" size={32} />
+                </div>
+                <h3 className="text-3xl font-black text-secondary mb-4">Aniversários</h3>
+                <p className="text-secondary/80 mb-8 flex-1">A festa perfeita que o seu filho nunca vai esquecer, sem que os pais tenham qualquer trabalho.</p>
+                
+                <ul className="space-y-4 mb-8">
+                  {[
+                    'Convites Digitais',
+                    'Lanche Incluído',
+                    'Supervisão Contínua',
+                    'Acesso a todas as zonas'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center text-secondary font-medium">
+                      <CheckCircle2 className="text-primary mr-3 shrink-0" size={20} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                
+                <button className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors">
+                  Verificar Disponibilidade
+                </button>
               </div>
-              <h3 className="text-3xl font-black text-secondary mb-4">Aniversários</h3>
-              <p className="text-gray-600 mb-8 flex-1">A festa perfeita que o seu filho nunca vai esquecer, sem que os pais tenham qualquer trabalho.</p>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  'Convites Digitais',
-                  'Lanche Incluído',
-                  'Supervisão Contínua',
-                  'Acesso a todas as zonas'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center text-secondary font-medium">
-                    <CheckCircle2 className="text-primary mr-3 shrink-0" size={20} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              
-              <button className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors">
-                Verificar Disponibilidade
-              </button>
             </motion.div>
 
             {/* Pacote 2: Visitas Escolares */}
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white rounded-[2rem] p-8 shadow-xl border-4 border-secondary flex flex-col"
+              className="bg-white rounded-[2rem] shadow-xl border-4 border-secondary flex flex-col overflow-hidden"
             >
-              <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6">
-                <GraduationCap className="text-secondary" size={32} />
+              <img src="/Fotos/futebol.jpg" loading="lazy" alt="Visitas Escolares" className="w-full h-48 object-cover rounded-t-xl" />
+              <div className="p-8 flex flex-col flex-1">
+                <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6">
+                  <GraduationCap className="text-secondary" size={32} />
+                </div>
+                <h3 className="text-3xl font-black text-secondary mb-4">Visitas Escolares</h3>
+                <p className="text-secondary/80 mb-8 flex-1">Uma experiência lúdica e desportiva ideal para turmas e associações, focada no bem-estar físico e mental.</p>
+                
+                <ul className="space-y-4 mb-8">
+                  {[
+                    'Condições Especiais para Turmas',
+                    'Desenvolvimento Motor e Lúdico',
+                    'Segurança Máxima'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center text-secondary font-medium">
+                      <CheckCircle2 className="text-secondary mr-3 shrink-0" size={20} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                
+                <button className="w-full py-4 rounded-xl font-bold text-lg bg-secondary text-white hover:bg-primary transition-colors">
+                  Contactar Equipa
+                </button>
               </div>
-              <h3 className="text-3xl font-black text-secondary mb-4">Visitas Escolares</h3>
-              <p className="text-gray-600 mb-8 flex-1">Uma experiência lúdica e desportiva ideal para turmas e associações, focada no bem-estar físico e mental.</p>
-              
-              <ul className="space-y-4 mb-8">
-                {[
-                  'Condições Especiais para Turmas',
-                  'Desenvolvimento Motor e Lúdico',
-                  'Segurança Máxima'
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center text-secondary font-medium">
-                    <CheckCircle2 className="text-secondary mr-3 shrink-0" size={20} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              
-              <button className="w-full py-4 rounded-xl font-bold text-lg bg-secondary text-white hover:bg-primary transition-colors">
-                Contactar Equipa
-              </button>
             </motion.div>
           </div>
         </div>
@@ -159,16 +164,16 @@ export default function Festas() {
             {/* Coluna Esquerda: Copy Persuasivo */}
             <div>
               <h2 className="text-4xl font-black text-secondary mb-6">Traga a Sua <span className="text-accent">Empresa</span> ou Grupo</h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
+              <p className="text-lg text-secondary/80 leading-relaxed mb-6">
                 Procura uma atividade de team building diferente, ou precisa de um espaço em total exclusividade para um evento de grandes dimensões? Nós facilitamos.
               </p>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
+              <p className="text-lg text-secondary/80 leading-relaxed mb-8">
                 O Leni's FunPark disponibiliza condições exclusivas para encerramento de espaço, adequando-se a empresas, associações desportivas e grandes ajuntamentos superiores a 20 pessoas. Garantimos catering à medida e total apoio da nossa equipa de coordenação.
               </p>
               
               <div className="bg-surface-alt p-6 rounded-2xl border-l-4 border-accent">
                 <p className="font-bold text-secondary text-lg">💡 Planeamento Rápido</p>
-                <p className="text-gray-600 mt-2">Deixe-nos as informações base e a nossa equipa de gestão enviará uma proposta no prazo máximo de 48 horas.</p>
+                <p className="text-secondary/80 mt-2">Deixe-nos as informações base e a nossa equipa de gestão enviará uma proposta no prazo máximo de 48 horas.</p>
               </div>
             </div>
 
@@ -179,34 +184,34 @@ export default function Festas() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Nome do Responsável *</label>
-                    <input name="responsible_name" required type="text" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
+                    <label className="block text-sm font-bold text-secondary mb-2">Nome do Responsável *</label>
+                    <input name="responsible_name" required type="text" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Entidade / Empresa *</label>
-                    <input name="company_name" required type="text" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Email *</label>
-                    <input name="client_email" required type="email" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Telemóvel *</label>
-                    <input name="client_phone" required type="tel" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
+                    <label className="block text-sm font-bold text-secondary mb-2">Entidade / Empresa *</label>
+                    <input name="company_name" required type="text" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Data Prevista *</label>
-                    <input name="target_date" required type="date" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
+                    <label className="block text-sm font-bold text-secondary mb-2">Email *</label>
+                    <input name="client_email" required type="email" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Nº Estimado de Pessoas *</label>
-                    <select name="estimated_participants" required defaultValue="" className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors">
+                    <label className="block text-sm font-bold text-secondary mb-2">Telemóvel *</label>
+                    <input name="client_phone" required type="tel" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-secondary mb-2">Data Prevista *</label>
+                    <input name="target_date" required type="date" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-secondary mb-2">Nº Estimado de Pessoas *</label>
+                    <select name="estimated_participants" required defaultValue="" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors">
                       <option value="" disabled>Selecione um intervalo...</option>
                       <option value="20-50">20 a 50 pessoas</option>
                       <option value="51-100">51 a 100 pessoas</option>
@@ -216,8 +221,8 @@ export default function Festas() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Observações / Requisitos Especiais</label>
-                  <textarea name="observations" rows={4} className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors resize-none"></textarea>
+                  <label className="block text-sm font-bold text-secondary mb-2">Observações / Requisitos Especiais</label>
+                  <textarea name="observations" rows={4} className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors resize-none"></textarea>
                 </div>
 
                 <motion.button 
@@ -226,8 +231,8 @@ export default function Festas() {
                   disabled={isSubmitted || isSubmitting}
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
                     isSubmitted 
-                      ? 'bg-green-500 text-white cursor-not-allowed' 
-                      : (isSubmitting ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-opacity-90')
+                      ? 'bg-primary text-white cursor-not-allowed' 
+                      : (isSubmitting ? 'bg-secondary/50 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-opacity-90')
                   }`}
                 >
                   {isSubmitted ? 'Pedido Enviado!' : (isSubmitting ? 'A enviar...' : 'Pedir Orçamento')}

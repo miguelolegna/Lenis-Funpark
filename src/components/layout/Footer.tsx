@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { PartyPopper, MapPin, Phone, Clock } from 'lucide-react';
 
@@ -15,7 +14,7 @@ export default function Footer() {
               </div>
               <span className="ml-3 font-black text-2xl text-white">Leni's <span className="text-accent">FunPark</span></span>
             </div>
-            <p className="text-gray-300">
+            <p className="text-surface-alt">
               O 1º Parque de Diversão Indoor na Covilhã!
             </p>
           </div>
@@ -23,7 +22,7 @@ export default function Footer() {
           {/* Coluna 2: Contactos & Morada */}
           <div>
             <h3 className="text-lg font-bold text-white mb-6">Contactos</h3>
-            <ul className="space-y-4 text-gray-300">
+            <ul className="space-y-4 text-surface-alt">
               <li className="flex items-start">
                 <MapPin className="text-primary mr-3 mt-1 shrink-0" size={20} />
                 <span>Zona Industrial do Tortosendo lt.23B Rua F, 6200-823 Tortosendo</span>
@@ -38,7 +37,7 @@ export default function Footer() {
           {/* Coluna 3: Horários */}
           <div>
             <h3 className="text-lg font-bold text-white mb-6">Horários</h3>
-            <ul className="space-y-4 text-gray-300">
+            <ul className="space-y-4 text-surface-alt">
               <li className="flex items-start">
                 <Clock className="text-primary mr-3 mt-1 shrink-0" size={20} />
                 <div>
@@ -53,7 +52,7 @@ export default function Footer() {
           {/* Coluna 4: Termos Legais */}
           <div>
             <h3 className="text-lg font-bold text-white mb-6">Informações</h3>
-            <ul className="space-y-3 text-gray-300">
+            <ul className="space-y-3 text-surface-alt">
               <li><a href="#" className="hover:text-primary transition-colors">Política de Privacidade</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Política de Cookies</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Termos e Condições</a></li>
@@ -63,13 +62,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-4 md:mb-0">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-surface-alt/80 text-sm mb-4 md:mb-0">
             &copy; 2026 Leni's FunPark.
           </p>
           <Link 
             to="/admin/login" 
-            className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors"
           >
             Área Reservada Staff
           </Link>

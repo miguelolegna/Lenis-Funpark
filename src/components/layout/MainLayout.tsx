@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import MapSection from './MapSection';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <main className="flex-grow">
         {children}
       </main>
+      <MapSection />
       <Footer />
     </div>
   );

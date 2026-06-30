@@ -28,21 +28,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border-2 border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-surface py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border-2 border-surface-alt">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-secondary">
             Leni's Staff
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm text-center">{error}</div>}
+          {error && <div className="bg-accent/10 text-accent p-3 rounded-md text-sm text-center">{error}</div>}
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <input
                 type="email"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-secondary/20 placeholder-secondary/50 text-secondary focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -52,7 +52,7 @@ export default function Login() {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-secondary/20 placeholder-secondary/50 text-secondary focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
