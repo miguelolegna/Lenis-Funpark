@@ -30,7 +30,7 @@ export default function MapSection() {
         {/* Coluna Direita (Mapa) */}
         <div className="w-full lg:w-3/5">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3051.4886361665426!2d-7.4984!3d40.22!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDEzJzEyLjAiTiA3wrAyOSc1NC4yIlc!5e0!3m2!1spt-PT!2spt!4v1700000000000!5m2!1spt-PT!2spt" 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3851.171062736886!2d-7.511324187859523!3d40.23053796683072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd3d2300266a00f5%3A0xbb18ab4f16cebe67!2sLeni&#39;s%20FunPark!5e1!3m2!1spt-PT!2spt!4v1782845233288!5m2!1spt-PT!2spt" 
             className="w-full h-full min-h-[400px] border-0"
             loading="lazy"
             title="Localização"
