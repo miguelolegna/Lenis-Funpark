@@ -36,7 +36,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/parque" element={<OParque />} />
         <Route path="/festas" element={<Festas />} />
-        <Route path="/contactos" element={<PagePlaceholder title="Contactos" />} />
+        {/* <Route path="/contactos" element={<PagePlaceholder title="Contactos" />} /> */}
         <Route path="/admin/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/dashboard" element={<Dashboard />} />

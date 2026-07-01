@@ -58,7 +58,7 @@ export default function Festas() {
       <section className="relative h-[60vh] bg-secondary flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/60 z-10"></div>
         <img 
-          src="https://images.unsplash.com/photo-1530103862676-de88924370a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+          src="/Fotos/zona_de_bolo.jpg" 
           alt="Festas e Eventos" 
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -92,7 +92,7 @@ export default function Festas() {
             {/* Pacote 1: Aniversários */}
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white rounded-[2rem] shadow-xl border-4 border-primary flex flex-col overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-xl border-b-4 border-primary flex flex-col overflow-hidden"
             >
               <img src="/Fotos/feliz_aniversário.jpg" loading="lazy" alt="Aniversários" className="w-full h-48 object-cover rounded-t-xl" />
               <div className="p-8 flex flex-col flex-1">
@@ -125,7 +125,7 @@ export default function Festas() {
             {/* Pacote 2: Visitas Escolares */}
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white rounded-[2rem] shadow-xl border-4 border-secondary flex flex-col overflow-hidden"
+              className="bg-white rounded-[2rem] shadow-xl border-b-4 border-accent flex flex-col overflow-hidden"
             >
               <img src="/Fotos/futebol.jpg" loading="lazy" alt="Visitas Escolares" className="w-full h-48 object-cover rounded-t-xl" />
               <div className="p-8 flex flex-col flex-1">
@@ -178,7 +178,7 @@ export default function Festas() {
             </div>
 
             {/* Coluna Direita: Formulário */}
-            <div className="bg-surface p-8 lg:p-10 rounded-[2rem] shadow-2xl">
+            <div className="bg-white rounded-[2rem] p-8 shadow-2xl border-4 border-surface-alt">
               <h3 className="text-2xl font-black text-secondary mb-8">Pedido de Orçamento</h3>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -232,7 +232,7 @@ export default function Festas() {
                   className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
                     isSubmitted 
                       ? 'bg-primary text-white cursor-not-allowed' 
-                      : (isSubmitting ? 'bg-secondary/50 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-opacity-90')
+                      : (isSubmitting ? 'bg-secondary/50 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent-dark')
                   }`}
                 >
                   {isSubmitted ? 'Pedido Enviado!' : (isSubmitting ? 'A enviar...' : 'Pedir Orçamento')}

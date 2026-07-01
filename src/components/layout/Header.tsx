@@ -11,7 +11,7 @@ export default function Header() {
     { path: '/', label: 'Início' },
     { path: '/parque', label: 'O Parque' },
     { path: '/festas', label: 'Festas & Eventos' },
-    { path: '/contactos', label: 'Contactos' }
+    // { path: '/contactos', label: 'Contactos' }
   ];
 
   return (

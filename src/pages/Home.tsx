@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -6,11 +6,21 @@ import {
   ChevronDown, 
   Ticket,
   CheckCircle2,
-  Smartphone
+  Smartphone,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../utils/animations';
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.7;
+    }
+  }, []);
+
   return (
     <motion.div
       initial="initial"
@@ -23,6 +33,7 @@ export default function Home() {
       {/* HERO SECTION - Com física de Salto (Bounce) no botão para simular trampolim */}
       <section className="relative bg-secondary overflow-hidden">
         <video 
+          ref={videoRef}
           autoPlay 
           muted 
           loop 
@@ -184,14 +195,51 @@ function ConvitesDigitais() {
 }
 
 function BookingModule() {
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const daysInMonth = Array.from({length: 30}, (_, i) => i + 1);
-  const occupiedDays = [5, 12, 18, 19, 25];
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    const dayOfWeek = selectedDate.getDay();
+    if (dayOfWeek >= 2 && dayOfWeek <= 5) {
+      setAvailableTimes(["14:00", "15:00", "16:00", "17:00", "18:00", "19:00"]);
+    } else if (dayOfWeek === 6 || dayOfWeek === 0) {
+      setAvailableTimes([
+        "10:00", "11:00", "12:00", "13:00", "14:00", 
+        "15:00", "16:00", "17:00", "18:00", "19:00"
+      ]);
+    } else {
+      setAvailableTimes([]);
+    }
+  }, [selectedDate]);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const getDaysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
+  const daysCount = getDaysInMonth(year, month);
+  const daysInMonth = Array.from({length: daysCount}, (_, i) => i + 1);
+  
+  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const handleDayClick = (day: number) => {
-    if (!occupiedDays.includes(day)) setSelectedDate(day);
+    const clickedDate = new Date(year, month, day);
+    const isPast = clickedDate < today;
+    const isMonday = clickedDate.getDay() === 1;
+    if (!isPast && !isMonday) setSelectedDate(clickedDate);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -199,21 +247,31 @@ function BookingModule() {
     if (!selectedDate) return;
     
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-    const client_name = formData.get('client_name') as string;
-    const client_phone = formData.get('client_phone') as string;
-    const shift = formData.get('shift') as string;
-    const target_date = `2026-06-${selectedDate.toString().padStart(2, '0')}`;
+    
+    // const formData = new FormData(e.currentTarget);
+    // const client_name = formData.get('client_name') as string;
+    // const client_phone = formData.get('client_phone') as string;
+    // const client_email = formData.get('client_email') as string;
+    // const time = formData.get('time') as string;
+    // const guests = formData.get('guests') as string;
+    // const notes = formData.get('notes') as string;
+    // const target_date = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
 
     try {
+      /*
       const { error } = await supabase.from('bookings').insert([{
         client_name,
         client_phone,
+        client_email,
         target_date,
-        shift
+        time,
+        guests: parseInt(guests),
+        notes
       }]);
       
       if (error) throw error;
+      */
+      
       setSubmitted(true);
     } catch (error: any) {
       alert('Ocorreu um erro ao registar o seu pedido: ' + error.message);
@@ -250,22 +308,36 @@ function BookingModule() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-white rounded-[3rem] p-8 shadow-2xl">
           <div className="lg:col-span-2">
-            <h3 className="text-2xl font-black text-secondary flex items-center mb-6"><Calendar className="mr-2 text-primary" /> Junho 2026</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-black text-secondary flex items-center">
+                <Calendar className="mr-2 text-primary" /> {monthNames[month]} {year}
+              </h3>
+              <div className="flex space-x-2">
+                <button onClick={prevMonth} type="button" className="p-2 rounded-lg bg-surface-alt hover:bg-surface text-secondary transition-colors"><ChevronLeft size={20} /></button>
+                <button onClick={nextMonth} type="button" className="p-2 rounded-lg bg-surface-alt hover:bg-surface text-secondary transition-colors"><ChevronRight size={20} /></button>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-7 gap-2">
               {daysInMonth.map(day => {
-                const isOccupied = occupiedDays.includes(day);
-                const isSelected = selectedDate === day;
+                const dateObj = new Date(year, month, day);
+                const isPast = dateObj < today;
+                const isMonday = dateObj.getDay() === 1;
+                const isDisabled = isPast || isMonday;
+                const isSelected = selectedDate?.getTime() === dateObj.getTime();
+                
                 return (
                   <motion.button
                     key={day}
-                    whileHover={!isOccupied && !isSelected ? { scale: 1.1 } : {}}
-                    whileTap={!isOccupied ? { scale: 0.9 } : {}}
+                    type="button"
+                    whileHover={!isDisabled && !isSelected ? { scale: 1.1 } : {}}
+                    whileTap={!isDisabled ? { scale: 0.9 } : {}}
                     onClick={() => handleDayClick(day)}
-                    disabled={isOccupied}
-                    className={`aspect-square rounded-xl font-bold text-lg 
-                      ${isOccupied ? 'bg-surface-alt text-secondary/40 cursor-not-allowed opacity-50' 
+                    disabled={isDisabled}
+                    className={`aspect-square rounded-xl font-bold text-lg transition-colors
+                      ${isDisabled ? 'bg-surface-alt text-secondary/40 cursor-not-allowed opacity-50' 
                         : isSelected ? 'bg-primary text-white shadow-lg'
-                        : 'bg-surface-alt text-secondary'}
+                        : 'bg-surface-alt text-secondary hover:bg-primary/20'}
                     `}
                   >
                     {day}
@@ -274,32 +346,72 @@ function BookingModule() {
               })}
             </div>
           </div>
-          <div className="lg:col-span-3 lg:border-l-2 lg:border-surface-alt lg:pl-12">
+          
+          <div className="lg:col-span-3 lg:border-l-2 lg:border-surface-alt lg:pl-12 mt-8 lg:mt-0">
             <form onSubmit={handleSubmit} className="space-y-6">
                <div className="space-y-6">
-                 <div className="grid grid-cols-2 gap-6">
-                  <div><label className="block text-sm font-bold text-secondary mb-2">Nome *</label><input name="client_name" required className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" /></div>
-                  <div><label className="block text-sm font-bold text-secondary mb-2">Telemóvel *</label><input name="client_phone" required type="tel" className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" /></div>
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-secondary mb-2">Nome *</label>
+                    <input name="client_name" required className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-secondary mb-2">Telemóvel *</label>
+                    <input name="client_phone" required type="tel" className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" />
+                  </div>
                  </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                   <div className="md:col-span-2">
+                     <label className="block text-sm font-bold text-secondary mb-2">Email *</label>
+                     <input name="client_email" type="email" required className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-bold text-secondary mb-2">Nº de Pessoas *</label>
+                     <input name="guests" type="number" min="1" required className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3" />
+                   </div>
+                 </div>
+
                  <div>
-                   <label className="block text-sm font-bold text-secondary mb-2">Turno *</label>
-                   <select name="shift" required defaultValue="" className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3">
-                     <option value="" disabled>Selecione um turno...</option>
-                     <option value="manha">Manhã</option>
-                     <option value="tarde">Tarde</option>
+                   <label className="block text-sm font-bold text-secondary mb-2">Hora *</label>
+                   <select 
+                     name="time" 
+                     required 
+                     defaultValue="" 
+                     disabled={!selectedDate || availableTimes.length === 0}
+                     className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                   >
+                     <option value="" disabled>
+                       {!selectedDate 
+                         ? "Selecione uma data primeiro..." 
+                         : availableTimes.length === 0 
+                           ? "Sem horários disponíveis" 
+                           : "Selecione um horário..."}
+                     </option>
+                     {availableTimes.map(time => (
+                       <option key={time} value={time}>{time}</option>
+                     ))}
                    </select>
                  </div>
+
+                 <div>
+                   <label className="block text-sm font-bold text-secondary mb-2">Observações</label>
+                   <textarea name="notes" rows={3} className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3 resize-none"></textarea>
+                 </div>
+
                </div>
+               
               <motion.button 
                 whileTap={{ scale: 0.98 }}
                 type="submit" disabled={!selectedDate || isSubmitting}
-                className={`w-full py-4 rounded-xl font-bold text-lg ${(selectedDate && !isSubmitting) ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-surface-alt text-secondary/50 cursor-not-allowed'}`}
+                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${(selectedDate && !isSubmitting) ? 'bg-primary text-white hover:bg-secondary cursor-pointer' : 'bg-surface-alt text-secondary/50 cursor-not-allowed'}`}
               >
-                {isSubmitting ? 'A enviar...' : selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data'}
+                {isSubmitting ? 'A enviar...' : selectedDate ? 'Pedir Confirmação' : 'Selecione uma Data primeiro'}
               </motion.button>
               
               <div className="mt-4 p-4 bg-surface-alt text-secondary text-sm rounded-xl text-center font-medium border border-surface">
-                A nossa equipa irá contactá-lo para confirmar os detalhes.
+                A nossa equipa irá contactá-lo para confirmar os detalhes da sua reserva.
               </div>
             </form>
           </div>
