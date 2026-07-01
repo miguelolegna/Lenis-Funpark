@@ -1,31 +1,14 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import ScrollToTop from './components/layout/ScrollToTop';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import Home from './pages/Home';
 import OParque from './pages/OParque';
 import Festas from './pages/Festas';
-import { pageVariants, pageTransition } from './utils/animations';
+// import { pageVariants, pageTransition } from './utils/animations';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
-
-// === COMPONENTES DA PÁGINA: ESTÁTICOS ===
-function PagePlaceholder({ title }: { title: string }) {
-  return (
-    <motion.div
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      transition={pageTransition}
-      className="p-32 text-center"
-    >
-      <h1 className="text-4xl font-black text-secondary">{title}</h1>
-      <p className="mt-4 text-secondary/60">Página em desenvolvimento estrutural.</p>
-    </motion.div>
-  );
-}
 
 // === GESTÃO DE ROTAS ===
 function AppRoutes() {
