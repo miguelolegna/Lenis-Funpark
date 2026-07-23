@@ -1,157 +1,70 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { pageVariants, pageTransition } from '../../utils/animations';
+
+import HeaderSection from '../../sections/admin/dashboard/HeaderSection';
+import BookingsTableSection from '../../sections/admin/dashboard/BookingsTableSection';
+import QuotesTableSection from '../../sections/admin/dashboard/QuotesTableSection';
 
 export default function Dashboard() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [eventQuotes, setEventQuotes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    const [resBookings, resQuotes] = await Promise.all([
-      supabase.from('bookings').select('*').order('created_at', { ascending: false }),
-      supabase.from('event_quotes').select('*').order('created_at', { ascending: false }),
-    ]);
-
-    if (resBookings.data) setBookings(resBookings.data);
-    if (resQuotes.data) setEventQuotes(resQuotes.data);
-    setLoading(false);
-  };
-
-  const updateBookingStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
-    if (error) {
-      alert('Erro ao atualizar: ' + error.message);
-    } else {
-      setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
+  const mockBookings = [
+    {
+      id: "1",
+      target_date: "2023-11-20",
+      shift: "Tarde",
+      client_name: "João Silva",
+      client_phone: "912345678",
+      status: "confirmado"
+    },
+    {
+      id: "2",
+      target_date: "2023-11-21",
+      shift: "Manhã",
+      client_name: "Maria Santos",
+      client_phone: "919876543",
+      status: "pendente"
     }
-  };
+  ];
 
-  const updateQuoteStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from('event_quotes').update({ status }).eq('id', id);
-    if (error) {
-      alert('Erro ao atualizar: ' + error.message);
-    } else {
-      setEventQuotes(eventQuotes.map(q => q.id === id ? { ...q, status } : q));
+  const mockQuotes = [
+    {
+      id: "1",
+      target_date: "2023-12-10",
+      estimated_participants: "51-100",
+      company_name: "Empresa XPTO",
+      responsible_name: "Carlos",
+      client_email: "carlos@xpto.pt",
+      client_phone: "931234567",
+      observations: "Precisamos de bolo",
+      status: "pendente"
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/admin/login');
-  };
-
-  if (loading) return <div className="p-8 text-center text-secondary/60">A carregar leads...</div>;
+  ];
 
   return (
-    <div className="min-h-screen bg-surface p-4 sm:p-8">
+    <motion.div
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+      className="w-full min-h-screen bg-surface p-4 sm:p-8"
+    >
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-sm border-2 border-surface-alt gap-4">
-          <h1 className="text-3xl font-black text-secondary">Backoffice</h1>
-          <button 
-            onClick={handleLogout} 
-            className="px-6 py-2 bg-surface-alt text-secondary font-bold rounded-xl hover:bg-surface transition-colors"
-          >
-            Sair
-          </button>
+        
+        <HeaderSection onLogout={() => console.log('Mock: Fazer logout')} />
+
+        <div className="grid grid-cols-1 gap-8">
+          <BookingsTableSection 
+            bookings={mockBookings} 
+            onStatusChange={(id, status) => console.log('Mock: Atualizar status booking', id, status)} 
+          />
+          
+          <QuotesTableSection 
+            quotes={mockQuotes} 
+            onStatusChange={(id, status) => console.log('Mock: Atualizar status quote', id, status)} 
+          />
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm border-2 border-surface-alt overflow-hidden">
-          <div className="p-6 border-b border-surface-alt bg-surface">
-            <h2 className="text-xl font-black text-secondary">Marcações B2C (Particulares)</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-white text-secondary/60 text-sm border-b border-surface-alt">
-                <tr>
-                  <th className="p-4 font-bold">Data / Turno</th>
-                  <th className="p-4 font-bold">Cliente</th>
-                  <th className="p-4 font-bold">Telemóvel</th>
-                  <th className="p-4 font-bold">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-alt">
-                {bookings.map(b => (
-                  <tr key={b.id} className="hover:bg-surface-alt transition-colors">
-                    <td className="p-4 font-medium">{b.target_date} <span className="text-secondary/50 font-normal">({b.shift})</span></td>
-                    <td className="p-4">{b.client_name}</td>
-                    <td className="p-4">{b.client_phone}</td>
-                    <td className="p-4">
-                      <select 
-                        value={b.status || 'pendente'} 
-                        onChange={(e) => updateBookingStatus(b.id, e.target.value)}
-                        className="border-2 border-surface-alt rounded-lg p-2 text-sm bg-white font-medium focus:border-primary outline-none"
-                      >
-                        <option value="pendente">Pendente</option>
-                        <option value="contactado">Contactado</option>
-                        <option value="confirmado">Confirmado</option>
-                        <option value="cancelado">Cancelado</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-                {bookings.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-secondary/50">Sem registos encontrados.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-sm border-2 border-surface-alt overflow-hidden">
-          <div className="p-6 border-b border-surface-alt bg-surface">
-            <h2 className="text-xl font-black text-secondary">Pedidos de Orçamento B2B (Empresas/Grupos)</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-white text-secondary/60 text-sm border-b border-surface-alt">
-                <tr>
-                  <th className="p-4 font-bold">Data / PAX</th>
-                  <th className="p-4 font-bold">Empresa / Responsável</th>
-                  <th className="p-4 font-bold">Contactos</th>
-                  <th className="p-4 font-bold">Observações</th>
-                  <th className="p-4 font-bold">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-alt">
-                {eventQuotes.map(q => (
-                  <tr key={q.id} className="hover:bg-surface-alt transition-colors">
-                    <td className="p-4 font-medium whitespace-nowrap">{q.target_date} <br/><span className="text-sm text-secondary/50 font-normal">{q.estimated_participants} pax</span></td>
-                    <td className="p-4 font-medium">{q.company_name} <br/><span className="font-normal text-sm text-secondary/50">{q.responsible_name}</span></td>
-                    <td className="p-4">{q.client_email} <br/><span className="text-sm text-secondary/50">{q.client_phone}</span></td>
-                    <td className="p-4 max-w-[200px] truncate text-sm text-secondary/70" title={q.observations}>{q.observations || '-'}</td>
-                    <td className="p-4">
-                      <select 
-                        value={q.status || 'pendente'} 
-                        onChange={(e) => updateQuoteStatus(q.id, e.target.value)}
-                        className="border-2 border-surface-alt rounded-lg p-2 text-sm bg-white font-medium focus:border-primary outline-none"
-                      >
-                        <option value="pendente">Pendente</option>
-                        <option value="em_negociacao">Em Negociação</option>
-                        <option value="fechado">Fechado</option>
-                        <option value="perdido">Perdido</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-                {eventQuotes.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-secondary/50">Sem registos encontrados.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

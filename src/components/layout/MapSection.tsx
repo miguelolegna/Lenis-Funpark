@@ -22,7 +22,7 @@ export default function MapSection() {
             
             <div className="bg-white/10 p-6 rounded-2xl flex items-center">
               <Mail className="text-primary mr-4 shrink-0" size={32} />
-              <span className="font-medium text-lg">layout.agency.pt@gmail.com</span>
+              <span className="font-medium text-lg">pereira.garcia2025@gmail.com</span>
             </div>
           </div>
         </div>

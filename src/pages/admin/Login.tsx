@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
@@ -14,16 +13,23 @@ export default function Login() {
     setLoading(true);
     setError('');
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Stub de login
+    if (email !== 'admin@admin.com' || password !== 'admin') {
+      setError('Email ou password inválidos (use admin@admin.com / admin).');
+      setLoading(false);
+      return;
+    }
 
-    if (error) {
-      setError(error.message);
+    const mockUser = { role: 'admin', email: 'admin@admin.com' };
+
+    if (mockUser.role !== 'admin') {
+      setError('Acesso negado. Esta conta não tem permissões de administrador.');
     } else {
+      // Tudo certo, guarda a sessão localmente e prossegue para o dashboard
+      localStorage.setItem('admin_user', JSON.stringify(mockUser));
       navigate('/admin/dashboard');
     }
+    
     setLoading(false);
   };
 

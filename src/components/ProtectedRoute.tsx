@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 
 export default function ProtectedRoute() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setAuthenticated(!!session);
+    const checkAuth = () => {
+      const savedUser = localStorage.getItem('admin_user');
+      setAuthenticated(!!savedUser);
       setLoading(false);
     };
     checkAuth();
