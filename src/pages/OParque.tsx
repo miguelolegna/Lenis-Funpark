@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { pageVariants, pageTransition } from '../utils/animations';
+import { pageVariants, pageTransition } from '../lib/animations';
 
 import HeroSection from '../sections/o-parque/HeroSection';
 import TourVisualSection from '../sections/o-parque/TourVisualSection';

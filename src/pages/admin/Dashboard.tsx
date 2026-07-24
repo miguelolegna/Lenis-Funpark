@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { pageVariants, pageTransition } from '../../utils/animations';
+import { pageVariants, pageTransition } from '../../lib/animations';
 
 import HeaderSection from '../../sections/admin/dashboard/HeaderSection';
 import BookingsTableSection from '../../sections/admin/dashboard/BookingsTableSection';

@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import Home from './pages/Home';
 import OParque from './pages/OParque';
 import Festas from './pages/Festas';
-// import { pageVariants, pageTransition } from './utils/animations';
+// import { pageVariants, pageTransition } from './lib/animations';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
