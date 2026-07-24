@@ -5,7 +5,7 @@ import HeroSection from '../sections/home/HeroSection';
 import SemaforoWidgetSection from '../sections/home/SemaforoWidgetSection';
 import SobrePreviewSection from '../sections/home/SobrePreviewSection';
 import ConvitesDigitaisSection from '../sections/home/ConvitesDigitaisSection';
-import BookingModuleSection from '../sections/home/BookingModuleSection';
+import BookingModuleSection from '../sections/home/Booking_ModuleSection';
 
 export default function Home() {
   const currentDateMock = new Date();
