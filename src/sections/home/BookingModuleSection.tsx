@@ -11,7 +11,6 @@ export interface BookingModuleSectionProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  onReset: () => void;
 }
 
 export default function BookingModuleSection({
@@ -23,8 +22,7 @@ export default function BookingModuleSection({
   onDayClick,
   onPrevMonth,
   onNextMonth,
-  onSubmit,
-  onReset
+  onSubmit
 }: BookingModuleSectionProps) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -49,7 +47,6 @@ export default function BookingModuleSection({
           >
             <CheckCircle2 className="w-24 h-24 text-primary mx-auto mb-6" />
             <h2 className="text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
-            <button onClick={onReset} className="px-8 py-4 bg-secondary text-white font-bold rounded-xl mt-4">Novo pedido</button>
           </motion.div>
         </div>
       </section>

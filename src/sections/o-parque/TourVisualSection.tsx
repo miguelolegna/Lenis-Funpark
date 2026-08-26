@@ -20,7 +20,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/trampolins2.jpg" 
+                src="/Fotos/trampolins2.webp" 
                 alt="Zona de Saltos" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"
@@ -41,7 +41,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/playground.jpg" 
+                src="/Fotos/playground.webp" 
                 alt="Área Kids" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"
@@ -62,7 +62,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/parent.jpg" 
+                src="/Fotos/parent.webp" 
                 alt="Lounge de Pais" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"
@@ -83,7 +83,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/futebol.jpg" 
+                src="/Fotos/futebol.webp" 
                 alt="Campo de Futebol" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"
@@ -104,7 +104,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/matraquilos.jpg" 
+                src="/Fotos/matraquilos.webp" 
                 alt="Matraquilhos" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"
@@ -125,7 +125,7 @@ export default function TourVisualSection({}: TourVisualSectionProps) {
           >
             <div className="aspect-[4/3] bg-surface-alt relative">
               <img 
-                src="/Fotos/escorrega_ondas.jpg" 
+                src="/Fotos/escorrega_ondas.webp" 
                 alt="Escalada e Escorregas" 
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover"

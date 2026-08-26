@@ -7,7 +7,7 @@ export default function HeroSection({}: HeroSectionProps) {
     <section className="relative h-[60vh] bg-secondary flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-black/60 z-10"></div>
       <img 
-        src="/Fotos/zona_de_bolo.jpg" 
+        src="/Fotos/zona_de_bolo.webp" 
         alt="Festas e Eventos" 
         className="absolute inset-0 w-full h-full object-cover"
       />

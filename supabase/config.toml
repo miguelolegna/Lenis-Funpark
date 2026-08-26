@@ -1,0 +1,19 @@
+
+[functions.convite-digital]
+enabled = true
+verify_jwt = false
+import_map = "./functions/convite-digital/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/convite-digital/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/convite-digital/*.html" ]
+
+[auth.email.template.magic_link]
+subject = "Código de Acesso Admin - Lenis Funpark"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Código de Acesso Admin - Lenis Funpark"
+content_path = "./supabase/templates/confirmation.html"

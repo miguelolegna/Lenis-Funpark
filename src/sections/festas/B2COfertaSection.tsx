@@ -18,7 +18,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-primary flex flex-col overflow-hidden"
           >
-            <img src="/Fotos/feliz_aniversário.jpg" loading="lazy" alt="Aniversários" className="w-full h-48 object-cover rounded-t-xl" />
+            <img src="/Fotos/feliz_aniversário.webp" loading="lazy" alt="Aniversários" className="w-full h-48 object-cover rounded-t-xl" />
             <div className="p-8 flex flex-col flex-1">
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
                 <PartyPopper className="text-primary" size={32} />
@@ -53,7 +53,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-accent flex flex-col overflow-hidden"
           >
-            <img src="/Fotos/futebol.jpg" loading="lazy" alt="Visitas Escolares" className="w-full h-48 object-cover rounded-t-xl" />
+            <img src="/Fotos/futebol.webp" loading="lazy" alt="Visitas Escolares" className="w-full h-48 object-cover rounded-t-xl" />
             <div className="p-8 flex flex-col flex-1">
               <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6">
                 <GraduationCap className="text-secondary" size={32} />
@@ -88,7 +88,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-yellow-400 flex flex-col overflow-hidden"
           >
-            <img src="/Fotos/playground.jpg" loading="lazy" alt="Instituições" className="w-full h-48 object-cover rounded-t-xl" />
+            <img src="/Fotos/playground.webp" loading="lazy" alt="Instituições" className="w-full h-48 object-cover rounded-t-xl" />
             <div className="p-8 flex flex-col flex-1">
               <div className="w-16 h-16 bg-yellow-400/10 rounded-2xl flex items-center justify-center mb-6">
                 <Building2 className="text-yellow-500" size={32} />
@@ -123,7 +123,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-green-500 flex flex-col overflow-hidden"
           >
-            <img src="/Fotos/trampolins2.jpg" loading="lazy" alt="Diversão à Hora" className="w-full h-48 object-cover rounded-t-xl" />
+            <img src="/Fotos/trampolins2.webp" loading="lazy" alt="Diversão à Hora" className="w-full h-48 object-cover rounded-t-xl" />
             <div className="p-8 flex flex-col flex-1">
               <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6">
                 <Clock className="text-green-500" size={32} />

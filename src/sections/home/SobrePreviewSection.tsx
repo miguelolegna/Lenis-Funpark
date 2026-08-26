@@ -32,10 +32,10 @@ export default function SobrePreviewSection({}: SobrePreviewSectionProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <motion.div whileHover={{ scale: 1.05 }} className="bg-surface-alt aspect-square rounded-3xl overflow-hidden shadow-lg">
-              <img src="/Fotos/trampolins.jpg" loading="lazy" alt="Crianças" className="w-full h-full object-cover" />
+              <img src="/Fotos/trampolins.webp" loading="lazy" alt="Crianças" className="w-full h-full object-cover" />
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} className="bg-surface-alt aspect-square rounded-3xl overflow-hidden shadow-lg mt-8">
-              <img src="/Fotos/matraquilos.jpg" loading="lazy" alt="Parque" className="w-full h-full object-cover" />
+              <img src="/Fotos/matraquilos.webp" loading="lazy" alt="Parque" className="w-full h-full object-cover" />
             </motion.div>
           </div>
         </div>

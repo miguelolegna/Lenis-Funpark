@@ -9,28 +9,28 @@ import EquipaSection from '../sections/o-parque/EquipaSection';
 export default function OParque() {
   const mockStaffList = [
     { 
-      name: "Ana", 
-      role: "Monitora Chefe", 
+      name: "Inês", 
+      role: "Monitora", 
       desc: "Sempre com um sorriso para vos receber e esclarecer qualquer dúvida.",
-      img: "/Fotos/Ana.jpg" 
+      img: "/Fotos/Ana.webp" 
     },
     { 
-      name: "Carla", 
-      role: "Responsável de Marketing", 
+      name: "Helena", 
+      role: "Monitora", 
       desc: "Especialista em dinamizar o parque, com atividades criativas para todas as idades.",
-      img: "/Fotos/Carla.jpg" 
+      img: "/Fotos/Carla.webp" 
     },
     { 
-      name: "Sofia", 
-      role: "Estudante de Desporto", 
+      name: "Ana", 
+      role: "Monitora/ Explicadora", 
       desc: "A energia do parque! Com ela, até os mais tímidos ganham coragem para saltar mais alto.",
-      img: "/Fotos/Sofia.jpg" 
+      img: "/Fotos/Sofia.webp" 
     },
     { 
-      name: "Margarida", 
-      role: "Chefe de Segurança", 
-      desc: "Sempre alerta, com os olhos em todo o lado, a garantir que cada salto é feito em segurança e com muita alegria.",
-      img: "/Fotos/Margarida.jpg" 
+      name: "Tatiana", 
+      role: "Monitora", 
+      desc: "A dona da adrenalina! Adora desafios e não descansa até contagiar toda a gente com o seu espírito aventureiro.",
+      img: "/Fotos/Margarida.webp" 
     }
   ];
 
