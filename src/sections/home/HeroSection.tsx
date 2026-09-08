@@ -16,7 +16,7 @@ export default function HeroSection({ onCheckAvailability }: HeroSectionProps) {
   }, []);
 
   return (
-    <section className="relative bg-secondary overflow-hidden">
+    <section className="relative">
       <video 
         ref={videoRef}
         autoPlay 
