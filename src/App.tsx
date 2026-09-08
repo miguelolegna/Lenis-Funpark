@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import Home from './pages/Home';
 import OParque from './pages/OParque';
 import Festas from './pages/Festas';
+import Contactos from './pages/Contactos';
 // import { pageVariants, pageTransition } from './lib/animations';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/admin/Login';
@@ -20,7 +21,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/parque" element={<OParque />} />
         <Route path="/festas" element={<Festas />} />
-        {/* <Route path="/contactos" element={<PagePlaceholder title="Contactos" />} /> */}
+        <Route path="/contactos" element={<Contactos />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/reserva/:token" element={<ReservaClient />} />
         <Route element={<ProtectedRoute />}>
