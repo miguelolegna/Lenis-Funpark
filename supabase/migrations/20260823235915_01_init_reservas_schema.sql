@@ -14,7 +14,7 @@ CREATE TYPE tipo_menu AS ENUM (
 );
 
 CREATE TABLE reservas (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     estado estado_reserva DEFAULT 'PENDING_APPROVAL',
     data_evento TIMESTAMPTZ NOT NULL,
     contacto_cliente TEXT NOT NULL,
