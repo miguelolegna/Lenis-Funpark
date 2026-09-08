@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  // Guarda EXCLUSIVAMENTE a altura no estado completo (não-scrolled)
+  const [fullNavHeight, setFullNavHeight] = useState<number>(108);
+  const fullNavHeightRef = useRef<number>(108);
   const location = useLocation();
 
   const links = [
@@ -18,6 +22,40 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Mede e actualiza APENAS quando navbar está no estado completo (topo da página)
+  const measureFullHeight = useCallback(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    // Só registar altura quando a navbar está no seu estado completo (não-scrolled)
+    if (window.scrollY <= 20) {
+      const height = el.getBoundingClientRect().height;
+      if (height > 0 && height !== fullNavHeightRef.current) {
+        fullNavHeightRef.current = height;
+        setFullNavHeight(height);
+        // Sincronizar CSS variable para uso em outros componentes se necessário
+        document.documentElement.style.setProperty('--navbar-height', `${height}px`);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    // ResizeObserver: detecta qualquer mudança de tamanho do header (logo a carregar, resize, etc.)
+    const ro = new ResizeObserver(() => measureFullHeight());
+    ro.observe(el);
+
+    // Medir imediatamente e após load da página
+    measureFullHeight();
+    window.addEventListener('load', measureFullHeight);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('load', measureFullHeight);
+    };
+  }, [measureFullHeight]);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -50,6 +88,7 @@ export default function Header() {
   return (
     <>
       <header
+        ref={headerRef}
         className={`fixed left-1/2 -translate-x-1/2 z-[60] transition-all duration-500 ${
           isScrolled ? "top-4 w-[95%] max-w-7xl" : "top-0 w-full max-w-full"
         }`}
@@ -67,7 +106,12 @@ export default function Header() {
             className="flex items-center shrink-0 transition-all duration-500 relative z-[60]"
             onClick={handleNavigation}
           >
-            <img src="/logos/Logo-sem_fundo1.png" alt="Leni's FunPark" className={`object-contain transition-all duration-500 origin-left scale-150 ${isScrolled ? 'h-10' : 'h-16'}`} />
+            <img
+              src="/logos/Logo-sem_fundo1.png"
+              alt="Leni's FunPark"
+              className={`object-contain transition-all duration-500 origin-left scale-150 ${isScrolled ? 'h-10' : 'h-16'}`}
+              onLoad={measureFullHeight}
+            />
           </Link>
 
           {/* Links de Navegação (Desktop) */}
@@ -113,6 +157,13 @@ export default function Header() {
           </button>
         </div>
       </header>
+
+      {/* Espaçador fixo com a altura exata da navbar no seu estado completo */}
+      <div
+        style={{ height: `${fullNavHeight}px` }}
+        className="w-full shrink-0"
+        aria-hidden="true"
+      />
 
       {/* Mobile Dropdown Menu Overlay */}
       <div

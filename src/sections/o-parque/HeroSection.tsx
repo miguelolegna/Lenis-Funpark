@@ -11,7 +11,7 @@ export default function HeroSection({}: HeroSectionProps) {
         muted 
         loop 
         playsInline
-        src="/videos lennis/lenis FPV.mp4"
+        src="/videos/lenis-fpv.mp4"
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="relative z-20 text-center px-4 max-w-4xl">

@@ -8,6 +8,7 @@ import FAQ from '../FAQ';
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const isReservaClient = location.pathname.startsWith('/reserva');
 
   const globalFaqs = [
     {q: "É obrigatório o uso de meias?", a: <><strong>Sim</strong>, por questões de higiene e segurança é obrigatório o uso de meias antiderrapantes. Podem trazer as vossas ou adquirir no parque.</>},
@@ -19,11 +20,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans selection:bg-primary selection:text-white">
-      {!isAdmin && <Header />}
+      {!isAdmin && !isReservaClient && <Header />}
       <main className="flex-grow">
         {children}
       </main>
-      {!isAdmin && (
+      {!isAdmin && !isReservaClient && (
         <>
           {['/', '/parque', '/festas', '/contactos'].includes(location.pathname) && (
             <>
