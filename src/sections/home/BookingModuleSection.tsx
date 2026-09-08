@@ -45,7 +45,7 @@ export default function BookingModuleSection({
 
   if (isSubmitted) {
     return (
-      <section id="reservas" className="py-24 bg-surface">
+      <section id="reservas" className="scroll-mt-28 py-24 bg-surface">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div 
             initial={{ scale: 0.5, opacity: 0 }}
@@ -61,7 +61,7 @@ export default function BookingModuleSection({
   }
 
   return (
-    <section id="reservas" className="py-24 bg-surface">
+    <section id="reservas" className="scroll-mt-28 py-24 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-secondary mb-4">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { requestOTP, verifyOTP } from '../../lib/auth';
+import { supabase } from '../../lib/supabase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,6 +38,11 @@ export default function Login() {
       // caso o dashboard atual dependa dessa flag legada
       localStorage.setItem('admin_session', JSON.stringify(session));
       localStorage.setItem('admin_user', JSON.stringify({ role: 'admin', email }));
+      
+      await supabase.auth.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
       
       navigate('/admin/dashboard');
     } catch (err: any) {

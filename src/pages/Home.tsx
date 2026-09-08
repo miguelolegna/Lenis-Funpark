@@ -10,8 +10,17 @@ import BookingModuleSection from '../sections/home/BookingModuleSection';
 
 import { supabase } from '../lib/supabase';
 import { buildLisbonDateTime } from '../lib/dateUtils';
+import { useParkStatus } from '../hooks/useParkStatus';
+
+const statusMessageMap = {
+  Livre: 'Venha brincar! Temos muito espaço.',
+  Moderado: 'O parque está com alguma afluência.',
+  Cheio: 'Lotação Completa. Vizite-nos mais tarde.',
+  Fechado: 'O parque está encerrado.'
+} as const;
 
 export default function Home() {
+  const { status: parkStatus, loading: isParkStatusLoading } = useParkStatus();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,8 +138,8 @@ export default function Home() {
       />
 
       <SemaforoWidgetSection 
-        status="Livre" 
-        message="Venha brincar! Temos muito espaço." 
+        status={isParkStatusLoading ? 'Fechado' : parkStatus} 
+        message={isParkStatusLoading ? '' : statusMessageMap[parkStatus]} 
       />
       
       <SobrePreviewSection />

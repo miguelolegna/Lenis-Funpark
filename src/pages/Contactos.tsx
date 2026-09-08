@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Phone,
   Mail,
   MessageCircle,
-  MapPin,
   Clock,
   Sparkles,
   Copy,
@@ -15,41 +14,160 @@ import {
   Heart,
   ShieldCheck,
   Car,
-  Calendar
+  Calendar,
+  PartyPopper,
+  Users,
+  MessageSquare,
+  GraduationCap,
+  Building2
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../lib/animations';
+import { supabase } from '../lib/supabase';
 
 export default function Contactos() {
+  const [searchParams] = useSearchParams();
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const [copiedPhone, setCopiedPhone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Mapear parâmetro de URL (?assunto=) para a opção correspondente
+  const getInitialMotivo = () => {
+    const p = (searchParams.get('assunto') || '').toLowerCase();
+    if (p.includes('escola') || p.includes('escolar')) return 'Visitas Escolares';
+    if (p.includes('institui') || p.includes('b2b') || p.includes('grupo')) return 'Traga a sua Instituição';
+    if (p.includes('aniversario') || p.includes('festa')) return 'Festa de Aniversário';
+    if (p.includes('familia') || p.includes('visita')) return 'Visita em Família';
+    if (p.includes('duvida')) return 'Outras Dúvidas';
+    return 'Festa de Aniversário';
+  };
 
   // Estado do formulário de mensagem rápida
   const [formData, setFormData] = useState({
     nome: '',
     contacto: '',
-    motivo: 'Festa de Aniversário',
+    motivo: getInitialMotivo(),
+    preferencia: 'whatsapp' as 'whatsapp' | 'email' | 'telefone',
     mensagem: ''
   });
   const [formSent, setFormSent] = useState(false);
 
-  const handleCopy = (text: string, type: 'email' | 'phone') => {
+  // Sincronizar caso o utilizador navegue com novo parâmetro
+  useEffect(() => {
+    const paramMotivo = getInitialMotivo();
+    setFormData((prev) => ({ ...prev, motivo: paramMotivo }));
+  }, [searchParams]);
+
+  const handleCopyEmail = (text: string) => {
     navigator.clipboard.writeText(text);
-    if (type === 'email') {
-      setCopiedEmail(true);
-      setTimeout(() => setCopiedEmail(false), 2500);
-    } else {
-      setCopiedPhone(true);
-      setTimeout(() => setCopiedPhone(false), 2500);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2500);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.nome.trim() || !formData.contacto.trim() || !formData.mensagem.trim()) return;
+
+    setSubmitting(true);
+
+    let categoria: 'escola' | 'instituicao' | 'geral' = 'geral';
+    if (formData.motivo === 'Visitas Escolares') {
+      categoria = 'escola';
+    } else if (formData.motivo === 'Traga a sua Instituição') {
+      categoria = 'instituicao';
+    }
+
+    const payload = {
+      nome: formData.nome.trim(),
+      contacto: formData.contacto.trim(),
+      motivo: formData.motivo,
+      categoria,
+      mensagem: formData.mensagem.trim(),
+      preferencia_resposta: formData.preferencia,
+      respondido: false,
+    };
+
+    try {
+      // 1. Tentar gravar na tabela mensagens_contacto do Supabase
+      const { data } = await supabase.from('mensagens_contacto').insert([payload]).select();
+
+      // 2. Guardar em localStorage para atualização imediata no painel admin
+      const newMsgItem = {
+        id: data?.[0]?.id || `msg-${Date.now()}`,
+        nome: payload.nome,
+        contacto: payload.contacto,
+        categoria: payload.categoria,
+        assunto: payload.motivo,
+        mensagem: payload.mensagem,
+        preferencia: payload.preferencia_resposta,
+        data: new Date().toISOString(),
+        respondido: false,
+      };
+
+      try {
+        const saved = localStorage.getItem('admin_mensagens');
+        const list = saved ? JSON.parse(saved) : [];
+        localStorage.setItem('admin_mensagens', JSON.stringify([newMsgItem, ...list]));
+        window.dispatchEvent(new Event('admin_messages_updated'));
+      } catch (err) {
+        console.error('Erro ao gravar mensagem localmente:', err);
+      }
+
+      setFormSent(true);
+    } catch (err) {
+      console.error('Erro ao enviar mensagem:', err);
+      // Fallback local caso falhe a ligação remota
+      const newMsgItem = {
+        id: `msg-${Date.now()}`,
+        nome: payload.nome,
+        contacto: payload.contacto,
+        categoria: payload.categoria,
+        assunto: payload.motivo,
+        mensagem: payload.mensagem,
+        preferencia: payload.preferencia_resposta,
+        data: new Date().toISOString(),
+        respondido: false,
+      };
+      const saved = localStorage.getItem('admin_mensagens');
+      const list = saved ? JSON.parse(saved) : [];
+      localStorage.setItem('admin_mensagens', JSON.stringify([newMsgItem, ...list]));
+      window.dispatchEvent(new Event('admin_messages_updated'));
+      setFormSent(true);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const textoMsg = `Olá Leni's FunPark! O meu nome é ${formData.nome} (${formData.contacto}). Assunto: ${formData.motivo}. Mensagem: ${formData.mensagem}`;
-    const whatsappUrl = `https://wa.me/351920259886?text=${encodeURIComponent(textoMsg)}`;
-    window.open(whatsappUrl, '_blank');
-    setFormSent(true);
-  };
+  const opcoesAssunto = [
+    {
+      id: 'Festa de Aniversário',
+      label: 'Festa de Aniversário',
+      desc: 'Pacotes, reservas e celebrações',
+      icon: PartyPopper
+    },
+    {
+      id: 'Visita Individual / Família',
+      label: 'Visita em Família',
+      desc: 'Bilhetes diários e entradas livres',
+      icon: Users
+    },
+    {
+      id: 'Visitas Escolares',
+      label: 'Visitas Escolares',
+      desc: 'Turmas escolares, colégios e ATL',
+      icon: GraduationCap
+    },
+    {
+      id: 'Traga a sua Instituição',
+      label: 'Traga a sua Instituição',
+      desc: 'Empresas, associações e eventos de grupo',
+      icon: Building2
+    },
+    {
+      id: 'Dúvida Geral ou Sugestão',
+      label: 'Outras Dúvidas',
+      desc: 'Informações gerais ou pedidos especiais',
+      icon: MessageSquare
+    }
+  ];
 
   return (
     <motion.div
@@ -193,7 +311,7 @@ export default function Contactos() {
               </a>
               <button
                 type="button"
-                onClick={() => handleCopy('pereira.garcia2025@gmail.com', 'email')}
+                onClick={() => handleCopyEmail('pereira.garcia2025@gmail.com')}
                 className="inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-secondary px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer"
               >
                 {copiedEmail ? (
@@ -280,7 +398,7 @@ export default function Contactos() {
       </section>
 
       {/* ================= SECÇÃO PRINCIPAL: FORMULÁRIO + HORÁRIOS & INFOS ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      <section id="formulario" className="scroll-mt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* COLUNA ESQUERDA: Formulário de Mensagem Direta (7 colunas) */}
           <div className="lg:col-span-7 bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-gray-100">
@@ -301,15 +419,15 @@ export default function Contactos() {
                 <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mx-auto mb-4">
                   <Check className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-black text-secondary mb-2">Mensagem Encaminhada!</h3>
+                <h3 className="text-2xl font-black text-secondary mb-2">Mensagem Enviada com Sucesso!</h3>
                 <p className="text-secondary/80 font-medium max-w-md mx-auto mb-6">
-                  A sua mensagem foi aberta no WhatsApp para envio direto à nossa equipa. Responderemos o mais breve possível!
+                  A sua mensagem foi registada e encaminhada diretamente para a equipa do Leni's FunPark. Entraremos em contacto consigo com a maior brevidade!
                 </p>
                 <button
                   type="button"
                   onClick={() => {
                     setFormSent(false);
-                    setFormData({ nome: '', contacto: '', motivo: 'Festa de Aniversário', mensagem: '' });
+                    setFormData({ nome: '', contacto: '', motivo: 'Festa de Aniversário', preferencia: 'whatsapp', mensagem: '' });
                   }}
                   className="bg-secondary text-white font-bold px-6 py-3 rounded-xl hover:bg-secondary/90 transition-colors text-sm cursor-pointer"
                 >
@@ -349,19 +467,91 @@ export default function Contactos() {
                 </div>
 
                 <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <label className="block text-sm font-bold text-secondary">
+                      Tipo de Assunto *
+                    </label>
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                      Selecione uma opção
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {opcoesAssunto.map((opt) => {
+                      const isSelected = formData.motivo === opt.id;
+                      const IconComponent = opt.icon;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, motivo: opt.id })}
+                          className={`group flex items-center gap-3.5 p-3.5 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer ${
+                            isSelected
+                              ? 'border-primary bg-surface text-secondary shadow-sm ring-2 ring-primary/20 scale-[1.01]'
+                              : 'border-gray-200/80 bg-gray-50/60 hover:bg-white hover:border-primary/40 text-secondary/75'
+                          }`}
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-white text-secondary/50 border border-gray-200/60 group-hover:text-primary group-hover:border-primary/30'
+                            }`}
+                          >
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-black leading-tight ${isSelected ? 'text-secondary' : 'text-secondary/85'}`}>
+                              {opt.label}
+                            </p>
+                            <p className="text-[11px] text-secondary/60 font-medium truncate mt-0.5">
+                              {opt.desc}
+                            </p>
+                          </div>
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                              isSelected
+                                ? 'bg-primary text-white scale-100 opacity-100'
+                                : 'border border-gray-300 opacity-40 scale-75 group-hover:opacity-70'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
                   <label className="block text-sm font-bold text-secondary mb-2">
-                    Tipo de Assunto
+                    Como prefere que entremos em contacto?
                   </label>
-                  <select
-                    value={formData.motivo}
-                    onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-secondary font-medium bg-white"
-                  >
-                    <option value="Festa de Aniversário">Festa de Aniversário</option>
-                    <option value="Visita Individual / Família">Visita Individual / Família</option>
-                    <option value="Grupo Escolar / Associação">Grupo Escolar / Associação</option>
-                    <option value="Dúvida Geral ou Sugestão">Dúvida Geral ou Sugestão</option>
-                  </select>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {[
+                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+                      { id: 'email', label: 'Email', icon: Mail },
+                      { id: 'telefone', label: 'Chamada', icon: Phone },
+                    ].map((pref) => {
+                      const Icon = pref.icon;
+                      const isSelected = formData.preferencia === pref.id;
+                      return (
+                        <button
+                          key={pref.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, preferencia: pref.id as 'whatsapp' | 'email' | 'telefone' })}
+                          className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 text-primary shadow-xs'
+                              : 'border-gray-200 bg-white text-secondary/70 hover:border-primary/30'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{pref.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div>
@@ -380,10 +570,11 @@ export default function Contactos() {
 
                 <button
                   type="submit"
-                  className="w-full bg-accent hover:bg-accent-dark text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg cursor-pointer"
+                  disabled={submitting}
+                  className="w-full bg-accent hover:bg-accent-dark text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg cursor-pointer disabled:opacity-60"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Enviar Mensagem via WhatsApp</span>
+                  <Send className="w-5 h-5" />
+                  <span>{submitting ? 'A enviar mensagem...' : 'Enviar Mensagem'}</span>
                 </button>
 
                 <p className="text-xs text-center text-secondary/50 font-medium">

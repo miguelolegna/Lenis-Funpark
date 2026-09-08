@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 
 import HeroSection from '../sections/festas/HeroSection';
 import B2COfertaSection from '../sections/festas/B2COfertaSection';
-import B2BFacilitadorSection from '../sections/festas/B2BFacilitadorSection';
 
 const pageVariants = {
   initial: { opacity: 0, y: 40, scale: 0.98 },
@@ -28,15 +27,8 @@ export default function Festas() {
     >
       <HeroSection />
 
-      <B2COfertaSection 
-        onCheckAvailability={(packageType) => console.log('Mock: Verificando disponibilidade para', packageType)}
-      />
-
-      <B2BFacilitadorSection 
-        isSubmitting={false}
-        isSubmitted={false}
-        onSubmit={(e) => { e.preventDefault(); console.log('Mock: Orçamento submetido'); }}
-      />
+      <B2COfertaSection />
     </motion.div>
   );
 }
+

@@ -1,5 +1,5 @@
 [auth]
-enable_signup = false
+enable_signup = true
 
 [functions.dispatch_b2c_otp]
 enabled = true

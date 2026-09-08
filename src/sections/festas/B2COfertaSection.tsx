@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { PartyPopper, GraduationCap, CheckCircle2, Building2, Clock } from 'lucide-react';
 
 export interface B2COfertaSectionProps {
-  onCheckAvailability: (packageType: string) => void;
+  onCheckAvailability?: (packageType: string) => void;
 }
 
 export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSectionProps) {
@@ -14,6 +15,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* CARTÃO 1: Aniversários -> Home Formulário */}
           <motion.div 
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-primary flex flex-col overflow-hidden"
@@ -40,15 +42,17 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <button 
-                onClick={() => onCheckAvailability('Aniversários')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors"
+              <Link 
+                to="/#reservas"
+                onClick={() => onCheckAvailability?.('Aniversários')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors text-center inline-block shadow-md hover:shadow-lg"
               >
                 Verificar Disponibilidade
-              </button>
+              </Link>
             </div>
           </motion.div>
 
+          {/* CARTÃO 2: Visitas Escolares -> Contactos com assunto marcado */}
           <motion.div 
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-accent flex flex-col overflow-hidden"
@@ -74,16 +78,17 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <button 
-                onClick={() => onCheckAvailability('Visitas Escolares')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-secondary text-white hover:bg-primary transition-colors"
+              <Link 
+                to="/contactos?assunto=escolar#formulario"
+                onClick={() => onCheckAvailability?.('Visitas Escolares')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-secondary text-white hover:bg-primary transition-colors text-center inline-block shadow-md hover:shadow-lg"
               >
                 Contactar Equipa
-              </button>
+              </Link>
             </div>
           </motion.div>
 
-          {/* NOVO CARTÃO: Instituição */}
+          {/* CARTÃO 3: Traga a sua Instituição -> Contactos com assunto marcado */}
           <motion.div 
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-yellow-400 flex flex-col overflow-hidden"
@@ -109,16 +114,17 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <button 
-                onClick={() => onCheckAvailability('Instituição')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-yellow-400 text-secondary hover:bg-yellow-500 transition-colors"
+              <Link 
+                to="/contactos?assunto=instituicao#formulario"
+                onClick={() => onCheckAvailability?.('Instituição')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-yellow-400 text-secondary hover:bg-yellow-500 transition-colors text-center inline-block shadow-md hover:shadow-lg"
               >
                 Pedir Informações
-              </button>
+              </Link>
             </div>
           </motion.div>
 
-          {/* NOVO CARTÃO: A Qualquer Hora */}
+          {/* CARTÃO 4: Venha a Qualquer Hora -> Home Semáforo */}
           <motion.div 
             whileHover={{ y: -10 }}
             className="bg-white rounded-[2rem] shadow-xl border-b-4 border-green-500 flex flex-col overflow-hidden"
@@ -144,12 +150,13 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <button 
-                onClick={() => onCheckAvailability('A Qualquer Hora')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+              <Link 
+                to="/#semaforo"
+                onClick={() => onCheckAvailability?.('A Qualquer Hora')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-center inline-block shadow-md hover:shadow-lg"
               >
-                Verificar Disponibilidade
-              </button>
+                Ver Lotação no Semáforo
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -157,3 +164,4 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
     </section>
   );
 }
+
