@@ -25,8 +25,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </main>
       {!isAdmin && (
         <>
-          <FAQ faqs={globalFaqs} />
-          <MapSection />
+          {['/', '/parque', '/festas', '/contactos'].includes(location.pathname) && (
+            <>
+              <FAQ faqs={globalFaqs} />
+              <MapSection />
+            </>
+          )}
           <Footer />
         </>
       )}

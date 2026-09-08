@@ -148,7 +148,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 onClick={() => onCheckAvailability('A Qualquer Hora')}
                 className="w-full py-4 rounded-xl font-bold text-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
               >
-                Ver Tarifários
+                Verificar Disponibilidade
               </button>
             </div>
           </motion.div>

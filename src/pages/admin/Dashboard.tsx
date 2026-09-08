@@ -46,6 +46,18 @@ export default function Dashboard() {
     }
   };
 
+  const handleReativarToken = async (id: string) => {
+    if (!window.confirm('Tem a certeza que deseja reativar o acesso de edição para o cliente?')) return;
+    
+    const { error } = await supabase.rpc('reativar_token_b2c', { p_reserva_id: id });
+    if (error) {
+      console.error('Erro ao reativar token:', error);
+      alert('Erro ao reativar acesso B2C.');
+    } else {
+      alert('Acesso B2C reativado com sucesso. O cliente já pode voltar a editar.');
+    }
+  };
+
   // 3. Formulário Complementar (Edição via modal inline)
   const handleUpdateReserva = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -124,7 +136,7 @@ export default function Dashboard() {
                 <tbody className="divide-y divide-surface-alt">
                   {reservas.map(r => (
                     <tr key={r.id} className="hover:bg-surface-alt transition-colors">
-                      <td className="p-4 font-medium">{new Date(r.data_evento).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short'})}</td>
+                      <td className="p-4 font-medium">{new Date(r.data_evento).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Lisbon' })}</td>
                       <td className="p-4">{r.nome_aniversariante}</td>
                       <td className="p-4">{r.contacto_cliente}</td>
                       <td className="p-4">
@@ -152,8 +164,14 @@ export default function Dashboard() {
                         >
                           Adicionar Complementos
                         </button>
+                        <button 
+                          onClick={() => handleReativarToken(r.id)}
+                          className="px-3 py-1 bg-yellow-500 text-white text-sm font-bold rounded-lg hover:bg-yellow-600 transition-colors shadow-sm"
+                        >
+                          Reativar B2C
+                        </button>
                         <a 
-                          href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/convite-digital?token=${r.id}`}
+                          href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/convite_digital?token=${r.convite_token}`}
                           download
                           className="inline-block px-3 py-1 bg-accent text-white text-sm font-bold rounded-lg hover:bg-accent/80 transition-colors shadow-sm"
                         >

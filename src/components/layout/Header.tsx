@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { PartyPopper } from 'lucide-react';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -68,16 +67,11 @@ export default function Header() {
             className="flex items-center shrink-0 transition-all duration-500 relative z-[60]"
             onClick={handleNavigation}
           >
-            <div className={`bg-primary rounded-xl flex items-center justify-center rotate-3 transition-all duration-500 ${isScrolled ? 'w-10 h-10' : 'w-12 h-12'}`}>
-              <PartyPopper className={`text-white transition-all duration-500 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
-            </div>
-            <span className={`ml-3 font-black text-secondary transition-all duration-500 ${isScrolled ? 'text-xl' : 'text-2xl'}`}>
-              Leni's <span className="text-accent">FunPark</span>
-            </span>
+            <img src="/logos/Logo-sem_fundo1.png" alt="Leni's FunPark" className={`object-contain transition-all duration-500 origin-left scale-150 ${isScrolled ? 'h-10' : 'h-16'}`} />
           </Link>
 
           {/* Links de Navegação (Desktop) */}
-          <nav className="hidden md:flex items-center gap-10">
+          <nav className="hidden min-[945px]:flex items-center gap-10">
             {links.map((link) => (
               <Link
                 key={link.path}
@@ -91,10 +85,10 @@ export default function Header() {
           </nav>
 
           {/* Contacto (Desktop) */}
-          <div className="hidden md:flex flex-col items-end shrink-0">
+          <div className="hidden min-[945px]:flex flex-col items-end shrink-0">
 
             <span className="font-black text-secondary text-lg tracking-tight">
-              920 259 886
+              (+351) 920 259 886
             </span>
             <span className="text-[10px] text-secondary/50 font-semibold">
               (Chamada para rede fixa nacional)
@@ -103,7 +97,7 @@ export default function Header() {
 
           {/* Hamburger Menu Toggle (Mobile only) */}
           <button
-            className="md:hidden flex flex-col justify-center items-center w-10 h-10 space-y-1.5 focus:outline-none relative z-[60] -mr-2"
+            className="min-[945px]:hidden flex flex-col justify-center items-center w-10 h-10 space-y-1.5 focus:outline-none relative z-[60] -mr-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Menu"
           >
@@ -122,7 +116,7 @@ export default function Header() {
 
       {/* Mobile Dropdown Menu Overlay */}
       <div
-        className={`fixed inset-0 bg-black/20 z-[40] transition-opacity duration-500 md:hidden ${
+        className={`fixed inset-0 bg-black/20 z-[40] transition-opacity duration-500 min-[945px]:hidden ${
           isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={() => setIsMenuOpen(false)}
@@ -130,7 +124,7 @@ export default function Header() {
 
       {/* Mobile Dropdown Menu */}
       <div
-        className={`fixed top-0 left-0 w-full bg-white z-[50] flex flex-col shadow-2xl rounded-b-3xl transition-all duration-500 ease-in-out md:hidden pt-28 pb-8 px-6 ${
+        className={`fixed top-0 left-0 w-full bg-white z-[50] flex flex-col shadow-2xl rounded-b-3xl transition-all duration-500 ease-in-out min-[945px]:hidden pt-28 pb-8 px-6 ${
           isMenuOpen
             ? "translate-y-0 opacity-100 visible"
             : "-translate-y-4 opacity-0 invisible"
@@ -164,7 +158,7 @@ export default function Header() {
               Contacto
             </span>
             <span className="font-black text-secondary text-2xl tracking-tight mb-1">
-              920 259 886
+              (+351) 920 259 886
             </span>
             <span className="text-xs text-secondary/50 font-medium text-center">
               (Chamada para rede fixa nacional)

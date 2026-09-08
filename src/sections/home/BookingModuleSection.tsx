@@ -5,6 +5,7 @@ export interface BookingModuleSectionProps {
   currentDate: Date;
   selectedDate: Date | null;
   availableTimes: string[];
+  isFetchingTimes?: boolean;
   isSubmitting: boolean;
   isSubmitted: boolean;
   onDayClick: (day: number) => void;
@@ -17,6 +18,7 @@ export default function BookingModuleSection({
   currentDate,
   selectedDate,
   availableTimes,
+  isFetchingTimes = false,
   isSubmitting,
   isSubmitted,
   onDayClick,
@@ -32,6 +34,11 @@ export default function BookingModuleSection({
   const daysInMonth = Array.from({length: daysCount}, (_, i) => i + 1);
   
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+  // Calcula o deslocamento para a semana iniciar à Segunda-feira (0 = Seg, 6 = Dom)
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const startingOffset = (firstDayOfMonth + 6) % 7;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -73,7 +80,19 @@ export default function BookingModuleSection({
               </div>
             </div>
             
+            {/* Dias da semana */}
+            <div className="grid grid-cols-7 gap-2 mb-2 text-center">
+              {weekDays.map((day) => (
+                <div key={day} className="text-xs sm:text-sm font-bold text-secondary/60 py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+
             <div className="grid grid-cols-7 gap-2">
+              {Array.from({ length: startingOffset }).map((_, index) => (
+                <div key={`empty-${index}`} className="aspect-square" />
+              ))}
               {daysInMonth.map(day => {
                 const dateObj = new Date(year, month, day);
                 const isPast = dateObj < today;
@@ -134,15 +153,17 @@ export default function BookingModuleSection({
                      name="time" 
                      required 
                      defaultValue="" 
-                     disabled={!selectedDate || availableTimes.length === 0}
+                     disabled={!selectedDate || isFetchingTimes || availableTimes.length === 0}
                      className="w-full bg-surface-alt border-2 border-surface rounded-xl px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                    >
                      <option value="" disabled>
                        {!selectedDate 
                          ? "Selecione uma data primeiro..." 
-                         : availableTimes.length === 0 
-                           ? "Sem horários disponíveis" 
-                           : "Selecione um horário..."}
+                         : isFetchingTimes
+                           ? "A carregar horários..."
+                           : availableTimes.length === 0 
+                             ? "Sem horários disponíveis" 
+                             : "Selecione um horário..."}
                      </option>
                      {availableTimes.map(time => (
                        <option key={time} value={time}>{time}</option>

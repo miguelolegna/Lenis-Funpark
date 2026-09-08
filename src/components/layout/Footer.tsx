@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { PartyPopper, MapPin, Phone, Clock } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { MapPin, Phone, Clock } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -9,10 +9,11 @@ export default function Footer() {
           {/* Coluna 1: Marca */}
           <div>
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center rotate-3">
-                <PartyPopper className="text-white" />
-              </div>
-              <span className="ml-3 font-black text-2xl text-white">Leni's <span className="text-accent">FunPark</span></span>
+              <img
+                src="/logos/Logo-sem_fundo2.png"
+                alt="Leni's FunPark"
+                className="h-16 object-contain origin-left scale-190"
+              />
             </div>
             <p className="text-surface-alt">
               O 1º Parque de Diversão Indoor na Covilhã!
@@ -25,11 +26,14 @@ export default function Footer() {
             <ul className="space-y-4 text-surface-alt">
               <li className="flex items-start">
                 <MapPin className="text-primary mr-3 mt-1 shrink-0" size={20} />
-                <span>Zona Industrial do Tortosendo lt.23B Rua F, 6200-823 Tortosendo</span>
+                <span>
+                  Zona Industrial do Tortosendo lt.23B Rua F, 6200-823
+                  Tortosendo
+                </span>
               </li>
               <li className="flex items-start">
                 <Phone className="text-primary mr-3 mt-1 shrink-0" size={20} />
-                <span>Telemóvel/WhatsApp: 920 259 886</span>
+                <span>Telemóvel/WhatsApp: (+351) 920 259 886</span>
               </li>
             </ul>
           </div>
@@ -53,10 +57,26 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-white mb-6">Informações</h3>
             <ul className="space-y-3 text-surface-alt">
-              <li><a href="#" className="hover:text-primary transition-colors">Política de Privacidade</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Política de Cookies</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Termos e Condições</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Livro de Reclamações Eletrónico</a></li>
+              <li>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Política de Privacidade
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Política de Cookies
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Termos e Condições
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Livro de Reclamações Eletrónico
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -66,8 +86,8 @@ export default function Footer() {
           <p className="text-surface-alt/80 text-sm mb-4 md:mb-0">
             &copy; 2026 Leni's FunPark.
           </p>
-          <Link 
-            to="/admin/login" 
+          <Link
+            to="/admin/login"
             className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors"
           >
             Área Reservada Staff

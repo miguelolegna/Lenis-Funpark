@@ -17,7 +17,7 @@ export default function MapSection() {
             
             <div className="bg-accent p-6 rounded-2xl flex items-center">
               <Phone className="text-white mr-4 shrink-0" size={32} />
-              <span className="font-medium text-lg font-bold">920 259 886</span>
+              <span className="font-medium text-lg font-bold">(+351) 920 259 886</span>
             </div>
             
             <div className="bg-white/10 p-6 rounded-2xl flex items-center">

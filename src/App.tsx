@@ -9,6 +9,7 @@ import Festas from './pages/Festas';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
+import ReservaClient from './pages/ReservaClient';
 
 // === GESTÃO DE ROTAS ===
 function AppRoutes() {
@@ -21,6 +22,7 @@ function AppRoutes() {
         <Route path="/festas" element={<Festas />} />
         {/* <Route path="/contactos" element={<PagePlaceholder title="Contactos" />} /> */}
         <Route path="/admin/login" element={<Login />} />
+        <Route path="/reserva/:token" element={<ReservaClient />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/dashboard" element={<Dashboard />} />
         </Route>
