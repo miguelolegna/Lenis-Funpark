@@ -11,22 +11,29 @@ export default function HeroSection({ onCheckAvailability }: HeroSectionProps) {
 
   useEffect(() => {
     if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
       videoRef.current.playbackRate = 0.9;
+      videoRef.current.play().catch(() => {});
     }
   }, []);
 
   return (
-    <section className="relative">
+    <section className="relative bg-secondary overflow-hidden">
       <video 
         ref={videoRef}
         autoPlay 
         muted 
         loop 
         playsInline 
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          v.muted = true;
+          v.play().catch(() => {});
+        }}
         className="absolute inset-0 w-full h-full object-cover"
         src="/videos lennis/Lenis Fun Park Siite.mp4"
       />
-      <div className="absolute inset-0 bg-black/40 z-10"></div>
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-48 flex flex-col items-center text-center">
         <motion.span 
