@@ -81,7 +81,7 @@ export function useAdminNotifications() {
       // 1. Reservas da base de dados Supabase
       const { data: reservas, error } = await supabase
         .from('reservas')
-        .select('id, estado, nome_aniversariante, data_evento, num_criancas, is_locked, termos_veracidade, created_at, updated_at')
+        .select('id, estado, nome_aniversariante, data_evento, num_criancas, termos_veracidade, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -111,7 +111,7 @@ export function useAdminNotifications() {
           }
 
           // Evento 2: Formulário Selado / Concluído pelo Cliente
-          if (r.is_locked || r.termos_veracidade || r.estado === 'COMPLETED') {
+          if (r.termos_veracidade || r.estado === 'COMPLETED' || r.estado === 'LOCKED') {
             const notifId = `selada-${r.id}`;
             items.push({
               id: notifId,
@@ -263,11 +263,13 @@ export function useAdminNotifications() {
 
   // Efeito de inicialização e subscrição Realtime
   useEffect(() => {
-    fetchNotifications();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchNotifications();
 
-    // 1. Subscrição Supabase Realtime para a tabela reservas
+    // Subscrição Supabase Realtime com canal único para evitar colisões entre instâncias simultâneas
+    const channelId = Math.random().toString(36).substring(2, 9);
     const channel = supabase
-      .channel('admin_notifs_reservas_realtime')
+      .channel(`admin_notifs_${channelId}`)
       .on(
         'postgres_changes',
         {
@@ -279,11 +281,6 @@ export function useAdminNotifications() {
           fetchNotifications(true);
         }
       )
-      .subscribe();
-
-    // 2. Subscrição Supabase Realtime para a tabela mensagens_contacto
-    const msgChannel = supabase
-      .channel('admin_notifs_mensagens_realtime')
       .on(
         'postgres_changes',
         {
@@ -312,7 +309,6 @@ export function useAdminNotifications() {
 
     return () => {
       supabase.removeChannel(channel);
-      supabase.removeChannel(msgChannel);
       window.removeEventListener('admin_messages_updated', handleMessagesUpdate);
       window.removeEventListener('storage', handleMessagesUpdate);
       clearInterval(interval);
