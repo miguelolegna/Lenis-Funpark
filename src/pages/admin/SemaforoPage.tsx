@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
@@ -13,9 +13,36 @@ export default function SemaforoPage() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
 
-  // Buscar metadados de última alteração
-  const fetchStatusMeta = async () => {
+  // Garante que a sessão de admin guardada no browser é restaurada no cliente Supabase
+  const ensureAuthenticatedSession = async () => {
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        return sessionData.session;
+      }
+      const saved = localStorage.getItem('admin_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.access_token && parsed?.refresh_token) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: parsed.access_token,
+            refresh_token: parsed.refresh_token,
+          });
+          if (!error && data?.session) {
+            return data.session;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao restaurar sessão de admin:', e);
+    }
+    return null;
+  };
+
+  // Buscar metadados de última alteração
+  const fetchStatusMeta = useCallback(async () => {
+    try {
+      await ensureAuthenticatedSession();
       const { data, error } = await supabase
         .from('park_status')
         .select('updated_at, updated_by')
@@ -38,36 +65,46 @@ export default function SemaforoPage() {
     } catch (err) {
       console.error('Erro ao consultar metadados do semáforo:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchStatusMeta();
-  }, [parkStatus]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchStatusMeta();
+  }, [fetchStatusMeta, parkStatus]);
 
   const handleUpdateStatus = async (novoEstadoDB: 'LIVRE' | 'MODERADO' | 'CHEIO' | 'FECHADO') => {
     setUpdating(true);
     setErrorMsg(null);
     setSuccessMsg(null);
     try {
+      // 1. Assegurar sessão ativa para passar a política RLS (authenticated)
+      const session = await ensureAuthenticatedSession();
       const { data: userData } = await supabase.auth.getUser();
-      const { error } = await supabase
+      const currentUserId = session?.user?.id || userData?.user?.id || null;
+
+      // 2. Executar update e verificar linhas alteradas via .select()
+      const { data: updatedRows, error } = await supabase
         .from('park_status')
         .update({
           estado: novoEstadoDB,
-          updated_by: userData.user?.id || null,
+          updated_by: currentUserId,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', 1);
+        .eq('id', 1)
+        .select();
 
       if (error) {
         console.error('Erro ao atualizar estado:', error);
         setErrorMsg('Falha ao atualizar: ' + error.message);
+      } else if (!updatedRows || updatedRows.length === 0) {
+        console.warn('Nenhuma linha foi alterada no park_status. Verifique a sessão admin.');
+        setErrorMsg('Sem permissão de escrita na BD. Inicie sessão como Admin (/admin/login) para renovar as credenciais.');
       } else {
         setSuccessMsg(`Estado alterado para ${novoEstadoDB}`);
         fetchStatusMeta();
         setTimeout(() => setSuccessMsg(null), 3000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro de ligação:', err);
       setErrorMsg('Erro de ligação ao tentar atualizar.');
     } finally {

@@ -59,9 +59,8 @@ export function useParkStatus(): UseParkStatusResult {
     fetchCurrentStatus();
 
     // 2. Subscrição Realtime para atualizações automáticas
-    const channelId = Math.random().toString(36).substring(2, 9);
     const channel = supabase
-      .channel(`park_status_realtime_${channelId}`)
+      .channel('park_status_realtime')
       .on(
         'postgres_changes',
         {
