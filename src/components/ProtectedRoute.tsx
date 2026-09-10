@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+// import { useEffect, useState } from 'react';
+// import { Navigate, Outlet } from 'react-router-dom';
+// import { supabase } from '../lib/supabase';
+import { Outlet } from 'react-router-dom';
 
 export default function ProtectedRoute() {
+  /*
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -42,4 +44,8 @@ export default function ProtectedRoute() {
   }
 
   return authenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
+  */
+
+  // Dashboard aberta temporariamente: acesso direto sem restrições
+  return <Outlet />;
 }
