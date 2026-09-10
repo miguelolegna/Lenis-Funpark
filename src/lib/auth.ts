@@ -18,14 +18,12 @@ export async function requestOTP(email: string): Promise<void> {
  * Devolve a Sessão em caso de sucesso para desbloquear as fases seguintes.
  */
 export async function verifyOTP(email: string, token: string): Promise<Session> {
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: 'email',
-  });
+  const variavelEmail = email;
+  const variavelCodigo = token;
+  const { data, error } = await supabase.auth.verifyOtp({ email: variavelEmail, token: variavelCodigo, type: 'email' });
 
   if (error) {
-    console.error('Erro ao verificar OTP:', error.message);
+    console.error("Erro de Verificação OTP:", error.message);
     throw new Error('Código de autenticação inválido ou expirado.');
   }
 

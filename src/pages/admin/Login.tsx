@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { requestOTP, verifyOTP } from '../../lib/auth';
+import { requestOTP } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
 
 export default function Login() {
@@ -19,8 +19,9 @@ export default function Login() {
     try {
       await requestOTP(email);
       setStep(2);
-    } catch (err: any) {
-      setError(err.message || 'Erro ao enviar o código OTP.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao enviar o código OTP.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -28,25 +29,44 @@ export default function Login() {
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
+    if (!token.trim() || token.trim().length !== 6) {
+      setError('Por favor, introduza o código de 6 dígitos.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
-      const session = await verifyOTP(email, token);
-      
-      // Armazenamos a sessão para uso na área restrita e mantemos o 'admin_user' 
-      // caso o dashboard atual dependa dessa flag legada
-      localStorage.setItem('admin_session', JSON.stringify(session));
-      localStorage.setItem('admin_user', JSON.stringify({ role: 'admin', email }));
-      
-      await supabase.auth.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-      });
-      
-      navigate('/admin/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Código inválido ou expirado.');
+      const variavelEmail = email;
+      const variavelCodigo = token;
+      const { data, error } = await supabase.auth.verifyOtp({ email: variavelEmail, token: variavelCodigo, type: 'email' });
+
+      if (error) {
+        setError(error.message);
+      }
+      if (error) { console.error("Erro de Verificação OTP:", error.message); return; }
+
+      if (data?.session) {
+        // Armazenamos a sessão para uso na área restrita e mantemos o 'admin_user' 
+        // caso o dashboard atual dependa dessa flag legada
+        localStorage.setItem('admin_session', JSON.stringify(data.session));
+        localStorage.setItem('admin_user', JSON.stringify({ role: 'admin', email: variavelEmail }));
+        
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        
+        navigate('/admin/dashboard');
+      } else {
+        setError('Não foi possível estabelecer a sessão.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Código inválido ou expirado.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -98,11 +118,15 @@ export default function Login() {
                 <input
                   type="text"
                   required
+                  minLength={6}
                   maxLength={6}
+                  pattern="[0-9]{6}"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   className="appearance-none rounded-md relative block w-full px-3 py-3 border border-secondary/20 placeholder-secondary/50 text-secondary focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm text-center tracking-[0.5em] font-mono text-xl"
                   placeholder="000000"
                   value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))} // Apenas dígitos
+                  onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 />
               </div>
             </div>
@@ -110,7 +134,7 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                disabled={loading || token.length !== 6}
+                disabled={loading || token.trim().length !== 6}
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors disabled:opacity-70"
               >
                 {loading ? 'A validar...' : 'Entrar na Área Reservada'}
