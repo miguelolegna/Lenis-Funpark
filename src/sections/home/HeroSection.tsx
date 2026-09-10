@@ -35,6 +35,9 @@ export default function HeroSection({ onCheckAvailability }: HeroSectionProps) {
         src="/videos/lenis-fun-park.mp4"
       />
 
+      {/* Overlay escuro com 15% de opacidade por cima do vídeo */}
+      <div className="absolute inset-0 bg-black/15 z-10 pointer-events-none" aria-hidden="true" />
+
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-48 flex flex-col items-center text-center">
         <motion.span 
           animate={{ y: [0, -10, 0] }}
