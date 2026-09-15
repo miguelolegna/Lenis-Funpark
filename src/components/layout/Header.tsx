@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { preloadRoute } from '../../utils/preload';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -122,6 +123,8 @@ export default function Header() {
                 className={getLinkClasses(link.path)}
                 to={link.path}
                 onClick={handleNavigation}
+                onMouseEnter={() => preloadRoute(link.path)}
+                onTouchStart={() => preloadRoute(link.path)}
               >
                 {link.label}
               </Link>
@@ -192,6 +195,8 @@ export default function Header() {
               className={getLinkClasses(link.path, true)}
               to={link.path}
               onClick={handleNavigation}
+              onMouseEnter={() => preloadRoute(link.path)}
+              onTouchStart={() => preloadRoute(link.path)}
             >
               {link.label}
             </Link>

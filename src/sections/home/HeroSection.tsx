@@ -26,6 +26,8 @@ export default function HeroSection({ onCheckAvailability }: HeroSectionProps) {
         muted 
         loop 
         playsInline 
+        preload="metadata"
+        poster="/Fotos/OverView.webp"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
           v.muted = true;

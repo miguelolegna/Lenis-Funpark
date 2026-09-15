@@ -45,11 +45,11 @@ export default function Home() {
       const dayOfWeek = date.getDay();
       let allSlots: string[] = [];
       
-      // horarios de funcionamento do parque, dependendo do dia da semana
+      // Horários de funcionamento do parque (último slot às 18:00 para festas de 2h com fecho às 20:00)
       if (dayOfWeek >= 2 && dayOfWeek <= 5) {
-        allSlots = ["14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+        allSlots = ["14:00", "15:00", "16:00", "17:00", "18:00"];
       } else if (dayOfWeek === 0 || dayOfWeek === 6) {
-        allSlots = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+        allSlots = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
       }
       
       const filteredSlots = allSlots.filter(slot => !occupiedHours.includes(slot));

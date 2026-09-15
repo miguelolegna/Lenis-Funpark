@@ -11,7 +11,7 @@ export default function OParque() {
     { 
       name: "Inês", 
       role: "Monitora", 
-      desc: "Sempre com um sorriso para vos receber e esclarecer qualquer dúvida.",
+      desc: "A dona da adrenalina! Adora desafios e não descansa até contagiar toda a gente com o seu espírito aventureiro.",
       img: "/Fotos/team/ines.webp" 
     },
     { 
@@ -20,17 +20,17 @@ export default function OParque() {
       desc: "Especialista em dinamizar o parque, com atividades criativas para todas as idades.",
       img: "/Fotos/team/helena.webp" 
     },
+        { 
+      name: "Tatiana", 
+      role: "Monitora", 
+      desc: "Sempre com um sorriso no rosto para receber e esclarecer qualquer duvida",
+      img: "/Fotos/team/tatiana.webp" 
+    },
     { 
       name: "Ana", 
       role: "Monitora/ Explicadora", 
       desc: "A energia do parque! Com ela, até os mais tímidos ganham coragem para saltar mais alto.",
       img: "/Fotos/team/ana.webp" 
-    },
-    { 
-      name: "Tatiana", 
-      role: "Monitora", 
-      desc: "A dona da adrenalina! Adora desafios e não descansa até contagiar toda a gente com o seu espírito aventureiro.",
-      img: "/Fotos/team/tatiana.webp" 
     }
   ];
 

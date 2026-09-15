@@ -11,6 +11,8 @@ export default function HeroSection({}: HeroSectionProps) {
         muted 
         loop 
         playsInline
+        preload="metadata"
+        poster="/Fotos/OverView.webp"
         src="/videos/lenis-fpv.mp4"
         className="absolute inset-0 w-full h-full object-cover"
       />

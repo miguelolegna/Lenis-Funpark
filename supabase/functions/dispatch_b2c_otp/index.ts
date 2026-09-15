@@ -51,7 +51,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: 'Leni\'s FunPark <onboarding@resend.dev>', // ATUALIZAR: Coloque o seu email de remetente configurado no Resend
+          from: 'Leni\'s FunPark <noreply@lenisfunpark.com>', // TODO: ATUALIZAR para o email verificado no Resend do novo domínio
           to: [clientEmail],
           subject: 'Código de Acesso - Leni\'s FunPark',
           html: `<p>Olá!</p><p>O seu código para acesso ao formulário da festa é: <strong>${otp}</strong></p><p>Este código expira em 10 minutos.</p>`

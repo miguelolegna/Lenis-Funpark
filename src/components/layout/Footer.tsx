@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { preloadRoute } from "../../utils/preload";
 
 export default function Footer() {
   return (
@@ -120,6 +121,8 @@ export default function Footer() {
           </p>
           <Link
             to="/admin/login"
+            onMouseEnter={() => preloadRoute('/admin/login')}
+            onTouchStart={() => preloadRoute('/admin/login')}
             className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors"
           >
             Área Reservada Staff
