@@ -66,6 +66,8 @@ const configPorTipo: Record<string, ConfigNotificacao> = {
   PAGAMENTO_CONFIRMADO: { icon: Wallet, bgClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', badgeLabel: 'Pagamento' },
   FORMULARIO_SUBMETIDO: { icon: FileCheck2, bgClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', badgeLabel: 'Formulário' },
   FORMULARIO_REABERTO: { icon: RotateCcw, bgClass: 'bg-yellow-100 text-yellow-800 border-yellow-200', badgeLabel: 'Formulário reaberto' },
+  RESERVA_RECUADA: { icon: RotateCcw, bgClass: 'bg-yellow-100 text-yellow-800 border-yellow-200', badgeLabel: 'Reserva recuada' },
+  RESERVA_REATIVADA: { icon: RotateCcw, bgClass: 'bg-orange-100 text-orange-800 border-orange-200', badgeLabel: 'Reserva reativada' },
   FESTA_CONCLUIDA: { icon: PartyPopper, bgClass: 'bg-teal-100 text-teal-800 border-teal-200', badgeLabel: 'Festa concluída' },
   FESTA_MANUAL: { icon: CalendarPlus, bgClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', badgeLabel: 'Festa adicionada' },
   CONVITE_AVULSO: { icon: Ticket, bgClass: 'bg-pink-100 text-pink-800 border-pink-200', badgeLabel: 'Convite' },

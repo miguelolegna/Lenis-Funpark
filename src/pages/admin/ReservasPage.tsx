@@ -15,6 +15,7 @@ import {
   Check,
   Eraser,
   Wallet,
+  ArrowLeft,
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { nomeMetodoPagamento } from '../../lib/pagamentos';
@@ -110,6 +111,47 @@ const estadoInfo: Record<string, { label: string; className: string }> = {
 
 const ESTADOS_ATIVOS = ['PENDING_APPROVAL', 'AWAITING_DEPOSIT', 'IN_PROGRESS', 'LOCKED'];
 
+const NOTA_CONVITE_AVULSO = 'Convite avulso emitido manualmente pelo Back-Office.';
+
+interface Recuo {
+  estado: string;
+  coluna: string;
+  aviso?: string;
+}
+
+// Para onde vai o card ao carregar na seta "voltar". "Festa em curso" depende só da data,
+// por isso não tem coluna anterior; "Concluído" só recua festas que ainda não passaram
+// (as passadas voltariam a ser concluídas automaticamente pela tarefa horária).
+function recuoDoCard(colunaId: string, r: ReservaKanban & { notas_adicionais?: string | null }): Recuo | null {
+  switch (colunaId) {
+    case 'aguarda-pagamento':
+      return { estado: 'PENDING_APPROVAL', coluna: 'Pendente' };
+    case 'em-preenchimento':
+      return {
+        estado: 'AWAITING_DEPOSIT',
+        coluna: 'A aguardar pagamento',
+        aviso: 'O cliente deixa de poder preencher o formulário até marcares o pagamento outra vez.',
+      };
+    case 'formulario-preenchido':
+      return {
+        estado: 'IN_PROGRESS',
+        coluna: 'Em preenchimento',
+        aviso: 'O formulário é reaberto: o cliente pode voltar a editar e submeter.',
+      };
+    case 'concluido':
+      if (r.notas_adicionais === NOTA_CONVITE_AVULSO || new Date(r.data_evento) <= new Date()) return null;
+      return { estado: 'LOCKED', coluna: 'Formulário preenchido' };
+    case 'canceladas':
+      return {
+        estado: 'PENDING_APPROVAL',
+        coluna: 'Pendente',
+        aviso: 'A reserva é reativada como pedido pendente.',
+      };
+    default:
+      return null;
+  }
+}
+
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,6 +210,36 @@ export default function ReservasPage() {
     } else {
       fetchReservas();
     }
+  };
+
+  const handleRecuar = async (reserva: ReservaKanban, recuo: Recuo) => {
+    const nome = reserva.nome_aniversariante || 'sem nome';
+    const pergunta = `Voltar a reserva de "${nome}" para "${recuo.coluna}"?${recuo.aviso ? `\n\n${recuo.aviso}` : ''}`;
+    if (!window.confirm(pergunta)) return;
+    setActionError(null);
+
+    // LOCKED → IN_PROGRESS passa pela função própria (reabre o formulário do cliente)
+    const { error } =
+      reserva.estado === 'LOCKED' && recuo.estado === 'IN_PROGRESS'
+        ? await supabase.rpc('reabrir_formulario_b2c', { p_reserva_id: reserva.id })
+        : await supabase
+            .from('reservas')
+            // updated_at novo: o cancelamento automático de "A aguardar pagamento" conta 48h a partir daqui
+            .update({ estado: recuo.estado, updated_at: new Date().toISOString() })
+            .eq('id', reserva.id);
+
+    if (error) {
+      console.error('[Reservas] Erro ao recuar reserva:', error.code, error.message);
+      setActionError(
+        error.message.includes('Horário indisponível')
+          ? 'Não é possível reativar: já existe uma festa confirmada a menos de 3 horas deste horário.'
+          : error.message.includes('chk_horario_funcionamento')
+          ? 'Não é possível reativar: o horário desta reserva está fora do horário de funcionamento.'
+          : `Não foi possível voltar a reserva para "${recuo.coluna}". Tenta novamente.`
+      );
+      return;
+    }
+    fetchReservas();
   };
 
   const handleCopiarLink = async (reserva: ReservaKanban) => {
@@ -377,6 +449,7 @@ export default function ReservasPage() {
                           const isAtiva = ESTADOS_ATIVOS.includes(reserva.estado);
                           const mostraConvite =
                             (reserva.estado === 'LOCKED' || reserva.estado === 'COMPLETED') && reserva.convite_token;
+                          const recuo = recuoDoCard(coluna.id, reserva);
 
                           return (
                             <div
@@ -384,9 +457,22 @@ export default function ReservasPage() {
                               className="p-3.5 bg-surface-alt/50 hover:bg-surface-alt rounded-2xl border border-surface-alt transition-all shadow-xs flex flex-col justify-between"
                             >
                               <div>
-                                <h4 className="font-black text-sm text-secondary truncate" title={reserva.nome_aniversariante}>
-                                  {reserva.nome_aniversariante || 'Sem Nome'}
-                                </h4>
+                                <div className="flex items-start justify-between gap-2">
+                                  <h4 className="font-black text-sm text-secondary truncate" title={reserva.nome_aniversariante}>
+                                    {reserva.nome_aniversariante || 'Sem Nome'}
+                                  </h4>
+                                  {recuo && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRecuar(reserva, recuo)}
+                                      className="-mt-1 -mr-1 p-1 rounded-md text-secondary/40 hover:text-secondary hover:bg-white transition-colors cursor-pointer flex-shrink-0"
+                                      title={`Voltar para "${recuo.coluna}"`}
+                                      aria-label={`Voltar a reserva de ${reserva.nome_aniversariante || 'sem nome'} para ${recuo.coluna}`}
+                                    >
+                                      <ArrowLeft className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
 
                                 <p className="text-[11px] font-bold text-primary mt-0.5 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
