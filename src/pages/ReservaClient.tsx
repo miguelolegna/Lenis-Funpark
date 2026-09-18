@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import PrivacyTermsCheckbox from "../components/PrivacyTermsCheckbox";
 import {
   PartyPopper,
   Sparkles,
@@ -840,30 +841,16 @@ export default function ReservaClient() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  const nextVal = !formData.termos_veracidade;
+              <PrivacyTermsCheckbox
+                id="client-reserva-privacy-terms"
+                checked={formData.termos_veracidade}
+                onChange={(nextVal) => {
                   handleInputChange("termos_veracidade", nextVal);
                   handleBlur("termos_veracidade", nextVal);
                 }}
-                className="w-full p-4 rounded-2xl bg-white border-2 border-primary/30 text-left transition-all flex items-center justify-between mb-6 shadow-xs"
-              >
-                <span className="font-extrabold text-sm text-secondary">
-                  Aceito os Termos e garanto a Veracidade das informações *
-                </span>
-                <div
-                  className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 ${
-                    formData.termos_veracidade
-                      ? "bg-primary border-primary text-white"
-                      : "bg-white border-secondary/30"
-                  }`}
-                >
-                  {formData.termos_veracidade && (
-                    <Check className="w-4 h-4 stroke-[3]" />
-                  )}
-                </div>
-              </button>
+                required
+                className="mb-6"
+              />
 
               {error && (
                 <div className="bg-rose-100 border-2 border-rose-300 text-rose-900 p-4 rounded-2xl text-sm font-bold text-center mb-6 flex items-center justify-center gap-2">

@@ -3,6 +3,8 @@ const routeImports: Record<string, () => Promise<unknown>> = {
   '/parque': () => import('../pages/OParque'),
   '/festas': () => import('../pages/Festas'),
   '/contactos': () => import('../pages/Contactos'),
+  '/politica-privacidade': () => import('../pages/PoliticaPrivacidade'),
+  '/termos-condicoes': () => import('../pages/TermosCondicoes'),
   '/admin/login': () => import('../pages/admin/Login'),
 };
 

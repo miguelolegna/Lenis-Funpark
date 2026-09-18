@@ -89,17 +89,17 @@ export default function Footer() {
             <h3 className="text-lg font-bold text-white mb-6">Informações</h3>
             <ul className="space-y-3 text-surface-alt">
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/politica-privacidade" className="hover:text-primary transition-colors">
                   Política de Privacidade
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/politica-privacidade#cookies" className="hover:text-primary transition-colors">
                   Política de Cookies
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/termos-condicoes" className="hover:text-primary transition-colors">
                   Termos e Condições
                 </a>
               </li>

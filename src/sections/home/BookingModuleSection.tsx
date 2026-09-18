@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import type { ResumoDia } from '../../lib/horarios';
 import { IBAN, MBWAY_NUMERO, metodosPagamento, type MetodoPagamento } from '../../lib/pagamentos';
+import PrivacyTermsCheckbox from '../../components/PrivacyTermsCheckbox';
 
 const iconePagamento: Record<MetodoPagamento, typeof Smartphone> = {
   mbway: Smartphone,
@@ -210,6 +211,7 @@ export default function BookingModuleSection({
   const [now, setNow] = useState(() => Date.now());
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [metodoEscolhido, setMetodoEscolhido] = useState<MetodoPagamento | null>(null);
+  const [concordaTermos, setConcordaTermos] = useState<boolean>(false);
 
   useEffect(() => {
     setSelectedTime('');
@@ -485,6 +487,13 @@ export default function BookingModuleSection({
           {/* Coluna Direita: Formulário de Reserva */}
           <div className="lg:col-span-3 lg:border-l-2 lg:border-surface-alt lg:pl-12 mt-8 lg:mt-0">
             <form onSubmit={onSubmit} className="space-y-6">
+              {/* Armadilha para bots: invisível para pessoas e leitores de ecrã */}
+              <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+                <label>
+                  Website
+                  <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+                </label>
+              </div>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -495,6 +504,9 @@ export default function BookingModuleSection({
                     <input
                       name="client_name"
                       required
+                      minLength={2}
+                      maxLength={100}
+                      autoComplete="name"
                       placeholder="O seu nome completo"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
@@ -508,6 +520,10 @@ export default function BookingModuleSection({
                       name="client_phone"
                       required
                       type="tel"
+                      autoComplete="tel"
+                      maxLength={20}
+                      pattern="^\+?[0-9][0-9 ]{7,18}$"
+                      title="Indique um número de telemóvel válido (ex: 912 345 678)"
                       placeholder="Ex: 912 345 678"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
@@ -524,6 +540,8 @@ export default function BookingModuleSection({
                       name="client_email"
                       type="email"
                       required
+                      autoComplete="email"
+                      maxLength={200}
                       placeholder="exemplo@email.com"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
@@ -537,6 +555,7 @@ export default function BookingModuleSection({
                       name="guests"
                       type="number"
                       min="1"
+                      max="100"
                       required
                       placeholder="Ex: 15"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
@@ -645,18 +664,26 @@ export default function BookingModuleSection({
                   <textarea
                     name="notes"
                     rows={3}
+                    maxLength={2000}
                     placeholder="Informações adicionais, idades das crianças, etc."
                     className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
                   ></textarea>
                 </div>
+
+                <PrivacyTermsCheckbox
+                  id="booking-privacy-terms"
+                  checked={concordaTermos}
+                  onChange={setConcordaTermos}
+                  required
+                />
               </div>
 
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={!selectedDate || !selectedTime || !metodoEscolhido || isSubmitting}
+                disabled={!selectedDate || !selectedTime || !metodoEscolhido || !concordaTermos || isSubmitting}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
-                  selectedDate && selectedTime && metodoEscolhido && !isSubmitting
+                  selectedDate && selectedTime && metodoEscolhido && concordaTermos && !isSubmitting
                     ? 'bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/20 cursor-pointer'
                     : 'bg-surface-alt text-secondary/50 border-2 border-surface cursor-not-allowed'
                 }`}
@@ -669,6 +696,8 @@ export default function BookingModuleSection({
                   ? 'Selecione um Horário acima'
                   : !metodoEscolhido
                   ? 'Escolha o método de pagamento'
+                  : !concordaTermos
+                  ? 'Aceite a Política e Termos'
                   : 'Pedir Confirmação'}
               </motion.button>
 

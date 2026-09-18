@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import PrivacyTermsCheckbox from '../../components/PrivacyTermsCheckbox';
 
 export interface B2BFacilitadorSectionProps {
   isSubmitting: boolean;
@@ -7,6 +9,8 @@ export interface B2BFacilitadorSectionProps {
 }
 
 export default function B2BFacilitadorSection({ isSubmitting, isSubmitted, onSubmit }: B2BFacilitadorSectionProps) {
+  const [concordaTermos, setConcordaTermos] = useState<boolean>(false);
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,14 +77,21 @@ export default function B2BFacilitadorSection({ isSubmitting, isSubmitted, onSub
                 <textarea name="observations" rows={4} className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors resize-none"></textarea>
               </div>
 
+              <PrivacyTermsCheckbox
+                id="b2b-privacy-terms"
+                checked={concordaTermos}
+                onChange={setConcordaTermos}
+                required
+              />
+
               <motion.button 
                 whileTap={{ scale: 0.98 }}
                 type="submit" 
-                disabled={isSubmitted || isSubmitting}
+                disabled={isSubmitted || isSubmitting || !concordaTermos}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
                   isSubmitted 
                     ? 'bg-primary text-white cursor-not-allowed' 
-                    : (isSubmitting ? 'bg-secondary/50 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent-dark')
+                    : (isSubmitting || !concordaTermos ? 'bg-secondary/40 text-white cursor-not-allowed' : 'bg-accent text-white hover:bg-accent-dark cursor-pointer')
                 }`}
               >
                 {isSubmitted ? 'Pedido Enviado!' : (isSubmitting ? 'A enviar...' : 'Pedir Orçamento')}

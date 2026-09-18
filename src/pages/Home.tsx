@@ -54,6 +54,17 @@ function readStoredMethod(): MetodoPagamento | null {
   }
 }
 
+// Respostas aos limites anti-spam dos pedidos de reserva (migração 48)
+const MENSAGENS_LIMITE: Record<string, string> = {
+  DEMASIADO_RAPIDO: 'Acabou de enviar um pedido de reserva. Aguarde uns minutos antes de enviar outro.',
+  PEDIDO_DUPLICADO: 'Já recebemos um pedido seu para este dia e hora. A nossa equipa vai entrar em contacto consigo.',
+  LIMITE_PENDENTES:
+    'Já tem 2 pedidos de reserva por confirmar. Aguarde o nosso contacto antes de fazer novos pedidos, ou fale connosco pelo WhatsApp.',
+  LIMITE_DIARIO:
+    'Atingiu o limite de pedidos de reserva por hoje. Se precisar de ajuda, contacte-nos por telefone ou WhatsApp.',
+  PEDIDO_INVALIDO: 'Confirme o nome, o email, o telemóvel e o número de pessoas, e tente novamente.',
+};
+
 function readStoredDeadline(): number | null {
   try {
     const remaining = Number(localStorage.getItem(PAYMENT_REMAINING_KEY));
@@ -132,17 +143,25 @@ export default function Home() {
       const timeStr = formData.get('time') as string;
       const dataEventoISO = buildLisbonDateTime(selectedDate, timeStr);
 
-      const contactInfo = `Tel: ${formData.get('client_phone')} | Email: ${formData.get('client_email')}`;
-      const notas = formData.get('notes') as string;
-      const numPessoas = formData.get('guests') as string;
+      const texto = (campo: string) => String(formData.get(campo) ?? '').trim();
+      const contactInfo = `Tel: ${texto('client_phone')} | Email: ${texto('client_email').toLowerCase()}`;
+      const notas = texto('notes');
+      const numPessoas = texto('guests');
       const metodo = formData.get('payment_method');
       if (!eMetodoPagamento(metodo)) return;
+
+      // Campo invisível: só um bot o preenche. Finge que correu bem e não grava nada.
+      if (texto('website')) {
+        setMetodoPagamento(metodo);
+        if (metodo !== 'dinheiro') setPaymentDeadline(Date.now() + PAYMENT_WINDOW_MS);
+        return;
+      }
 
       const { error } = await supabase.from('reservas').insert([
         {
           data_evento: dataEventoISO,
           contacto_cliente: contactInfo,
-          nome_aniversariante: formData.get('client_name') as string,
+          nome_aniversariante: texto('client_name'),
           num_criancas: parseInt(numPessoas, 10),
           notas_adicionais: notas,
           tipo_convite: 'lenis',
@@ -155,6 +174,13 @@ export default function Home() {
           alert("Pedimos desculpa, mas o horário selecionado acabou de ser reservado ou é inválido. Por favor, escolha outro horário.");
           // Refresh times to remove the taken slot
           if (selectedDate) fetchAvailableTimes(selectedDate);
+          return;
+        }
+        // Limites anti-spam da base de dados (migração 48)
+        const limite = Object.entries(MENSAGENS_LIMITE).find(([codigo]) => error.message.startsWith(codigo));
+        if (limite) {
+          console.error('[Marcação] Pedido recusado pelo limite anti-spam:', limite[0]);
+          alert(limite[1]);
           return;
         }
         throw error;

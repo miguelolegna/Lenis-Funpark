@@ -14,6 +14,8 @@ const OParque = lazy(() => import('./pages/OParque'));
 const Festas = lazy(() => import('./pages/Festas'));
 const Contactos = lazy(() => import('./pages/Contactos'));
 const ReservaClient = lazy(() => import('./pages/ReservaClient'));
+const PoliticaPrivacidade = lazy(() => import('./pages/PoliticaPrivacidade'));
+const TermosCondicoes = lazy(() => import('./pages/TermosCondicoes'));
 
 // Rotas Administrativas com Lazy Loading
 const Login = lazy(() => import('./pages/admin/Login'));
@@ -38,6 +40,8 @@ function AppRoutes() {
           <Route path="/festas" element={<Festas />} />
           <Route path="/contactos" element={<Contactos />} />
           <Route path="/reserva/:token" element={<ReservaClient />} />
+          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+          <Route path="/termos-condicoes" element={<TermosCondicoes />} />
 
           {/* Autenticação Admin */}
           <Route path="/admin/login" element={<Login />} />

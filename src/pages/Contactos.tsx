@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../lib/animations';
 import { supabase } from '../lib/supabase';
+import PrivacyTermsCheckbox from '../components/PrivacyTermsCheckbox';
 
 const VALIDADE_CODIGO_MS = 5 * 60 * 1000;
 const ESPERA_REENVIO_MS = 60 * 1000;
@@ -95,6 +96,7 @@ export default function Contactos() {
   const [verificando, setVerificando] = useState(false);
   const [reenviando, setReenviando] = useState(false);
   const [agora, setAgora] = useState(() => Date.now());
+  const [concordaTermos, setConcordaTermos] = useState(false);
 
   useEffect(() => {
     if (!verificacao) return;
@@ -769,10 +771,17 @@ export default function Contactos() {
                   </p>
                 )}
 
+                <PrivacyTermsCheckbox
+                  id="contactos-privacy-terms"
+                  checked={concordaTermos}
+                  onChange={setConcordaTermos}
+                  required
+                />
+
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full bg-accent hover:bg-accent-dark text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg cursor-pointer disabled:opacity-60"
+                  disabled={submitting || !concordaTermos}
+                  className="w-full bg-accent hover:bg-accent-dark text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-5 h-5" />
                   <span>{submitting ? 'A enviar código...' : 'Enviar Mensagem'}</span>
