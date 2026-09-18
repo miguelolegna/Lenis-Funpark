@@ -577,34 +577,6 @@ export default function BookingModuleSection({
                     selectedTime={selectedTime}
                     onSelectTime={setSelectedTime}
                   />
-
-                  {/* Pills de Acesso Rápido aos Horários */}
-                  {selectedDate && availableTimes.length > 0 && (
-                    <div className="mt-3">
-                      <div className="flex flex-wrap gap-2">
-                        {availableTimes.map((time) => {
-                          const isSelected = selectedTime === time;
-                          const pending = resumoDia?.horasPendentes.includes(time);
-                          return (
-                            <button
-                              key={time}
-                              type="button"
-                              onClick={() => setSelectedTime(time)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                                isSelected
-                                  ? 'bg-primary text-white border-primary shadow-sm scale-105'
-                                  : pending
-                                  ? 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
-                                  : 'bg-surface-alt text-secondary border-surface hover:border-primary/40 hover:bg-primary/10 hover:text-primary'
-                              }`}
-                            >
-                              {time} {pending ? '⚠️' : ''}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <fieldset>

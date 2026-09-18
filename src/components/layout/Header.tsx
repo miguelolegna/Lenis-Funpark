@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Calendar } from 'lucide-react';
 import { preloadRoute } from '../../utils/preload';
 
 export default function Header() {
@@ -74,6 +75,18 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
+  const handleReservaClick = (e: React.MouseEvent) => {
+    setIsMenuOpen(false);
+    if (location.pathname === '/') {
+      const el = document.getElementById('reservas');
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth' });
+        window.history.pushState(null, '', '/#reservas');
+      }
+    }
+  };
+
   const getLinkClasses = (path: string, isMobile = false) => {
     const isActive = location.pathname === path;
     if (isMobile) {
@@ -131,16 +144,15 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Contacto (Desktop) */}
-          <div className="hidden min-[945px]:flex flex-col items-end shrink-0">
-
-            <span className="font-black text-secondary text-lg tracking-tight">
-              (+351) 920 259 886
-            </span>
-            <span className="text-[10px] text-secondary/50 font-semibold">
-              (Chamada para rede fixa nacional)
-            </span>
-          </div>
+          {/* Botão de Reserva (Desktop) */}
+          <Link
+            to="/#reservas"
+            onClick={handleReservaClick}
+            className="hidden min-[945px]:inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white font-black text-sm px-5 py-2.5 rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer shrink-0"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Reservar Agora</span>
+          </Link>
 
           {/* Hamburger Menu Toggle (Mobile only) */}
           <button
@@ -203,23 +215,20 @@ export default function Header() {
           ))}
         </div>
 
-        {/* Contacto (Mobile) */}
+        {/* Botão de Reserva (Mobile) */}
         <div
           className={`w-full mt-8 transition-transform duration-500 delay-200 ${
             isMenuOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
         >
-          <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6 flex flex-col items-center shadow-sm">
-            <span className="text-secondary/60 text-sm font-semibold mb-1 uppercase tracking-wider">
-              Contacto
-            </span>
-            <span className="font-black text-secondary text-2xl tracking-tight mb-1">
-              (+351) 920 259 886
-            </span>
-            <span className="text-xs text-secondary/50 font-medium text-center">
-              (Chamada para rede fixa nacional)
-            </span>
-          </div>
+          <Link
+            to="/#reservas"
+            onClick={handleReservaClick}
+            className="w-full py-4 bg-primary hover:bg-secondary text-white font-black text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer text-center"
+          >
+            <Calendar className="w-5 h-5" />
+            <span>Reservar Agora</span>
+          </Link>
         </div>
       </div>
     </>
