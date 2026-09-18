@@ -562,9 +562,6 @@ export default function BookingModuleSection({
                   {/* Pills de Acesso Rápido aos Horários */}
                   {selectedDate && availableTimes.length > 0 && (
                     <div className="mt-3">
-                      <span className="text-[11px] font-extrabold text-secondary/50 uppercase tracking-wider block mb-2">
-                        Atalhos Rápidos de Horário
-                      </span>
                       <div className="flex flex-wrap gap-2">
                         {availableTimes.map((time) => {
                           const isSelected = selectedTime === time;
