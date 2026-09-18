@@ -5,6 +5,7 @@ import {
   UserPlus,
   Trash2,
   Mail,
+  Lock,
   AlertTriangle,
   X,
   CheckCircle2,
@@ -17,88 +18,38 @@ interface AdminUser {
   email: string;
   created_at: string;
   last_sign_in_at: string | null;
-  role: string;
-  is_current?: boolean;
+  is_current: boolean;
 }
 
-const STORAGE_ADMINS_KEY = 'admin_registered_users';
+async function callManageAdmins<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('manage_admins', { body });
+  if (error) {
+    let message = error.message;
+    try {
+      const payload = await (error as { context?: Response }).context?.json();
+      if (payload?.error) message = payload.error;
+    } catch { /* manter a mensagem genérica */ }
+    throw new Error(message);
+  }
+  return data as T;
+}
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const fetchAdmins = async () => {
     setLoading(true);
     try {
-      // Obter o utilizador atual da sessão ativa
-      const { data: userData } = await supabase.auth.getUser();
-      const currentUser = userData?.user;
-
-      // Lista local base ou pré-registada
-      let storedList: AdminUser[] = [];
-      try {
-        const saved = localStorage.getItem(STORAGE_ADMINS_KEY);
-        if (saved) storedList = JSON.parse(saved);
-      } catch {
-        storedList = [];
-      }
-
-      const adminList: AdminUser[] = [];
-
-      if (currentUser) {
-        adminList.push({
-          id: currentUser.id,
-          email: currentUser.email || 'admin@lenisfunpark.pt',
-          created_at: currentUser.created_at || new Date().toISOString(),
-          last_sign_in_at: currentUser.last_sign_in_at || new Date().toISOString(),
-          role: 'authenticated',
-          is_current: true,
-        });
-      }
-
-      // Adicionar outros admins persistidos que não sejam o atual
-      storedList.forEach((st) => {
-        if (!adminList.some((a) => a.id === st.id || a.email.toLowerCase() === st.email.toLowerCase())) {
-          adminList.push({ ...st, is_current: false });
-        }
-      });
-
-      // Se lista ainda tiver apenas 1 ou nenhum, garantir exemplo representativo
-      if (adminList.length <= 1) {
-        const defaultAdmins: AdminUser[] = [
-          {
-            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-            email: 'miguel@gmail.com',
-            created_at: '2026-08-20T10:00:00Z',
-            last_sign_in_at: new Date().toISOString(),
-            role: 'authenticated',
-            is_current: currentUser?.email === 'miguel@gmail.com',
-          },
-          {
-            id: 'f9e8d7c6-b5a4-3210-fedc-ba9876543210',
-            email: 'geral@lenisfunpark.pt',
-            created_at: '2026-08-24T14:30:00Z',
-            last_sign_in_at: '2026-09-07T18:45:00Z',
-            role: 'authenticated',
-            is_current: currentUser?.email === 'geral@lenisfunpark.pt',
-          },
-        ];
-
-        defaultAdmins.forEach((def) => {
-          if (!adminList.some((a) => a.email.toLowerCase() === def.email.toLowerCase())) {
-            adminList.push(def);
-          }
-        });
-      }
-
-      setAdmins(adminList);
-      localStorage.setItem(STORAGE_ADMINS_KEY, JSON.stringify(adminList));
-    } catch (err: any) {
-      console.error('Erro ao carregar admins:', err);
+      const { admins: list } = await callManageAdmins<{ admins: AdminUser[] }>({ action: 'list' });
+      setAdmins(list);
+    } catch (err) {
+      setFeedback({ type: 'error', message: 'Erro ao carregar admins: ' + (err as Error).message });
     } finally {
       setLoading(false);
     }
@@ -110,44 +61,25 @@ export default function AdminsPage() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail.trim()) return;
+    const emailTrimmed = newEmail.trim().toLowerCase();
+    if (!emailTrimmed || !newPassword) return;
 
     setActionLoading(true);
     setFeedback(null);
 
-    const emailTrimmed = newEmail.trim().toLowerCase();
-
-    // Verificar duplicação
-    if (admins.some((a) => a.email.toLowerCase() === emailTrimmed)) {
-      setFeedback({ type: 'error', message: 'Este email já está registado como administrador.' });
-      setActionLoading(false);
-      return;
-    }
-
     try {
-      // Criação de admin via Supabase Function se disponível, ou registo com envio de convite
-      const newAdminUser: AdminUser = {
-        id: crypto.randomUUID(),
-        email: emailTrimmed,
-        created_at: new Date().toISOString(),
-        last_sign_in_at: null,
-        role: 'authenticated',
-        is_current: false,
-      };
-
-      const updated = [...admins, newAdminUser];
-      setAdmins(updated);
-      localStorage.setItem(STORAGE_ADMINS_KEY, JSON.stringify(updated));
-
+      await callManageAdmins({ action: 'create', email: emailTrimmed, password: newPassword });
+      await fetchAdmins();
       setFeedback({
         type: 'success',
-        message: `Administrador "${emailTrimmed}" adicionado com sucesso.`,
+        message: `Administrador "${emailTrimmed}" criado com sucesso.`,
       });
       setNewEmail('');
+      setNewPassword('');
       setModalOpen(false);
       setTimeout(() => setFeedback(null), 4000);
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: 'Erro ao registar admin: ' + err.message });
+    } catch (err) {
+      setFeedback({ type: 'error', message: 'Erro ao criar admin: ' + (err as Error).message });
     } finally {
       setActionLoading(false);
     }
@@ -164,15 +96,17 @@ export default function AdminsPage() {
     );
     if (!confirmou) return;
 
-    const updated = admins.filter((a) => a.id !== admin.id);
-    setAdmins(updated);
-    localStorage.setItem(STORAGE_ADMINS_KEY, JSON.stringify(updated));
-
-    setFeedback({
-      type: 'success',
-      message: `Acesso do administrador ${admin.email} revogado com sucesso.`,
-    });
-    setTimeout(() => setFeedback(null), 4000);
+    try {
+      await callManageAdmins({ action: 'delete', id: admin.id });
+      setAdmins((prev) => prev.filter((a) => a.id !== admin.id));
+      setFeedback({
+        type: 'success',
+        message: `Acesso do administrador ${admin.email} revogado com sucesso.`,
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    } catch (err) {
+      setFeedback({ type: 'error', message: 'Erro ao remover admin: ' + (err as Error).message });
+    }
   };
 
   return (
@@ -205,6 +139,7 @@ export default function AdminsPage() {
             type="button"
             onClick={() => {
               setNewEmail('');
+              setNewPassword('');
               setModalOpen(true);
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-secondary transition-colors shadow-sm cursor-pointer"
@@ -368,7 +303,7 @@ export default function AdminsPage() {
             </div>
 
             <p className="text-xs text-secondary/70 leading-relaxed font-medium">
-              Introduz o endereço de email que terá permissão de login no painel de administração via código OTP.
+              A nova conta pode entrar logo no painel de administração com este email e password.
             </p>
 
             <form onSubmit={handleAddAdmin} className="space-y-4">
@@ -384,6 +319,25 @@ export default function AdminsPage() {
                     placeholder="exemplo@lenisfunpark.pt"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary placeholder-secondary/40 focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-secondary uppercase mb-1">
+                  Password *
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    placeholder="Mínimo 8 caracteres"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary placeholder-secondary/40 focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>

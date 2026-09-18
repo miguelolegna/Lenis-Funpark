@@ -41,16 +41,6 @@ export default function AdminLayout() {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.user?.email) {
         setAdminEmail(data.session.user.email);
-      } else {
-        const stored = localStorage.getItem('admin_session');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (parsed.email) setAdminEmail(parsed.email);
-          } catch {
-            // fallback
-          }
-        }
       }
     }
     getAdminUser();
@@ -64,7 +54,6 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      localStorage.removeItem('admin_session');
     } catch (err) {
       console.error('Erro ao terminar sessão:', err);
     } finally {

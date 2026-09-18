@@ -13,30 +13,9 @@ export default function SemaforoPage() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
 
-  // Garante que a sessão de admin guardada no browser é restaurada no cliente Supabase
   const ensureAuthenticatedSession = async () => {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData?.session) {
-        return sessionData.session;
-      }
-      const saved = localStorage.getItem('admin_session');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.access_token && parsed?.refresh_token) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: parsed.access_token,
-            refresh_token: parsed.refresh_token,
-          });
-          if (!error && data?.session) {
-            return data.session;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Erro ao restaurar sessão de admin:', e);
-    }
-    return null;
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData?.session ?? null;
   };
 
   // Buscar metadados de última alteração

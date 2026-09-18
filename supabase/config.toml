@@ -1,5 +1,5 @@
 [auth]
-enable_signup = true
+enable_signup = false
 
 [functions.dispatch_b2c_otp]
 enabled = true
@@ -12,6 +12,11 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/convite_digital/deno.json"
 entrypoint = "./functions/convite_digital/index.ts"
+
+[functions.manage_admins]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/manage_admins/index.ts"
 
 [auth.email.template.magic_link]
 subject = "Código de Acesso Admin - Lenis Funpark"

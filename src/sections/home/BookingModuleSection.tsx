@@ -33,9 +33,13 @@ export default function BookingModuleSection({
 
   useEffect(() => {
     if (paymentDeadline === null) return;
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
+    const tick = () => setNow(Date.now());
+    const first = setTimeout(tick, 0);
+    const timer = setInterval(tick, 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+    };
   }, [paymentDeadline]);
 
   useEffect(() => {
