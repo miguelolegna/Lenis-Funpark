@@ -19,7 +19,11 @@ import {
   Users,
   MessageSquare,
   GraduationCap,
-  Building2
+  Building2,
+  Wallet,
+  Smartphone,
+  CreditCard,
+  Banknote
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../lib/animations';
 import { supabase } from '../lib/supabase';
@@ -27,6 +31,8 @@ import { supabase } from '../lib/supabase';
 export default function Contactos() {
   const [searchParams] = useSearchParams();
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedMBWay, setCopiedMBWay] = useState(false);
+  const [copiedIBAN, setCopiedIBAN] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Mapear parâmetro de URL (?assunto=) para a opção correspondente
@@ -56,10 +62,18 @@ export default function Contactos() {
     setFormData((prev) => ({ ...prev, motivo: paramMotivo }));
   }, [searchParams]);
 
-  const handleCopyEmail = (text: string) => {
+  const handleCopyText = (text: string, type: 'email' | 'mbway' | 'iban') => {
     navigator.clipboard.writeText(text);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2500);
+    if (type === 'email') {
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2500);
+    } else if (type === 'mbway') {
+      setCopiedMBWay(true);
+      setTimeout(() => setCopiedMBWay(false), 2500);
+    } else if (type === 'iban') {
+      setCopiedIBAN(true);
+      setTimeout(() => setCopiedIBAN(false), 2500);
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -311,7 +325,7 @@ export default function Contactos() {
               </a>
               <button
                 type="button"
-                onClick={() => handleCopyEmail('pereira.garcia2025@gmail.com')}
+                onClick={() => handleCopyText('pereira.garcia2025@gmail.com', 'email')}
                 className="inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-secondary px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer"
               >
                 {copiedEmail ? (
@@ -655,27 +669,129 @@ export default function Contactos() {
               </div>
             </div>
 
-            {/* Cartão de Morada */}
-            {/* <div className="bg-surface rounded-3xl p-6 border-2 border-primary/30 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shrink-0">
-                <MapPin className="w-6 h-6" />
+            {/* Bloco de Métodos de Pagamento */}
+            <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-xl border border-gray-100 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                    <Wallet className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-secondary leading-tight">
+                      Métodos de Pagamento
+                    </h3>
+                    <p className="text-xs text-secondary/60 font-medium">Disponíveis online e no parque</p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Online & Presencial
+                </span>
               </div>
-              <div>
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">Onde estamos</span>
-                <p className="font-bold text-secondary text-base leading-snug mt-0.5">
-                  Zona Industrial do Tortosendo lt.23B Rua F, 6200-823 Tortosendo
-                </p>
-                <a
-                  href="https://maps.google.com/?q=Leni's+FunPark+Tortosendo"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-secondary mt-2 underline"
-                >
-                  <span>Abrir no Google Maps</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3 pt-1">
+                {/* 1. MB WAY */}
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-surface/70 border border-primary/20 hover:border-primary hover:bg-surface transition-all duration-200 group">
+                  <div className="w-9 h-9 rounded-xl bg-white shadow-xs border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200 mb-1.5">
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-secondary group-hover:text-primary transition-colors">
+                    MB WAY
+                  </span>
+                  <span className="text-[10px] text-secondary/65 font-medium mt-0.5 leading-tight">
+                    Online & móvel
+                  </span>
+                </div>
+
+                {/* 2. Multibanco / IBAN */}
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-surface/70 border border-primary/20 hover:border-primary hover:bg-surface transition-all duration-200 group">
+                  <div className="w-9 h-9 rounded-xl bg-white shadow-xs border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200 mb-1.5">
+                    <CreditCard className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-secondary group-hover:text-primary transition-colors">
+                    Multibanco / IBAN
+                  </span>
+                  <span className="text-[10px] text-secondary/65 font-medium mt-0.5 leading-tight">
+                    Cartão / Transf.
+                  </span>
+                </div>
+
+                {/* 3. Em Dinheiro */}
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-surface/70 border border-primary/20 hover:border-primary hover:bg-surface transition-all duration-200 group">
+                  <div className="w-9 h-9 rounded-xl bg-white shadow-xs border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200 mb-1.5">
+                    <Banknote className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-secondary group-hover:text-primary transition-colors">
+                    Em Dinheiro
+                  </span>
+                  <span className="text-[10px] text-secondary/65 font-medium mt-0.5 leading-tight">
+                    Na receção
+                  </span>
+                </div>
               </div>
-            </div> */}
+
+              {/* Detalhes para Pagamentos Diretos */}
+              <div className="space-y-2 pt-1 border-t border-gray-100">
+                {/* MB WAY */}
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/40 border border-primary/15 hover:border-primary/40 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0">
+                      MB WAY
+                    </span>
+                    <span className="text-xs sm:text-sm font-black text-secondary tracking-wide">
+                      911 855 496
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText('911855496', 'mbway')}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-secondary bg-white hover:bg-surface border border-primary/20 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ml-2 shadow-xs"
+                    title="Copiar número MB WAY"
+                  >
+                    {copiedMBWay ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                        <span>Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* IBAN */}
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface/40 border border-primary/15 hover:border-primary/40 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-md shrink-0">
+                      IBAN
+                    </span>
+                    <span className="text-[11px] sm:text-xs font-black text-secondary tracking-tight font-mono truncate">
+                      PT50 3560 0001 9001 8810 5228 3
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText('PT50356000019001881052283', 'iban')}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-secondary hover:text-primary bg-white hover:bg-surface border border-gray-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ml-2 shadow-xs"
+                    title="Copiar IBAN"
+                  >
+                    {copiedIBAN ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                        <span>Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -34,9 +34,15 @@ serve(async (req) => {
     }
     
     // O cast é necessário pois a união de tipos pode vir como array em algumas queries
-    const clientEmail = Array.isArray(reservaData.reservas) 
-      ? reservaData.reservas[0].contacto_cliente 
+    const contacto: string = Array.isArray(reservaData.reservas)
+      ? reservaData.reservas[0].contacto_cliente
       : (reservaData.reservas as any).contacto_cliente;
+
+    // contacto_cliente é gravado como "Tel: ... | Email: ..." (Home.tsx)
+    const clientEmail = contacto.match(/[^\s|:<>]+@[^\s|:<>]+\.[^\s|:<>]+/)?.[0];
+    if (!clientEmail) {
+      throw new Error('Esta reserva não tem um email válido associado.');
+    }
 
     // 2. Gerar OTP (A RPC agora grava o hash na nova tabela e devolve o código de 6 dígitos)
     const { data: otp, error: rpcError } = await supabase.rpc('gerar_otp_b2c', { p_token_opaco: token_opaco });
@@ -51,7 +57,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: 'Leni\'s FunPark <noreply@lenisfunpark.com>', // TODO: ATUALIZAR para o email verificado no Resend do novo domínio
+          from: Deno.env.get('RESEND_FROM') ?? 'Leni\'s FunPark <noreply@lenisfunpark.com>',
           to: [clientEmail],
           subject: 'Código de Acesso - Leni\'s FunPark',
           html: `<p>Olá!</p><p>O seu código para acesso ao formulário da festa é: <strong>${otp}</strong></p><p>Este código expira em 10 minutos.</p>`
