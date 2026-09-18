@@ -64,7 +64,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-surface">
       {/* Topbar Mobile */}
-      <header className="md:hidden flex items-center justify-between p-4 bg-white border-b-2 border-surface-alt sticky top-0 z-40">
+      <header className="md:hidden flex items-center justify-between p-4 bg-white border-b-2 border-surface-alt sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -100,7 +100,7 @@ export default function AdminLayout() {
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="flex flex-col flex-1 overflow-y-auto">
+        <div className="flex flex-col flex-1 min-h-0">
           {/* Header da Sidebar */}
           <div className="p-6 border-b border-surface-alt flex items-center justify-between">
             <div>
@@ -121,12 +121,12 @@ export default function AdminLayout() {
           </div>
 
           {/* Barra de Notificação Rápida Interativa */}
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-4 pt-4 pb-2 relative z-[100]">
             <NotificationPopover variant="sidebar" onCloseParentDrawer={() => setMobileMenuOpen(false)} />
           </div>
 
           {/* Links de Navegação das 6 Páginas */}
-          <nav className="p-3 space-y-1.5 flex-1" aria-label="Navegação da Administração">
+          <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto" aria-label="Navegação da Administração">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (

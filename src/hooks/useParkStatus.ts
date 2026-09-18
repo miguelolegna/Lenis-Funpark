@@ -58,9 +58,11 @@ export function useParkStatus(): UseParkStatusResult {
 
     fetchCurrentStatus();
 
-    // 2. Subscrição Realtime para atualizações automáticas
+    // 2. Subscrição Realtime para atualizações automáticas.
+    // O nome tem de ser único: o realtime-js reutiliza canais com o mesmo nome,
+    // e uma segunda montagem ficaria presa ao canal antigo, já a ser removido.
     const channel = supabase
-      .channel('park_status_realtime')
+      .channel(`park_status_realtime_${crypto.randomUUID()}`)
       .on(
         'postgres_changes',
         {

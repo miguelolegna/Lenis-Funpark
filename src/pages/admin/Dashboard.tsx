@@ -379,7 +379,7 @@ export default function Dashboard() {
                             : reserva.estado === 'REJECTED'
                             ? 'Cancelada'
                             : 'Concluída'}
-                        </span>
+                        </span> 
 
                         <span className="text-xs font-bold text-secondary/50 flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />

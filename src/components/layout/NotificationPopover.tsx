@@ -101,7 +101,7 @@ export default function NotificationPopover({
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative z-[100]">
       {/* Botão Disparador */}
       {variant === 'sidebar' ? (
         <button
@@ -160,7 +160,7 @@ export default function NotificationPopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className={`absolute z-50 bg-white rounded-3xl shadow-2xl border-2 border-surface-alt w-[340px] sm:w-[380px] overflow-hidden ${
+            className={`absolute z-[9999] bg-white rounded-3xl shadow-2xl border-2 border-surface-alt w-[340px] sm:w-[380px] overflow-hidden ${
               variant === 'sidebar'
                 ? 'left-0 sm:left-2 top-full mt-2'
                 : 'right-0 top-full mt-2'
