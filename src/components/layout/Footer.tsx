@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
 import { MapPin, Phone, Clock, Mail } from "lucide-react";
-import { preloadRoute } from "../../utils/preload";
 
 export default function Footer() {
   return (
@@ -106,7 +104,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a
+                  href="https://www.livroreclamacoes.pt/Inicio/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
                   Livro de Reclamações Eletrónico
                 </a>
               </li>
@@ -119,14 +122,14 @@ export default function Footer() {
           <p className="text-surface-alt/80 text-sm mb-4 md:mb-0">
             &copy; 2026 Leni's FunPark.
           </p>
-          <Link
-            to="/admin/login"
-            onMouseEnter={() => preloadRoute('/admin/login')}
-            onTouchStart={() => preloadRoute('/admin/login')}
+          <a
+            href="https://layoutagency.pt/"
+            target="_blank"
+            rel="noreferrer"
             className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors"
           >
-            Área Reservada Staff
-          </Link>
+            Desenvolvido por Layout Agency
+          </a>
         </div>
       </div>
     </footer>

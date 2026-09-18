@@ -35,107 +35,57 @@ export interface MensagemItem {
   notas_admin?: string;
 }
 
-const initialMensagens: MensagemItem[] = [
-  {
-    id: 'msg-1',
-    nome: 'Colégio São José - Prof.ª Carla',
-    contacto: '912 345 678',
-    email: 'secretaria@colegiosaojose.pt',
-    categoria: 'escola',
-    assunto: 'Visita Escolar - 2 Turmas do 3º Ano',
-    mensagem: 'Gostaríamos de saber a disponibilidade para uma visita com cerca de 45 crianças numa sexta-feira de manhã e os pacotes especiais disponíveis.',
-    data: new Date(Date.now() - 3600000 * 3).toISOString(),
-    preferencia: 'email',
-    respondido: false,
-  },
-  {
-    id: 'msg-2',
-    nome: 'Associação Viver Mais - Dr. Pedro',
-    contacto: '934 567 890',
-    categoria: 'instituicao',
-    assunto: 'Atividade de ATL de Férias',
-    mensagem: 'Estamos a organizar as atividades para as férias escolares com um grupo de 20 crianças. Pretendemos um dia completo com almoço.',
-    data: new Date(Date.now() - 3600000 * 24).toISOString(),
-    preferencia: 'whatsapp',
-    respondido: false,
-  },
-  {
-    id: 'msg-3',
-    nome: 'Mariana Silva',
-    contacto: '961 234 567',
-    categoria: 'geral',
-    assunto: 'Dúvida sobre restrições alimentares no bolo',
-    mensagem: 'Olá! Um dos amiguinhos da festa tem intolerância severa a lactose. É possível personalizar o recheio do bolo incluído?',
-    data: new Date(Date.now() - 3600000 * 48).toISOString(),
-    preferencia: 'whatsapp',
-    respondido: true,
-    canal_resposta: 'whatsapp',
-    notas_admin: 'Informado que os bolos são feitos na pastelaria parceira com opções sem lactose.',
-  },
-];
-
 export default function ContactosPage() {
-  const [mensagens, setMensagens] = useState<MensagemItem[]>(() => {
-    const saved = localStorage.getItem('admin_mensagens');
-    return saved ? JSON.parse(saved) : initialMensagens;
-  });
+  const [mensagens, setMensagens] = useState<MensagemItem[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
 
   const [filtroCategoria, setFiltroCategoria] = useState<'todas' | 'escola' | 'instituicao' | 'geral'>('todas');
   const [filtroEstado, setFiltroEstado] = useState<'todas' | 'pendentes' | 'respondidas'>('todas');
   const [pesquisa, setPesquisa] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [notesText, setNotesText] = useState('');
 
-  // Carregar mensagens do Supabase e sincronizar com localStorage
   const fetchMensagens = useCallback(async () => {
     setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('mensagens_contacto')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('mensagens_contacto')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setLoading(false);
 
-      if (!error && data && data.length > 0) {
-        const mapped: MensagemItem[] = data.map((d) => ({
-          id: d.id,
-          nome: d.nome,
-          contacto: d.contacto,
-          email: d.email || (d.contacto.includes('@') ? d.contacto : undefined),
-          categoria: (d.categoria as 'escola' | 'instituicao' | 'geral') || 'geral',
-          assunto: d.motivo || 'Mensagem do Site',
-          mensagem: d.mensagem,
-          data: d.created_at || new Date().toISOString(),
-          preferencia: d.preferencia_resposta || 'whatsapp',
-          respondido: Boolean(d.respondido),
-          canal_resposta: d.canal_resposta,
-          notas_admin: d.notas_admin,
-        }));
-
-        setMensagens(mapped);
-        localStorage.setItem('admin_mensagens', JSON.stringify(mapped));
-        window.dispatchEvent(new Event('admin_messages_updated'));
-      } else {
-        // Fallback para localStorage
-        const saved = localStorage.getItem('admin_mensagens');
-        if (saved) {
-          setMensagens(JSON.parse(saved));
-        }
-      }
-    } catch (err) {
-      console.error('Erro ao buscar mensagens do Supabase:', err);
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.error('[Mensagens] Erro ao carregar mensagens:', error.code, error.message);
+      setErro('Não foi possível carregar as mensagens.');
+      return;
     }
+
+    setMensagens(
+      (data ?? []).map((d) => ({
+        id: d.id,
+        nome: d.nome,
+        contacto: d.contacto,
+        email: d.email || (d.contacto.includes('@') ? d.contacto : undefined),
+        categoria: (d.categoria as 'escola' | 'instituicao' | 'geral') || 'geral',
+        assunto: d.motivo || 'Mensagem do Site',
+        mensagem: d.mensagem,
+        data: d.created_at || new Date().toISOString(),
+        preferencia: d.preferencia_resposta || 'whatsapp',
+        respondido: Boolean(d.respondido),
+        canal_resposta: d.canal_resposta,
+        notas_admin: d.notas_admin,
+      }))
+    );
   }, []);
 
   useEffect(() => {
-    fetchMensagens();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchMensagens();
 
-    // Subscrição Supabase Realtime
+    // Nome único: o realtime-js reutiliza canais com o mesmo nome entre montagens
     const channel = supabase
-      .channel('admin_mensagens_contacto_realtime')
+      .channel(`admin_mensagens_contacto_${crypto.randomUUID()}`)
       .on(
         'postgres_changes',
         {
@@ -154,13 +104,6 @@ export default function ContactosPage() {
     };
   }, [fetchMensagens]);
 
-  // Persistir alterações locais e notificar eventos
-  const saveAndSync = (updated: MensagemItem[]) => {
-    setMensagens(updated);
-    localStorage.setItem('admin_mensagens', JSON.stringify(updated));
-    window.dispatchEvent(new Event('admin_messages_updated'));
-  };
-
   // Alternar estado de respondido
   const handleToggleRespondido = async (id: string, novoCanal?: string) => {
     const item = mensagens.find((m) => m.id === id);
@@ -169,59 +112,55 @@ export default function ContactosPage() {
     const novoRespondido = !item.respondido;
     const canal = novoRespondido ? novoCanal || item.canal_resposta || 'whatsapp' : undefined;
 
-    const updated = mensagens.map((m) =>
-      m.id === id ? { ...m, respondido: novoRespondido, canal_resposta: canal } : m
-    );
-    saveAndSync(updated);
+    const { error } = await supabase
+      .from('mensagens_contacto')
+      .update({
+        respondido: novoRespondido,
+        canal_resposta: canal ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
 
-    // Tentar atualizar no Supabase se existir
-    try {
-      await supabase
-        .from('mensagens_contacto')
-        .update({
-          respondido: novoRespondido,
-          canal_resposta: canal,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-    } catch (e) {
-      console.error('Erro ao atualizar estado no Supabase:', e);
+    if (error) {
+      console.error('[Mensagens] Erro ao alterar estado da mensagem:', error.code, error.message);
+      setErro('Não foi possível atualizar a mensagem. Tenta novamente.');
+      return;
     }
+    setMensagens((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, respondido: novoRespondido, canal_resposta: canal } : m))
+    );
   };
 
   // Guardar notas internas
   const handleSaveNotes = async (id: string) => {
-    const updated = mensagens.map((m) =>
-      m.id === id ? { ...m, notas_admin: notesText } : m
-    );
-    saveAndSync(updated);
-    setEditingNotesId(null);
+    const { error } = await supabase
+      .from('mensagens_contacto')
+      .update({
+        notas_admin: notesText,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
 
-    try {
-      await supabase
-        .from('mensagens_contacto')
-        .update({
-          notas_admin: notesText,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-    } catch (e) {
-      console.error('Erro ao guardar notas no Supabase:', e);
+    if (error) {
+      console.error('[Mensagens] Erro ao guardar nota interna:', error.code, error.message);
+      setErro('Não foi possível guardar a nota. Tenta novamente.');
+      return;
     }
+    setMensagens((prev) => prev.map((m) => (m.id === id ? { ...m, notas_admin: notesText } : m)));
+    setEditingNotesId(null);
   };
 
   // Eliminar mensagem
   const handleDeleteMessage = async (id: string) => {
     if (!window.confirm('Tem a certeza de que deseja eliminar esta mensagem?')) return;
 
-    const updated = mensagens.filter((m) => m.id !== id);
-    saveAndSync(updated);
-
-    try {
-      await supabase.from('mensagens_contacto').delete().eq('id', id);
-    } catch (e) {
-      console.error('Erro ao eliminar no Supabase:', e);
+    const { error } = await supabase.from('mensagens_contacto').delete().eq('id', id);
+    if (error) {
+      console.error('[Mensagens] Erro ao eliminar mensagem:', error.code, error.message);
+      setErro('Não foi possível eliminar a mensagem. Tenta novamente.');
+      return;
     }
+    setMensagens((prev) => prev.filter((m) => m.id !== id));
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -329,6 +268,15 @@ export default function ContactosPage() {
           </span>
         </div>
       </div>
+
+      {erro && (
+        <div className="p-4 bg-red-100 text-red-800 rounded-2xl text-sm font-medium border border-red-200 flex items-center justify-between gap-3">
+          <span>{erro}</span>
+          <button onClick={() => setErro(null)} className="text-xs font-bold underline cursor-pointer flex-shrink-0">
+            Dispensar
+          </button>
+        </div>
+      )}
 
       {/* Barra de Filtros e Pesquisa */}
       <div className="space-y-3">
@@ -441,7 +389,11 @@ export default function ContactosPage() {
       <div className="space-y-4">
         {mensagensFiltradas.length === 0 ? (
           <div className="p-12 text-center text-secondary/50 font-semibold bg-white rounded-3xl border-2 border-surface-alt">
-            Nenhuma mensagem encontrada com os filtros selecionados.
+            {loading
+              ? 'A carregar mensagens...'
+              : mensagens.length === 0
+              ? 'Ainda não há mensagens.'
+              : 'Nenhuma mensagem encontrada com os filtros selecionados.'}
           </div>
         ) : (
           mensagensFiltradas.map((item) => {

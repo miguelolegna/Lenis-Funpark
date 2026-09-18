@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { pageVariants, pageTransition } from '../lib/animations';
 
@@ -10,7 +10,7 @@ import BookingModuleSection from '../sections/home/BookingModuleSection';
 
 import { supabase } from '../lib/supabase';
 import { buildLisbonDateTime } from '../lib/dateUtils';
-import { obterHorariosDisponiveis } from '../lib/horarios';
+import { obterHorariosDisponiveis, obterResumoDia, type ResumoDia } from '../lib/horarios';
 import { useParkStatus } from '../hooks/useParkStatus';
 
 const statusMessageMap = {
@@ -47,6 +47,8 @@ export default function Home() {
   const [paymentDeadline, setPaymentDeadline] = useState<number | null>(readStoredDeadline);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [isFetchingTimes, setIsFetchingTimes] = useState(false);
+  const [resumoDia, setResumoDia] = useState<ResumoDia | null>(null);
+  const pedidoHorariosAtual = useRef(0);
 
   useEffect(() => {
     if (paymentDeadline === null) return;
@@ -55,16 +57,28 @@ export default function Home() {
   }, [paymentDeadline]);
 
   const fetchAvailableTimes = async (date: Date) => {
+    // Ignora respostas de dias clicados antes, se chegarem depois
+    const pedido = ++pedidoHorariosAtual.current;
     setIsFetchingTimes(true);
     setAvailableTimes([]); // Reset until loaded
-    try {
-      setAvailableTimes(await obterHorariosDisponiveis(date));
-    } catch (err) {
-      console.error("Erro ao buscar horários ocupados:", err);
+    setResumoDia(null);
+
+    const [horarios, resumo] = await Promise.allSettled([obterHorariosDisponiveis(date), obterResumoDia(date)]);
+    if (pedido !== pedidoHorariosAtual.current) return;
+
+    if (horarios.status === 'fulfilled') {
+      setAvailableTimes(horarios.value);
+    } else {
+      console.error("Erro ao buscar horários ocupados:", horarios.reason);
       alert("Não foi possível carregar os horários. Tente novamente.");
-    } finally {
-      setIsFetchingTimes(false);
     }
+    if (resumo.status === 'fulfilled') {
+      setResumoDia(resumo.value);
+    } else {
+      // O aviso é só informativo: sem ele a marcação continua a funcionar
+      console.error("[Marcação] Erro ao carregar o resumo do dia:", resumo.reason);
+    }
+    setIsFetchingTimes(false);
   };
 
   const handleDayClick = (day: number) => {
@@ -135,6 +149,7 @@ export default function Home() {
     setPaymentDeadline(null);
     setSelectedDate(null);
     setAvailableTimes([]);
+    setResumoDia(null);
   };
 
   return (
@@ -166,6 +181,7 @@ export default function Home() {
         selectedDate={selectedDate}
         availableTimes={availableTimes}
         isFetchingTimes={isFetchingTimes}
+        resumoDia={resumoDia}
         isSubmitting={isSubmitting}
         paymentDeadline={paymentDeadline}
         onNewBooking={handleNewBooking}

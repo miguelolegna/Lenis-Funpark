@@ -11,6 +11,27 @@ export default function ReservaClient() {
   const [reservaId, setReservaId] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [conviteToken, setConviteToken] = useState<string | null>(null);
+  const [estadoFormulario, setEstadoFormulario] = useState<'a_verificar' | 'aberto' | 'fechado' | 'invalido'>('a_verificar');
+
+  useEffect(() => {
+    let cancelado = false;
+    const verificar = async () => {
+      const { data, error } = await supabase.rpc("estado_formulario_b2c", { p_token_opaco: token });
+      if (cancelado) return;
+      if (error) {
+        console.error("[Formulário] Erro ao verificar o estado do formulário:", error.code, error.message);
+        // 22P02: o token do link não tem formato válido. Noutros erros não se bloqueia aqui:
+        // o servidor recusa sempre alterações a formulários fechados.
+        setEstadoFormulario(error.code === "22P02" ? "invalido" : "aberto");
+        return;
+      }
+      setEstadoFormulario(data === "fechado" || data === "invalido" ? data : "aberto");
+    };
+    void verificar();
+    return () => {
+      cancelado = true;
+    };
+  }, [token]);
 
   const [formData, setFormData] = useState({
     nome_aniversariante: "",
@@ -616,6 +637,33 @@ export default function ReservaClient() {
                 : "Concluir Preenchimento da Reserva"}
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (estadoFormulario !== "aberto") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 pt-24 p-4">
+        <div className="p-8 max-w-md w-full bg-white rounded-xl shadow-md text-center">
+          {estadoFormulario === "a_verificar" ? (
+            <p className="text-slate-500 font-medium">A verificar o acesso...</p>
+          ) : estadoFormulario === "fechado" ? (
+            <>
+              <h2 className="text-2xl font-bold mb-4 text-slate-800">Formulário já submetido</h2>
+              <p className="text-slate-600 font-medium leading-relaxed">
+                Os detalhes da sua festa já foram enviados ao Leni's FunPark. Se precisar de alterar
+                alguma coisa, contacte-nos e reabriremos o formulário para si.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold mb-4 text-slate-800">Link inválido</h2>
+              <p className="text-slate-600 font-medium leading-relaxed">
+                Este link não é válido. Confirme o link que recebeu ou contacte o Leni's FunPark.
+              </p>
+            </>
+          )}
         </div>
       </div>
     );

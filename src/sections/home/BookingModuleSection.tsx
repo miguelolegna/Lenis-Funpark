@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight, CheckCircle2, Clock, Smartphone, CreditCard } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, CheckCircle2, Clock, Smartphone, CreditCard, Info } from 'lucide-react';
+import type { ResumoDia } from '../../lib/horarios';
+
+function listarHoras(horas: string[]) {
+  return horas.length === 1 ? horas[0] : `${horas.slice(0, -1).join(', ')} e ${horas[horas.length - 1]}`;
+}
 
 export interface BookingModuleSectionProps {
   currentDate: Date;
   selectedDate: Date | null;
   availableTimes: string[];
   isFetchingTimes?: boolean;
+  resumoDia: ResumoDia | null;
   isSubmitting: boolean;
   paymentDeadline: number | null;
   onNewBooking: () => void;
@@ -21,6 +27,7 @@ export default function BookingModuleSection({
   selectedDate,
   availableTimes,
   isFetchingTimes = false,
+  resumoDia,
   isSubmitting,
   paymentDeadline,
   onNewBooking,
@@ -80,7 +87,7 @@ export default function BookingModuleSection({
             <CheckCircle2 className="w-20 h-20 text-primary mx-auto mb-4" />
             <h2 className="text-3xl sm:text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
             <p className="text-secondary/80 font-medium mb-6">
-              Para garantir a sua reserva, por favor efetue o pagamento do sinal dentro do tempo limite.
+              Para garantir a sua reserva, por favor efetue o pagamento da caução dentro do tempo limite.
             </p>
             
             <div className="bg-surface rounded-2xl p-6 mb-8 border-2 border-primary/20">
@@ -193,6 +200,32 @@ export default function BookingModuleSection({
                 );
               })}
             </div>
+
+            {selectedDate && resumoDia && (resumoDia.festasConfirmadas > 0 || resumoDia.horasPendentes.length > 0) && (
+              <div className="mt-6 space-y-3" aria-live="polite">
+                {resumoDia.festasConfirmadas > 0 && (
+                  <div className="flex items-start gap-2 p-4 rounded-xl bg-surface-alt border border-surface text-sm text-secondary font-medium">
+                    <Info className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                    <p>
+                      {resumoDia.festasConfirmadas === 1
+                        ? 'Já há uma festa marcada neste dia.'
+                        : `Já há ${resumoDia.festasConfirmadas} festas marcadas neste dia.`}{' '}
+                      Os horários indisponíveis não aparecem na lista.
+                    </p>
+                  </div>
+                )}
+                {resumoDia.horasPendentes.length > 0 && (
+                  <div className="flex items-start gap-2 p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900 font-medium">
+                    <Info className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                    <p>
+                      {resumoDia.horasPendentes.length === 1
+                        ? `Há um pedido de reserva por confirmar para as ${resumoDia.horasPendentes[0]}. Pode pedir esse horário na mesma, mas só um dos pedidos poderá ser confirmado.`
+                        : `Há pedidos de reserva por confirmar para as ${listarHoras(resumoDia.horasPendentes)}. Pode pedir esses horários na mesma, mas só um pedido por horário poderá ser confirmado.`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="lg:col-span-3 lg:border-l-2 lg:border-surface-alt lg:pl-12 mt-8 lg:mt-0">
@@ -240,7 +273,9 @@ export default function BookingModuleSection({
                              : "Selecione um horário..."}
                      </option>
                      {availableTimes.map(time => (
-                       <option key={time} value={time}>{time}</option>
+                       <option key={time} value={time}>
+                         {resumoDia?.horasPendentes.includes(time) ? `${time} (pedido por confirmar)` : time}
+                       </option>
                      ))}
                    </select>
                  </div>

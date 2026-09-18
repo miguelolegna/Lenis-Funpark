@@ -17,7 +17,7 @@ const DIAS_SEMANA = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 const estiloFesta: Record<string, { label: string; chip: string; dot: string }> = {
   IN_PROGRESS: { label: 'Em preenchimento', chip: 'bg-emerald-100 text-emerald-900 border-emerald-200', dot: 'bg-emerald-500' },
-  LOCKED: { label: 'Festa em curso', chip: 'bg-violet-100 text-violet-900 border-violet-200', dot: 'bg-violet-500' },
+  LOCKED: { label: 'Formulário preenchido', chip: 'bg-indigo-100 text-indigo-900 border-indigo-200', dot: 'bg-indigo-500' },
   COMPLETED: { label: 'Concluído', chip: 'bg-teal-100 text-teal-900 border-teal-200', dot: 'bg-teal-600' },
 };
 const estiloInterno = { label: 'Evento interno', chip: 'bg-amber-100 text-amber-900 border-amber-200', dot: 'bg-amber-500' };

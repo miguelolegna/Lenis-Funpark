@@ -55,6 +55,7 @@ export default function Contactos() {
     mensagem: ''
   });
   const [formSent, setFormSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Sincronizar caso o utilizador navegue com novo parâmetro
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function Contactos() {
     if (!formData.nome.trim() || !formData.contacto.trim() || !formData.mensagem.trim()) return;
 
     setSubmitting(true);
+    setSubmitError(null);
 
     let categoria: 'escola' | 'instituicao' | 'geral' = 'geral';
     if (formData.motivo === 'Visitas Escolares') {
@@ -99,55 +101,16 @@ export default function Contactos() {
       respondido: false,
     };
 
-    try {
-      // 1. Tentar gravar na tabela mensagens_contacto do Supabase
-      const { data } = await supabase.from('mensagens_contacto').insert([payload]).select();
+    // Sem .select(): os visitantes só podem inserir mensagens, não lê-las
+    const { error } = await supabase.from('mensagens_contacto').insert([payload]);
+    setSubmitting(false);
 
-      // 2. Guardar em localStorage para atualização imediata no painel admin
-      const newMsgItem = {
-        id: data?.[0]?.id || `msg-${Date.now()}`,
-        nome: payload.nome,
-        contacto: payload.contacto,
-        categoria: payload.categoria,
-        assunto: payload.motivo,
-        mensagem: payload.mensagem,
-        preferencia: payload.preferencia_resposta,
-        data: new Date().toISOString(),
-        respondido: false,
-      };
-
-      try {
-        const saved = localStorage.getItem('admin_mensagens');
-        const list = saved ? JSON.parse(saved) : [];
-        localStorage.setItem('admin_mensagens', JSON.stringify([newMsgItem, ...list]));
-        window.dispatchEvent(new Event('admin_messages_updated'));
-      } catch (err) {
-        console.error('Erro ao gravar mensagem localmente:', err);
-      }
-
-      setFormSent(true);
-    } catch (err) {
-      console.error('Erro ao enviar mensagem:', err);
-      // Fallback local caso falhe a ligação remota
-      const newMsgItem = {
-        id: `msg-${Date.now()}`,
-        nome: payload.nome,
-        contacto: payload.contacto,
-        categoria: payload.categoria,
-        assunto: payload.motivo,
-        mensagem: payload.mensagem,
-        preferencia: payload.preferencia_resposta,
-        data: new Date().toISOString(),
-        respondido: false,
-      };
-      const saved = localStorage.getItem('admin_mensagens');
-      const list = saved ? JSON.parse(saved) : [];
-      localStorage.setItem('admin_mensagens', JSON.stringify([newMsgItem, ...list]));
-      window.dispatchEvent(new Event('admin_messages_updated'));
-      setFormSent(true);
-    } finally {
-      setSubmitting(false);
+    if (error) {
+      console.error('[Contactos] Erro ao enviar mensagem:', error.code, error.message);
+      setSubmitError('Não foi possível enviar a mensagem. Tente novamente ou contacte-nos por email.');
+      return;
     }
+    setFormSent(true);
   };
 
   const opcoesAssunto = [
@@ -581,6 +544,12 @@ export default function Contactos() {
                     className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-secondary font-medium resize-none"
                   />
                 </div>
+
+                {submitError && (
+                  <p role="alert" className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm font-medium text-red-700 text-center">
+                    {submitError}
+                  </p>
+                )}
 
                 <button
                   type="submit"

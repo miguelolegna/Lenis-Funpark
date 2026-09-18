@@ -366,7 +366,7 @@ export default function Dashboard() {
                               : reserva.estado === 'IN_PROGRESS'
                               ? 'bg-emerald-100 text-emerald-800'
                               : reserva.estado === 'LOCKED'
-                              ? 'bg-violet-100 text-violet-800'
+                              ? 'bg-indigo-100 text-indigo-800'
                               : reserva.estado === 'REJECTED' || reserva.estado === 'CANCELLED'
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-surface text-secondary'
@@ -379,7 +379,7 @@ export default function Dashboard() {
                             : reserva.estado === 'IN_PROGRESS'
                             ? 'Em Preenchimento'
                             : reserva.estado === 'LOCKED'
-                            ? 'Festa em Curso'
+                            ? 'Formulário Preenchido'
                             : reserva.estado === 'REJECTED' || reserva.estado === 'CANCELLED'
                             ? 'Cancelada'
                             : 'Concluída'}

@@ -1,26 +1,24 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
-export type NotificationType =
-  | 'NOVA_RESERVA'
-  | 'FORMULARIO_CONCLUIDO'
-  | 'DEPOSITO_PENDENTE'
-  | 'NOVO_CONTACTO';
-
+// Registo partilhado por todos os admins: lida e apagada contam para toda a equipa.
+// As notificações são criadas por triggers na base de dados (migração 41).
 export interface AdminNotification {
   id: string;
-  type: NotificationType;
-  title: string;
-  description: string;
-  timestamp: string;
-  link: string;
-  isRead: boolean;
-  priority: 'high' | 'normal';
-  rawId: string;
+  tipo: string;
+  titulo: string;
+  descricao: string | null;
+  link: string | null;
+  autor: string | null;
+  lida: boolean;
+  created_at: string;
 }
 
-const STORAGE_KEY_READ = 'lenis_admin_notifications_read';
-const STORAGE_KEY_MESSAGES = 'admin_mensagens';
+const LIMITE = 100;
+
+// O painel existe em duas instâncias (menu móvel e barra lateral): o som só toca uma vez por notificação
+const notificacoesComSom = new Set<string>();
 
 /**
  * Toca um aviso sonoro elegante e suave através da Web Audio API
@@ -63,267 +61,122 @@ export function playNotificationChime() {
 
 export function useAdminNotifications() {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [, setReadIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_READ);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
+  const [erro, setErro] = useState<string | null>(null);
+
+  const carregar = useCallback(async () => {
+    const [lista, naoLidas] = await Promise.all([
+      supabase.from('notificacoes').select('*').order('created_at', { ascending: false }).limit(LIMITE),
+      supabase.from('notificacoes').select('id', { count: 'exact', head: true }).eq('lida', false),
+    ]);
+    setLoading(false);
+
+    const falha = lista.error ?? naoLidas.error;
+    if (falha) {
+      console.error('[Notificações] Erro ao carregar notificações:', falha.code, falha.message);
+      setErro('Não foi possível carregar as notificações.');
+      return;
     }
-  });
-
-  const isInitialMount = useRef(true);
-
-  // Carrega as notificações atuais a partir da BD (reservas) e do storage (mensagens)
-  const fetchNotifications = useCallback(async (isRealtimeUpdate = false) => {
-    try {
-      // 1. Reservas da base de dados Supabase
-      const { data: reservas, error } = await supabase
-        .from('reservas')
-        .select('id, estado, nome_aniversariante, data_evento, num_criancas, termos_veracidade, created_at, updated_at')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao buscar reservas para notificações:', error);
-      }
-
-      const items: AdminNotification[] = [];
-
-      if (reservas) {
-        reservas.forEach((r) => {
-          const rawDate = r.created_at || r.updated_at || new Date().toISOString();
-
-          // Evento 1: Nova Reserva Pendente de Aprovação
-          if (r.estado === 'PENDING_APPROVAL') {
-            const notifId = `nova-reserva-${r.id}`;
-            items.push({
-              id: notifId,
-              type: 'NOVA_RESERVA',
-              title: `Nova Reserva: ${r.nome_aniversariante || 'Sem Nome'}`,
-              description: `${r.data_evento ? `Festa a ${r.data_evento}` : 'Data a definir'} • ${r.num_criancas || 0} crianças`,
-              timestamp: rawDate,
-              link: '/admin/reservas',
-              isRead: false, // preenchido abaixo
-              priority: 'high',
-              rawId: r.id,
-            });
-          }
-
-          // Evento 2: Formulário Selado / Concluído pelo Cliente
-          if (r.termos_veracidade || r.estado === 'COMPLETED' || r.estado === 'LOCKED') {
-            const notifId = `selada-${r.id}`;
-            items.push({
-              id: notifId,
-              type: 'FORMULARIO_CONCLUIDO',
-              title: `Formulário Selado: ${r.nome_aniversariante || 'Cliente'}`,
-              description: 'O cliente concluiu e confirmou a ficha de festa.',
-              timestamp: r.updated_at || rawDate,
-              link: '/admin/reservas',
-              isRead: false,
-              priority: 'normal',
-              rawId: r.id,
-            });
-          }
-
-          // Evento 3: Depósito Pendente (Aprovada a aguardar pagamento de sinal)
-          if (r.estado === 'AWAITING_DEPOSIT') {
-            const notifId = `deposito-${r.id}`;
-            items.push({
-              id: notifId,
-              type: 'DEPOSITO_PENDENTE',
-              title: `Sinal Pendente: ${r.nome_aniversariante || 'Cliente'}`,
-              description: 'Reserva aprovada aguarda comprovativo de depósito.',
-              timestamp: r.updated_at || rawDate,
-              link: '/admin/reservas',
-              isRead: false,
-              priority: 'high',
-              rawId: r.id,
-            });
-          }
-        });
-      }
-
-      // Evento 4: Mensagens de Contacto pendentes (Escolas, Instituições, Geral)
-      try {
-        const { data: dbMsgs } = await supabase
-          .from('mensagens_contacto')
-          .select('id, nome, motivo, mensagem, created_at, respondido')
-          .eq('respondido', false)
-          .order('created_at', { ascending: false });
-
-        if (dbMsgs && dbMsgs.length > 0) {
-          dbMsgs.forEach((m) => {
-            const notifId = `contacto-${m.id}`;
-            items.push({
-              id: notifId,
-              type: 'NOVO_CONTACTO',
-              title: `Mensagem: ${m.nome}`,
-              description: m.motivo || (m.mensagem ? m.mensagem.slice(0, 50) + '...' : 'Novo pedido de contacto recebido.'),
-              timestamp: m.created_at || new Date().toISOString(),
-              link: '/admin/contactos',
-              isRead: false,
-              priority: 'normal',
-              rawId: m.id,
-            });
-          });
-        } else {
-          // Fallback para localStorage caso ainda não haja dados no Supabase
-          const savedMsgs = localStorage.getItem(STORAGE_KEY_MESSAGES);
-          if (savedMsgs) {
-            const msgs = JSON.parse(savedMsgs);
-            if (Array.isArray(msgs)) {
-              msgs
-                .filter((m: { respondido?: boolean }) => !m.respondido)
-                .forEach((m: { id: string; nome: string; assunto?: string; mensagem?: string; data?: string }) => {
-                  const notifId = `contacto-${m.id}`;
-                  items.push({
-                    id: notifId,
-                    type: 'NOVO_CONTACTO',
-                    title: `Mensagem: ${m.nome}`,
-                    description: m.assunto || (m.mensagem ? m.mensagem.slice(0, 50) + '...' : 'Novo pedido de contacto recebido.'),
-                    timestamp: m.data || new Date().toISOString(),
-                    link: '/admin/contactos',
-                    isRead: false,
-                    priority: 'normal',
-                    rawId: m.id,
-                  });
-                });
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Erro ao ler mensagens de contacto:', e);
-      }
-
-      // Ordenar por data mais recente
-      items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-      // Atribuir estado de leitura
-      const savedReadIds = (() => {
-        try {
-          const s = localStorage.getItem(STORAGE_KEY_READ);
-          return s ? JSON.parse(s) : [];
-        } catch {
-          return [];
-        }
-      })();
-
-      const finalItems = items.map((item) => ({
-        ...item,
-        isRead: savedReadIds.includes(item.id),
-      }));
-
-      setNotifications(finalItems);
-
-      // Tocar aviso sonoro se for um update em tempo real e existirem novos itens não lidos
-      if (isRealtimeUpdate && !isInitialMount.current) {
-        const hasUnread = finalItems.some((item) => !item.isRead);
-        if (hasUnread) {
-          playNotificationChime();
-        }
-      }
-    } catch (err) {
-      console.error('Erro ao atualizar notificações:', err);
-    } finally {
-      setLoading(false);
-      isInitialMount.current = false;
-    }
+    setErro(null);
+    setNotifications((lista.data ?? []) as AdminNotification[]);
+    setUnreadCount(naoLidas.count ?? 0);
   }, []);
 
-  // Sincronizar leitura com localStorage
-  const markAsRead = useCallback((id: string) => {
-    setReadIds((prev) => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      try {
-        localStorage.setItem(STORAGE_KEY_READ, JSON.stringify(next));
-      } catch (e) {
-        console.error(e);
-      }
-      return next;
-    });
-
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
-    );
-  }, []);
-
-  // Marcar todas como lidas
-  const markAllAsRead = useCallback(() => {
-    const allIds = notifications.map((n) => n.id);
-    setReadIds(allIds);
-    try {
-      localStorage.setItem(STORAGE_KEY_READ, JSON.stringify(allIds));
-    } catch (e) {
-      console.error(e);
-    }
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }, [notifications]);
-
-  // Efeito de inicialização e subscrição Realtime
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchNotifications();
+    void carregar();
 
-    // Subscrição Supabase Realtime com canal único para evitar colisões entre instâncias simultâneas
-    const channelId = Math.random().toString(36).substring(2, 9);
+    let emailAtual: string | null = null;
+    void supabase.auth.getSession().then(({ data }) => {
+      emailAtual = data.session?.user.email ?? null;
+    });
+
     const channel = supabase
-      .channel(`admin_notifs_${channelId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'reservas',
-        },
-        () => {
-          fetchNotifications(true);
+      .channel(`admin_notificacoes_${crypto.randomUUID()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notificacoes' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          const nova = payload.new as AdminNotification;
+          // Sem som para as ações do próprio admin
+          if (nova.autor !== emailAtual && !notificacoesComSom.has(nova.id)) {
+            notificacoesComSom.add(nova.id);
+            playNotificationChime();
+          }
         }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'mensagens_contacto',
-        },
-        () => {
-          fetchNotifications(true);
-        }
-      )
+        void carregar();
+      })
       .subscribe();
-
-    // 3. Ouvir evento de mensagens de contacto do admin (localStorage/custom)
-    const handleMessagesUpdate = () => {
-      fetchNotifications(false);
-    };
-
-    window.addEventListener('admin_messages_updated', handleMessagesUpdate);
-    window.addEventListener('storage', handleMessagesUpdate);
-
-    // 4. Fallback de polling a cada 30 segundos
-    const interval = setInterval(() => {
-      fetchNotifications(false);
-    }, 30000);
 
     return () => {
       supabase.removeChannel(channel);
-      window.removeEventListener('admin_messages_updated', handleMessagesUpdate);
-      window.removeEventListener('storage', handleMessagesUpdate);
-      clearInterval(interval);
     };
-  }, [fetchNotifications]);
+  }, [carregar]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const executar = useCallback(
+    async (pedido: PromiseLike<{ error: PostgrestError | null }>, descricao: string, mensagem: string) => {
+      const { error } = await pedido;
+      if (error) {
+        console.error(`[Notificações] Erro ao ${descricao}:`, error.code, error.message);
+        setErro(mensagem);
+      }
+      void carregar();
+    },
+    [carregar]
+  );
+
+  const markAsRead = useCallback(
+    (id: string) => {
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, lida: true } : n)));
+      return executar(
+        supabase.from('notificacoes').update({ lida: true }).eq('id', id),
+        'marcar como lida',
+        'Não foi possível marcar a notificação como lida.'
+      );
+    },
+    [executar]
+  );
+
+  const markAllAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, lida: true })));
+    setUnreadCount(0);
+    return executar(
+      supabase.from('notificacoes').update({ lida: true }).eq('lida', false),
+      'marcar todas como lidas',
+      'Não foi possível marcar as notificações como lidas.'
+    );
+  }, [executar]);
+
+  const remove = useCallback(
+    (id: string) => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      return executar(
+        supabase.from('notificacoes').delete().eq('id', id),
+        'apagar notificação',
+        'Não foi possível apagar a notificação.'
+      );
+    },
+    [executar]
+  );
+
+  const removeAll = useCallback(() => {
+    setNotifications([]);
+    setUnreadCount(0);
+    return executar(
+      supabase.from('notificacoes').delete().not('id', 'is', null),
+      'apagar todas as notificações',
+      'Não foi possível apagar as notificações.'
+    );
+  }, [executar]);
 
   return {
     notifications,
     unreadCount,
     loading,
+    erro,
     markAsRead,
     markAllAsRead,
-    refresh: () => fetchNotifications(false),
+    remove,
+    removeAll,
   };
 }
 

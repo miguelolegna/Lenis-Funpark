@@ -6,13 +6,27 @@ import {
   BellOff,
   Sparkles,
   CheckCircle2,
-  Clock,
   MessageSquare,
+  MessageSquareText,
+  MailCheck,
+  MailWarning,
   CheckCheck,
-  ChevronRight,
   ExternalLink,
+  Wallet,
+  FileCheck2,
+  RotateCcw,
+  PartyPopper,
+  CalendarPlus,
+  CalendarDays,
+  StickyNote,
+  Ticket,
+  Ban,
+  Trash2,
+  UserPlus,
+  UserMinus,
+  X,
 } from 'lucide-react';
-import { useAdminNotifications, type AdminNotification, type NotificationType } from '../../hooks/useAdminNotifications';
+import { useAdminNotifications, type AdminNotification } from '../../hooks/useAdminNotifications';
 
 interface NotificationPopoverProps {
   variant?: 'sidebar' | 'icon';
@@ -39,33 +53,43 @@ function formatRelativeTime(dateStr: string): string {
   }
 }
 
-function getNotificationConfig(type: NotificationType) {
-  switch (type) {
-    case 'NOVA_RESERVA':
-      return {
-        icon: Sparkles,
-        bgClass: 'bg-amber-100 text-amber-800 border-amber-200',
-        badgeLabel: 'Nova Reserva',
-      };
-    case 'FORMULARIO_CONCLUIDO':
-      return {
-        icon: CheckCircle2,
-        bgClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        badgeLabel: 'Formulário Selado',
-      };
-    case 'DEPOSITO_PENDENTE':
-      return {
-        icon: Clock,
-        bgClass: 'bg-blue-100 text-blue-800 border-blue-200',
-        badgeLabel: 'Sinal Pendente',
-      };
-    case 'NOVO_CONTACTO':
-      return {
-        icon: MessageSquare,
-        bgClass: 'bg-purple-100 text-purple-800 border-purple-200',
-        badgeLabel: 'Contacto',
-      };
-  }
+type ConfigNotificacao = { icon: React.ComponentType<{ className?: string }>; bgClass: string; badgeLabel: string };
+
+const ROSA = 'bg-rose-100 text-rose-800 border-rose-200';
+const ROXO = 'bg-purple-100 text-purple-800 border-purple-200';
+const AMBAR = 'bg-amber-100 text-amber-800 border-amber-200';
+const CINZA = 'bg-slate-100 text-slate-700 border-slate-200';
+
+const configPorTipo: Record<string, ConfigNotificacao> = {
+  NOVA_RESERVA: { icon: Sparkles, bgClass: 'bg-orange-100 text-orange-800 border-orange-200', badgeLabel: 'Nova reserva' },
+  RESERVA_APROVADA: { icon: CheckCircle2, bgClass: 'bg-blue-100 text-blue-800 border-blue-200', badgeLabel: 'Reserva aprovada' },
+  PAGAMENTO_CONFIRMADO: { icon: Wallet, bgClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', badgeLabel: 'Pagamento' },
+  FORMULARIO_SUBMETIDO: { icon: FileCheck2, bgClass: 'bg-indigo-100 text-indigo-800 border-indigo-200', badgeLabel: 'Formulário' },
+  FORMULARIO_REABERTO: { icon: RotateCcw, bgClass: 'bg-yellow-100 text-yellow-800 border-yellow-200', badgeLabel: 'Formulário reaberto' },
+  FESTA_CONCLUIDA: { icon: PartyPopper, bgClass: 'bg-teal-100 text-teal-800 border-teal-200', badgeLabel: 'Festa concluída' },
+  FESTA_MANUAL: { icon: CalendarPlus, bgClass: 'bg-emerald-100 text-emerald-800 border-emerald-200', badgeLabel: 'Festa adicionada' },
+  CONVITE_AVULSO: { icon: Ticket, bgClass: 'bg-pink-100 text-pink-800 border-pink-200', badgeLabel: 'Convite' },
+  RESERVA_CANCELADA: { icon: Ban, bgClass: ROSA, badgeLabel: 'Cancelamento' },
+  RESERVA_RECUSADA: { icon: Ban, bgClass: ROSA, badgeLabel: 'Reserva recusada' },
+  RESERVA_APAGADA: { icon: Trash2, bgClass: ROSA, badgeLabel: 'Reserva apagada' },
+  NOVA_MENSAGEM: { icon: MessageSquare, bgClass: ROXO, badgeLabel: 'Nova mensagem' },
+  MENSAGEM_RESPONDIDA: { icon: MailCheck, bgClass: ROXO, badgeLabel: 'Mensagem respondida' },
+  MENSAGEM_PENDENTE: { icon: MailWarning, bgClass: ROXO, badgeLabel: 'Mensagem pendente' },
+  MENSAGEM_NOTA: { icon: MessageSquareText, bgClass: ROXO, badgeLabel: 'Nota interna' },
+  MENSAGEM_APAGADA: { icon: Trash2, bgClass: ROXO, badgeLabel: 'Mensagem apagada' },
+  EVENTO_CRIADO: { icon: CalendarDays, bgClass: AMBAR, badgeLabel: 'Evento interno' },
+  EVENTO_APAGADO: { icon: CalendarDays, bgClass: AMBAR, badgeLabel: 'Evento apagado' },
+  NOTA_DIA_CRIADA: { icon: StickyNote, bgClass: AMBAR, badgeLabel: 'Nota do dia' },
+  NOTA_DIA_APAGADA: { icon: StickyNote, bgClass: AMBAR, badgeLabel: 'Nota apagada' },
+  ADMIN_CRIADO: { icon: UserPlus, bgClass: CINZA, badgeLabel: 'Administrador' },
+  ADMIN_REMOVIDO: { icon: UserMinus, bgClass: CINZA, badgeLabel: 'Administrador' },
+};
+
+const configGenerica: ConfigNotificacao = { icon: Bell, bgClass: CINZA, badgeLabel: 'Atividade' };
+
+function descreverAutor(autor: string | null) {
+  if (!autor || autor === 'Sistema') return 'Automático';
+  return autor;
 }
 
 export default function NotificationPopover({
@@ -76,7 +100,7 @@ export default function NotificationPopover({
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
+  const { notifications, unreadCount, erro, markAsRead, markAllAsRead, remove, removeAll } = useAdminNotifications();
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -94,10 +118,16 @@ export default function NotificationPopover({
   }, [isOpen]);
 
   const handleSelectNotification = (item: AdminNotification) => {
-    markAsRead(item.id);
+    if (!item.lida) void markAsRead(item.id);
+    if (!item.link) return;
     setIsOpen(false);
     if (onCloseParentDrawer) onCloseParentDrawer();
     navigate(item.link);
+  };
+
+  const handleApagarTodas = () => {
+    if (!window.confirm('Apagar todas as notificações? Desaparecem para todos os administradores.')) return;
+    void removeAll();
   };
 
   return (
@@ -178,18 +208,35 @@ export default function NotificationPopover({
                 )}
               </div>
 
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={markAllAsRead}
-                  className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors p-1 rounded-lg"
-                  title="Marcar todas como lidas"
-                >
-                  <CheckCheck className="w-3.5 h-3.5" />
-                  <span>Marcar lidas</span>
-                </button>
-              )}
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void markAllAsRead()}
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors p-1 rounded-lg"
+                    title="Marcar todas como lidas (para todos os administradores)"
+                  >
+                    <CheckCheck className="w-3.5 h-3.5" />
+                    <span>Marcar lidas</span>
+                  </button>
+                )}
+                {notifications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleApagarTodas}
+                    className="flex items-center gap-1 text-xs font-bold text-secondary/50 hover:text-rose-600 transition-colors p-1 rounded-lg"
+                    title="Apagar todas as notificações (para todos os administradores)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Apagar</span>
+                  </button>
+                )}
+              </div>
             </div>
+
+            {erro && (
+              <p className="mx-3 mt-3 p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs font-medium text-red-700">{erro}</p>
+            )}
 
             {/* Lista de Alertas */}
             <div className="max-h-[380px] overflow-y-auto divide-y divide-surface-alt p-2">
@@ -199,13 +246,11 @@ export default function NotificationPopover({
                     <BellOff className="w-6 h-6" />
                   </div>
                   <h4 className="text-sm font-bold text-secondary">Tudo calmo por aqui!</h4>
-                  <p className="text-xs text-secondary/60 mt-1">
-                    Não existem novas reservas pendentes ou mensagens por responder.
-                  </p>
+                  <p className="text-xs text-secondary/60 mt-1">Não há notificações.</p>
                 </div>
               ) : (
                 notifications.map((item) => {
-                  const config = getNotificationConfig(item.type);
+                  const config = configPorTipo[item.tipo] ?? configGenerica;
                   const Icon = config.icon;
 
                   return (
@@ -213,7 +258,7 @@ export default function NotificationPopover({
                       key={item.id}
                       onClick={() => handleSelectNotification(item)}
                       className={`group p-3 rounded-2xl cursor-pointer transition-all duration-150 flex items-start gap-3 hover:bg-surface-alt/70 ${
-                        item.isRead ? 'opacity-70 bg-transparent' : 'bg-primary/5'
+                        item.lida ? 'opacity-70 bg-transparent' : 'bg-primary/5'
                       }`}
                     >
                       {/* Ícone contextual */}
@@ -230,30 +275,42 @@ export default function NotificationPopover({
                             {config.badgeLabel}
                           </span>
                           <span className="text-[10px] font-medium text-secondary/40 shrink-0">
-                            {formatRelativeTime(item.timestamp)}
+                            {formatRelativeTime(item.created_at)}
                           </span>
                         </div>
 
                         <h4
                           className={`text-xs truncate mt-0.5 ${
-                            item.isRead ? 'font-semibold text-secondary' : 'font-black text-secondary'
+                            item.lida ? 'font-semibold text-secondary' : 'font-black text-secondary'
                           }`}
+                          title={item.titulo}
                         >
-                          {item.title}
+                          {item.titulo}
                         </h4>
 
-                        <p className="text-[11px] text-secondary/70 line-clamp-2 mt-0.5 leading-relaxed">
-                          {item.description}
-                        </p>
+                        {item.descricao && (
+                          <p className="text-[11px] text-secondary/70 line-clamp-2 mt-0.5 leading-relaxed">
+                            {item.descricao}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-secondary/40 mt-0.5 truncate">{descreverAutor(item.autor)}</p>
                       </div>
 
-                      {/* Indicador de não lida ou seta */}
-                      <div className="self-center shrink-0">
-                        {!item.isRead ? (
-                          <span className="w-2.5 h-2.5 rounded-full bg-accent block" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-secondary/30 group-hover:text-secondary/70 group-hover:translate-x-0.5 transition-all" />
-                        )}
+                      {/* Não lida + apagar */}
+                      <div className="self-center shrink-0 flex items-center gap-1">
+                        {!item.lida && <span className="w-2.5 h-2.5 rounded-full bg-accent block" aria-label="Não lida" />}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void remove(item.id);
+                          }}
+                          className="p-1 rounded-md text-secondary/30 hover:text-rose-600 hover:bg-white transition-colors"
+                          title="Apagar notificação (para todos os administradores)"
+                          aria-label={`Apagar notificação: ${item.titulo}`}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   );

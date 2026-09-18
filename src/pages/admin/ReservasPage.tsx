@@ -19,12 +19,24 @@ import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
 import ReservaAdminView from '../../sections/admin/dashboard/ReservaAdminView';
 
-type EstadoKey = 'PENDING_APPROVAL' | 'AWAITING_DEPOSIT' | 'IN_PROGRESS' | 'LOCKED' | 'COMPLETED' | 'CANCELLED';
+interface ReservaKanban {
+  id: string;
+  estado: string;
+  data_evento: string;
+  nome_aniversariante?: string | null;
+  reserva_tokens?: { token_opaco: string }[];
+}
+
+function chaveDia(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const eDiaDaFesta = (r: ReservaKanban, hoje: string) => chaveDia(new Date(r.data_evento)) === hoje;
 
 interface ColunaKanban {
-  id: EstadoKey;
-  estados: string[];
+  id: string;
   titulo: string;
+  pertence: (r: ReservaKanban, hoje: string) => boolean;
   badgeClass: string;
   headerBg: string;
   limpavel?: boolean;
@@ -32,45 +44,52 @@ interface ColunaKanban {
 
 const colunasKanban: ColunaKanban[] = [
   {
-    id: 'PENDING_APPROVAL',
-    estados: ['PENDING_APPROVAL'],
+    id: 'pendente',
     titulo: 'Pendente',
+    pertence: (r) => r.estado === 'PENDING_APPROVAL',
     badgeClass: 'bg-orange-100 text-orange-800 border-orange-200',
     headerBg: 'border-t-4 border-orange-500',
   },
   {
-    id: 'AWAITING_DEPOSIT',
-    estados: ['AWAITING_DEPOSIT'],
+    id: 'aguarda-pagamento',
     titulo: 'A aguardar pagamento',
+    pertence: (r) => r.estado === 'AWAITING_DEPOSIT',
     badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
     headerBg: 'border-t-4 border-blue-500',
   },
   {
-    id: 'IN_PROGRESS',
-    estados: ['IN_PROGRESS'],
+    id: 'em-preenchimento',
     titulo: 'Em preenchimento',
+    pertence: (r, hoje) => r.estado === 'IN_PROGRESS' && !eDiaDaFesta(r, hoje),
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
     headerBg: 'border-t-4 border-emerald-500',
   },
   {
-    id: 'LOCKED',
-    estados: ['LOCKED'],
+    id: 'formulario-preenchido',
+    titulo: 'Formulário preenchido',
+    pertence: (r, hoje) => r.estado === 'LOCKED' && !eDiaDaFesta(r, hoje),
+    badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    headerBg: 'border-t-4 border-indigo-500',
+  },
+  {
+    id: 'festa-em-curso',
     titulo: 'Festa em curso',
+    pertence: (r, hoje) => (r.estado === 'IN_PROGRESS' || r.estado === 'LOCKED') && eDiaDaFesta(r, hoje),
     badgeClass: 'bg-violet-100 text-violet-800 border-violet-200',
     headerBg: 'border-t-4 border-violet-500',
   },
   {
-    id: 'COMPLETED',
-    estados: ['COMPLETED'],
+    id: 'concluido',
     titulo: 'Concluído',
+    pertence: (r) => r.estado === 'COMPLETED',
     badgeClass: 'bg-teal-100 text-teal-800 border-teal-200',
     headerBg: 'border-t-4 border-teal-600',
     limpavel: true,
   },
   {
-    id: 'CANCELLED',
-    estados: ['CANCELLED', 'REJECTED'],
+    id: 'canceladas',
     titulo: 'Canceladas',
+    pertence: (r) => r.estado === 'CANCELLED' || r.estado === 'REJECTED',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
     headerBg: 'border-t-4 border-rose-500',
     limpavel: true,
@@ -81,7 +100,7 @@ const estadoInfo: Record<string, { label: string; className: string }> = {
   PENDING_APPROVAL: { label: 'Pendente', className: 'bg-orange-100 text-orange-700' },
   AWAITING_DEPOSIT: { label: 'A aguardar pagamento', className: 'bg-blue-100 text-blue-700' },
   IN_PROGRESS: { label: 'Em preenchimento', className: 'bg-emerald-100 text-emerald-800' },
-  LOCKED: { label: 'Festa em curso', className: 'bg-violet-100 text-violet-800' },
+  LOCKED: { label: 'Formulário preenchido', className: 'bg-indigo-100 text-indigo-800' },
   COMPLETED: { label: 'Concluído', className: 'bg-teal-100 text-teal-800' },
   CANCELLED: { label: 'Cancelada', className: 'bg-rose-100 text-rose-700' },
   REJECTED: { label: 'Recusada', className: 'bg-rose-100 text-rose-700' },
@@ -89,20 +108,12 @@ const estadoInfo: Record<string, { label: string; className: string }> = {
 
 const ESTADOS_ATIVOS = ['PENDING_APPROVAL', 'AWAITING_DEPOSIT', 'IN_PROGRESS', 'LOCKED'];
 
-interface ReservaKanban {
-  id: string;
-  estado: string;
-  nome_aniversariante?: string | null;
-  reserva_tokens?: { token_opaco: string }[];
-}
-
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reservaModal, setReservaModal] = useState<any>(null);
   const [filtroTexto, setFiltroTexto] = useState('');
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const fetchReservas = async () => {
@@ -124,7 +135,6 @@ export default function ReservasPage() {
     fetchReservas();
   }, []);
 
-  // Transição de estado via botão ou Drag & Drop
   const handleUpdateEstado = async (id: string, novoEstado: string) => {
     setActionError(null);
     const { error } = await supabase
@@ -192,36 +202,9 @@ export default function ReservasPage() {
     }
   };
 
-  // Drag & Drop handlers nativos
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.setData('text/plain', id);
-    setDraggingId(id);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent, coluna: ColunaKanban) => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData('text/plain');
-    setDraggingId(null);
-    if (!id) return;
-
-    const reserva = reservas.find((r) => r.id === id);
-    if (!reserva || coluna.estados.includes(reserva.estado)) return;
-
-    if (coluna.id === 'CANCELLED') {
-      await handleCancelar(reserva);
-    } else if (coluna.id === 'IN_PROGRESS' && reserva.estado === 'LOCKED') {
-      // A base de dados devolve a Festa em curso qualquer formulário já submetido; só reabrindo volta
-      await handleReabrirFormulario(reserva.id);
-    } else {
-      await handleUpdateEstado(id, coluna.id);
-    }
-  };
-
   // Filtragem de reservas
+  const hoje = chaveDia(new Date());
+
   const reservasFiltradas = useMemo(() => {
     if (!filtroTexto.trim()) return reservas;
     const termo = filtroTexto.toLowerCase();
@@ -334,7 +317,7 @@ export default function ReservasPage() {
           <div>
             <h2 className="text-xl font-black text-secondary">Quadro Kanban</h2>
             <p className="text-xs font-medium text-secondary/60">
-              Arrasta os cartões entre colunas ou usa os botões rápidos de ação
+              Usa os botões de cada cartão para avançar as reservas no fluxo
             </p>
           </div>
           <span className="text-xs font-bold text-secondary/50">
@@ -347,15 +330,13 @@ export default function ReservasPage() {
             A carregar quadro de reservas...
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 pb-2">
+          <div className="grid grid-cols-1 md:grid-cols-none md:grid-flow-col md:auto-cols-[minmax(13rem,1fr)] md:overflow-x-auto gap-4 pb-2">
             {colunasKanban.map((coluna) => {
-              const reservasDaColuna = reservasFiltradas.filter((r) => coluna.estados.includes(r.estado));
+              const reservasDaColuna = reservasFiltradas.filter((r) => coluna.pertence(r, hoje));
 
               return (
                 <div
                   key={coluna.id}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, coluna)}
                   className={`bg-white rounded-3xl p-4 border-2 border-surface-alt flex flex-col justify-between min-h-[420px] shadow-sm ${coluna.headerBg}`}
                 >
                   <div>
@@ -398,11 +379,7 @@ export default function ReservasPage() {
                           return (
                             <div
                               key={reserva.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, reserva.id)}
-                              className={`p-3.5 bg-surface-alt/50 hover:bg-surface-alt rounded-2xl border border-surface-alt transition-all shadow-xs flex flex-col justify-between cursor-grab active:cursor-grabbing ${
-                                draggingId === reserva.id ? 'opacity-50 scale-95 ring-2 ring-primary' : ''
-                              }`}
+                              className="p-3.5 bg-surface-alt/50 hover:bg-surface-alt rounded-2xl border border-surface-alt transition-all shadow-xs flex flex-col justify-between"
                             >
                               <div>
                                 <h4 className="font-black text-sm text-secondary truncate" title={reserva.nome_aniversariante}>
