@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, CheckCircle2, Clock, Smartphone, CreditCard } from 'lucide-react';
 
 export interface BookingModuleSectionProps {
   currentDate: Date;
@@ -26,6 +27,17 @@ export default function BookingModuleSection({
   onNextMonth,
   onSubmit
 }: BookingModuleSectionProps) {
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+
+  useEffect(() => {
+    if (isSubmitted && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isSubmitted, timeLeft]);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
@@ -44,16 +56,61 @@ export default function BookingModuleSection({
   today.setHours(0, 0, 0, 0);
 
   if (isSubmitted) {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
     return (
       <section id="reservas" className="scroll-mt-28 py-24 bg-surface">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div 
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-[2rem] p-12 shadow-2xl border-4 border-primary"
+            className="bg-white rounded-[2rem] p-8 sm:p-12 shadow-2xl border-4 border-primary"
           >
-            <CheckCircle2 className="w-24 h-24 text-primary mx-auto mb-6" />
-            <h2 className="text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
+            <CheckCircle2 className="w-20 h-20 text-primary mx-auto mb-4" />
+            <h2 className="text-3xl sm:text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
+            <p className="text-secondary/80 font-medium mb-6">
+              Para garantir a sua reserva, por favor efetue o pagamento do sinal dentro do tempo limite.
+            </p>
+            
+            <div className="bg-surface rounded-2xl p-6 mb-8 border-2 border-primary/20">
+              <div className="flex items-center justify-center gap-2 text-3xl font-black text-primary mb-2">
+                <Clock className="w-8 h-8" />
+                <span>{timeString}</span>
+              </div>
+              <p className="text-sm font-bold text-secondary">Tempo restante para o pagamento</p>
+            </div>
+
+            <div className="space-y-4 text-left">
+              <h3 className="text-xl font-black text-secondary mb-4 text-center">Métodos de Pagamento</h3>
+              
+              <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-primary shadow-sm shrink-0">
+                  <Smartphone className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-secondary/70 uppercase">MB WAY</p>
+                  <p className="text-xl font-black text-secondary tracking-wide">911 855 496</p>
+                </div>
+              </div>
+
+              <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-secondary shadow-sm shrink-0">
+                  <CreditCard className="w-6 h-6" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-secondary/70 uppercase">Transferência / IBAN</p>
+                  <p className="text-sm sm:text-lg font-black text-secondary font-mono tracking-tight truncate">
+                    PT50 3560 0001 9001 8810 5228 3
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 p-4 bg-primary/10 text-secondary text-sm rounded-xl font-medium border border-primary/20 text-center">
+              Após o pagamento, envie o comprovativo pelo WhatsApp para validarmos a sua reserva de imediato!
+            </div>
           </motion.div>
         </div>
       </section>
