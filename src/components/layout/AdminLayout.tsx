@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   CalendarCheck,
+  CalendarDays,
   Activity,
   Mail,
   Ticket,
@@ -24,6 +25,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: 'Dashboard Geral', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Reservas', path: '/admin/reservas', icon: CalendarCheck },
+  { name: 'Calendário', path: '/admin/calendario', icon: CalendarDays },
   { name: 'Semáforo', path: '/admin/semaforo', icon: Activity },
   { name: 'Mensagens', path: '/admin/contactos', icon: Mail },
   { name: 'Convites', path: '/admin/convites', icon: Ticket },

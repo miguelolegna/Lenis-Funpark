@@ -10,6 +10,7 @@ import BookingModuleSection from '../sections/home/BookingModuleSection';
 
 import { supabase } from '../lib/supabase';
 import { buildLisbonDateTime } from '../lib/dateUtils';
+import { obterHorariosDisponiveis } from '../lib/horarios';
 import { useParkStatus } from '../hooks/useParkStatus';
 
 const statusMessageMap = {
@@ -57,28 +58,7 @@ export default function Home() {
     setIsFetchingTimes(true);
     setAvailableTimes([]); // Reset until loaded
     try {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
-
-      const { data, error } = await supabase.rpc('obter_horarios_ocupados', { p_data: dateString });
-      if (error) throw error;
-      
-      const occupiedHours = (data as { hora: string }[] || []).map(r => r.hora);
-      
-      const dayOfWeek = date.getDay();
-      let allSlots: string[] = [];
-      
-      // Horários de funcionamento do parque (último slot às 18:00 para festas de 2h com fecho às 20:00)
-      if (dayOfWeek >= 2 && dayOfWeek <= 5) {
-        allSlots = ["14:00", "15:00", "16:00", "17:00", "18:00"];
-      } else if (dayOfWeek === 0 || dayOfWeek === 6) {
-        allSlots = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
-      }
-      
-      const filteredSlots = allSlots.filter(slot => !occupiedHours.includes(slot));
-      setAvailableTimes(filteredSlots);
+      setAvailableTimes(await obterHorariosDisponiveis(date));
     } catch (err) {
       console.error("Erro ao buscar horários ocupados:", err);
       alert("Não foi possível carregar os horários. Tente novamente.");
