@@ -1,5 +1,23 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  PartyPopper,
+  Sparkles,
+  CheckCircle2,
+  KeyRound,
+  User,
+  Utensils,
+  Gift,
+  Palette,
+  Cake,
+  FileText,
+  ShieldCheck,
+  Download,
+  Check,
+  Ticket,
+  AlertCircle,
+} from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 export default function ReservaClient() {
@@ -11,21 +29,29 @@ export default function ReservaClient() {
   const [reservaId, setReservaId] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [conviteToken, setConviteToken] = useState<string | null>(null);
-  const [estadoFormulario, setEstadoFormulario] = useState<'a_verificar' | 'aberto' | 'fechado' | 'invalido'>('a_verificar');
+  const [estadoFormulario, setEstadoFormulario] = useState<
+    "a_verificar" | "aberto" | "fechado" | "invalido"
+  >("a_verificar");
 
   useEffect(() => {
     let cancelado = false;
     const verificar = async () => {
-      const { data, error } = await supabase.rpc("estado_formulario_b2c", { p_token_opaco: token });
+      const { data, error } = await supabase.rpc("estado_formulario_b2c", {
+        p_token_opaco: token,
+      });
       if (cancelado) return;
       if (error) {
-        console.error("[Formulário] Erro ao verificar o estado do formulário:", error.code, error.message);
-        // 22P02: o token do link não tem formato válido. Noutros erros não se bloqueia aqui:
-        // o servidor recusa sempre alterações a formulários fechados.
+        console.error(
+          "[Formulário] Erro ao verificar o estado do formulário:",
+          error.code,
+          error.message,
+        );
         setEstadoFormulario(error.code === "22P02" ? "invalido" : "aberto");
         return;
       }
-      setEstadoFormulario(data === "fechado" || data === "invalido" ? data : "aberto");
+      setEstadoFormulario(
+        data === "fechado" || data === "invalido" ? data : "aberto",
+      );
     };
     void verificar();
     return () => {
@@ -72,7 +98,7 @@ export default function ReservaClient() {
       setStep(2);
       setOtp("");
     } catch (err: any) {
-      setError(err.message || "Erro ao solicitar OTP.");
+      setError(err.message || "Erro ao solicitar código de acesso.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +108,6 @@ export default function ReservaClient() {
     setLoading(true);
     setError("");
     try {
-      // 1. Validar e obter ID
       const { data: reservaId, error: rpcError } = await supabase.rpc(
         "validar_otp_b2c",
         {
@@ -91,16 +116,14 @@ export default function ReservaClient() {
         },
       );
       if (rpcError) throw rpcError;
-      if (!reservaId) throw new Error("Falha na extração do ID.");
+      if (!reservaId) throw new Error("Falha na extração do ID da reserva.");
 
-      // 2. Extrair dados da base de dados contornando o RLS
       const { data: reservaData, error: fetchError } = await supabase.rpc(
         "obter_reserva_b2c",
         { p_token_opaco: token },
       );
       if (fetchError) throw fetchError;
 
-      // 3. Hidratar a RAM do React com os dados absolutos do PostgreSQL
       if (reservaData) {
         setConviteToken(reservaData.convite_token);
         setFormData({
@@ -130,7 +153,7 @@ export default function ReservaClient() {
       setReservaId(reservaId);
       setStep(3);
     } catch (err: any) {
-      setError(err.message || "OTP Inválido ou Expirado.");
+      setError(err.message || "Código Inválido ou Expirado.");
     } finally {
       setLoading(false);
     }
@@ -164,7 +187,7 @@ export default function ReservaClient() {
     });
 
     if (rpcError) {
-      setError("Falha de sistema ao selar a reserva: " + rpcError.message);
+      setError("Falha de sistema ao guardar a reserva: " + rpcError.message);
       setLoading(false);
       return;
     }
@@ -175,16 +198,12 @@ export default function ReservaClient() {
 
   const handleBlur = async (field: string, value: any) => {
     if (!reservaId) return;
-    console.log(`[PATCH request]: Atualizando ${field} para ${value}`);
 
     if (
       field === "inclui_bolo" &&
       value === true &&
       !formData.bolo_composicao
     ) {
-      console.warn(
-        "Bloqueio Síncrono: Composição do bolo não pode estar vazia.",
-      );
       return;
     }
 
@@ -202,338 +221,494 @@ export default function ReservaClient() {
     });
 
     if (patchError) {
-      console.error(`Falha RPC ao gravar ${field}:`, patchError);
-    } else {
-      console.log(
-        `[PATCH success]: ${field} atualizado com sucesso no backend.`,
-      );
+      console.error(`Falha ao gravar ${field}:`, patchError);
     }
   };
 
+  // -------------------------------------------------------------
+  // ECRÃ 1: RESERVA SUBMETIDA COM SUCESSO
+  // -------------------------------------------------------------
   if (isCompleted) {
-    const conviteUrl = `${import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "")}/functions/v1/convite_digital?token=${conviteToken}`;
+    const conviteUrl = `${import.meta.env.VITE_SUPABASE_URL?.replace(
+      /\/$/,
+      "",
+    )}/functions/v1/convite_digital?token=${conviteToken}`;
 
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-24">
-        <div className="bg-white p-10 rounded-xl shadow-lg max-w-md text-center border-t-8 border-teal-600">
-          <h2 className="text-3xl font-black text-slate-800 mb-4">
-            Reserva Submetida
+      <div className="min-h-screen bg-surface py-20 px-4 flex items-center justify-center">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="max-w-lg w-full bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-2xl border-4 border-primary text-center"
+        >
+          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-6 shadow-sm">
+            <Sparkles className="w-10 h-10" />
+          </div>
+
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 mb-3">
+            Formulário Concluído
+          </span>
+
+          <h2 className="text-3xl sm:text-4xl font-black text-secondary mb-4">
+            Reserva Submetida!
           </h2>
-          <p className="text-slate-600 font-medium leading-relaxed mb-6">
-            Os detalhes da sua festa foram gravados com sucesso. A equipa do
-            Leni's FunPark irá analisar a informação.
+          <p className="text-secondary/80 font-medium leading-relaxed mb-8">
+            Os detalhes da sua festa foram gravados com sucesso. A nossa equipa
+            no Leni's FunPark irá analisar as preferências da sua celebração.
           </p>
 
-          {formData.tipo_convite === 'lenis' && conviteToken && (
-            <a 
-              href={conviteUrl} 
-              target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center justify-center bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-lg w-full font-bold text-lg transition-colors uppercase tracking-wide mb-4"
+          {formData.tipo_convite === "lenis" && conviteToken && (
+            <a
+              href={conviteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-secondary text-white px-6 py-4 rounded-2xl font-black text-base transition-all uppercase tracking-wide shadow-lg shadow-primary/20 mb-4"
             >
-              📥 Descarregar Convite Digital
+              <Download className="w-5 h-5" />
+              <span>Descarregar Convite Digital</span>
             </a>
           )}
 
-          {formData.tipo_convite === 'tematico' && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-sm mb-4">
-              🎨 <strong>Convite Temático ({formData.tema_convite}):</strong> A nossa equipa de design irá preparar o convite personalizado e enviá-lo por email.
+          {formData.tipo_convite === "tematico" && (
+            <div className="bg-amber-50 border-2 border-amber-200 text-amber-900 p-4 rounded-2xl text-sm font-medium mb-6 text-left flex items-start gap-3">
+              <Palette className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-amber-900">
+                  Convite Temático ({formData.tema_convite})
+                </p>
+                <p className="text-xs mt-1 text-amber-800">
+                  A nossa equipa de design irá preparar o convite personalizado e
+                  enviá-lo por email.
+                </p>
+              </div>
             </div>
           )}
 
-          <div className="mt-4 text-sm text-slate-400">
-            Pode fechar esta janela de forma segura.
+          <div className="p-4 bg-surface-alt rounded-2xl text-xs font-bold text-secondary/60">
+            Pode fechar esta página com segurança.
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
+  // -------------------------------------------------------------
+  // ECRÃ 2: PREENCHIMENTO DOS DETALHES DA FESTA (STEP 3)
+  // -------------------------------------------------------------
   if (step === 3) {
     return (
-      <div className="min-h-screen bg-slate-50 p-8 pt-24 flex justify-center">
-        <div className="max-w-2xl w-full bg-white rounded-xl shadow-md p-8 h-fit">
-          <h2 className="text-2xl font-bold mb-6 text-slate-800">
-            Detalhes da Festa
-          </h2>
-          <div className="flex flex-col gap-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Nome do Aniversariante (Obrigatório)
-                </label>
-                <input
-                  type="text"
-                  value={formData.nome_aniversariante}
-                  onChange={(e) =>
-                    handleInputChange("nome_aniversariante", e.target.value)
-                  }
-                  onBlur={(e) =>
-                    handleBlur("nome_aniversariante", e.target.value)
-                  }
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Idade a Celebrar
-                </label>
-                <input
-                  type="number"
-                  value={formData.idade}
-                  onChange={(e) => handleInputChange("idade", e.target.value)}
-                  onBlur={(e) => handleBlur("idade", e.target.value)}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Nº de Crianças
-                </label>
-                <input
-                  type="number"
-                  value={formData.num_criancas}
-                  onChange={(e) =>
-                    handleInputChange("num_criancas", e.target.value)
-                  }
-                  onBlur={(e) => handleBlur("num_criancas", e.target.value)}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-            </div>
+      <div className="min-h-screen bg-surface py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+        <div className="max-w-3xl w-full">
+          {/* Header da Página */}
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-3">
+              <PartyPopper className="w-4 h-4" /> Personalize o Evento
+            </span>
+            <h1 className="text-3xl sm:text-5xl font-black text-secondary tracking-tight">
+              Detalhes da <span className="text-accent">Sua Festa</span>
+            </h1>
+            <p className="text-secondary/70 font-medium text-sm sm:text-base mt-2 max-w-xl mx-auto">
+              Preencha as preferências de convites, menu, bolo e decoração para
+              a celebração no Leni's FunPark.
+            </p>
+          </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-800">
-                Convite Digital
-              </h3>
-              <div className="flex flex-col gap-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="tipo_convite"
-                    value="nenhum"
-                    checked={formData.tipo_convite === "nenhum"}
-                    onChange={(e) =>
-                      handleInputChange("tipo_convite", e.target.value)
-                    }
-                    onBlur={(e) => handleBlur("tipo_convite", e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  Sem Convite
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="tipo_convite"
-                    value="lenis"
-                    checked={formData.tipo_convite === "lenis"}
-                    onChange={(e) =>
-                      handleInputChange("tipo_convite", e.target.value)
-                    }
-                    onBlur={(e) => handleBlur("tipo_convite", e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  Convite Leni's
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="tipo_convite"
-                    value="tematico"
-                    checked={formData.tipo_convite === "tematico"}
-                    onChange={(e) =>
-                      handleInputChange("tipo_convite", e.target.value)
-                    }
-                    onBlur={(e) => handleBlur("tipo_convite", e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  Convite Temático
-                </label>
+          <div className="space-y-8">
+            {/* Bloco 1: Aniversariante */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black shrink-0">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Dados do Aniversariante
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Informação principal do homenageado
+                  </p>
+                </div>
               </div>
-              {formData.tipo_convite === "tematico" && (
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Tema do Convite
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                    Nome do Aniversariante *
                   </label>
                   <input
                     type="text"
-                    value={formData.tema_convite}
+                    required
+                    value={formData.nome_aniversariante}
                     onChange={(e) =>
-                      handleInputChange("tema_convite", e.target.value)
+                      handleInputChange("nome_aniversariante", e.target.value)
                     }
-                    onBlur={(e) => handleBlur("tema_convite", e.target.value)}
-                    className="w-full p-2 border rounded"
-                    placeholder="Ex: Homem-Aranha, Princesas, etc."
+                    onBlur={(e) =>
+                      handleBlur("nome_aniversariante", e.target.value)
+                    }
+                    placeholder="Ex: Gabriel Silva"
+                    className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                   />
                 </div>
-              )}
-            </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-800">Menu</h3>
-              <div className="flex flex-col gap-3">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                    Idade a Celebrar
+                  </label>
                   <input
-                    type="radio"
-                    name="opcao_menu"
-                    value="sem_menu"
-                    checked={formData.opcao_menu === "sem_menu"}
-                    onChange={(e) =>
-                      handleInputChange("opcao_menu", e.target.value)
-                    }
-                    onBlur={(e) => handleBlur("opcao_menu", e.target.value)}
-                    className="w-4 h-4"
+                    type="number"
+                    min="1"
+                    max="99"
+                    value={formData.idade}
+                    onChange={(e) => handleInputChange("idade", e.target.value)}
+                    onBlur={(e) => handleBlur("idade", e.target.value)}
+                    placeholder="Ex: 8"
+                    className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                   />
-                  Sem Menu (11,50€/criança)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                </div>
+
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                    Nº Estimado de Crianças
+                  </label>
                   <input
-                    type="radio"
-                    name="opcao_menu"
-                    value="com_menu"
-                    checked={formData.opcao_menu === "com_menu"}
+                    type="number"
+                    min="1"
+                    value={formData.num_criancas}
                     onChange={(e) =>
-                      handleInputChange("opcao_menu", e.target.value)
+                      handleInputChange("num_criancas", e.target.value)
                     }
-                    onBlur={(e) => handleBlur("opcao_menu", e.target.value)}
-                    className="w-4 h-4"
+                    onBlur={(e) => handleBlur("num_criancas", e.target.value)}
+                    placeholder="Ex: 15"
+                    className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                   />
-                  Com Menu (13,50€/criança)
-                </label>
+                </div>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-800">
-                Extras de Menu
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.extra_pizza}
-                    onChange={(e) =>
-                      handleInputChange("extra_pizza", e.target.checked)
-                    }
-                    onBlur={(e) => handleBlur("extra_pizza", e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  Pizza (+1.50€/criança)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.extra_cachorro}
-                    onChange={(e) =>
-                      handleInputChange("extra_cachorro", e.target.checked)
-                    }
-                    onBlur={(e) =>
-                      handleBlur("extra_cachorro", e.target.checked)
-                    }
-                    className="w-4 h-4"
-                  />
-                  Cachorro (+1.50€/criança)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.extra_doces}
-                    onChange={(e) =>
-                      handleInputChange("extra_doces", e.target.checked)
-                    }
-                    onBlur={(e) => handleBlur("extra_doces", e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  Doces (+1.00€/criança)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.extra_fruta}
-                    onChange={(e) =>
-                      handleInputChange("extra_fruta", e.target.checked)
-                    }
-                    onBlur={(e) => handleBlur("extra_fruta", e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  Fruta (+1.00€/criança)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.extra_gelatina}
-                    onChange={(e) =>
-                      handleInputChange("extra_gelatina", e.target.checked)
-                    }
-                    onBlur={(e) =>
-                      handleBlur("extra_gelatina", e.target.checked)
-                    }
-                    className="w-4 h-4"
-                  />
-                  Gelatina (+1.00€/criança)
-                </label>
+            {/* Bloco 2: Convite Digital */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-accent/15 flex items-center justify-center text-accent font-black shrink-0">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Convite Digital
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Escolha o tipo de convite para os convidados
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-800">
-                Animação & Decoração
-              </h3>
-              <div className="flex flex-col gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.decoracao_tematica}
-                    onChange={(e) =>
-                      handleInputChange("decoracao_tematica", e.target.checked)
-                    }
-                    onBlur={(e) =>
-                      handleBlur("decoracao_tematica", e.target.checked)
-                    }
-                    className="w-4 h-4"
-                  />
-                  Decoração Temática
-                </label>
-                {formData.decoracao_tematica && (
-                  <div className="pl-6 border-l-2 border-slate-200 ml-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Tema da Decoração
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {[
+                  { id: "nenhum", label: "Sem Convite", desc: "Não necessito de convite" },
+                  { id: "lenis", label: "Convite Leni's", desc: "Modelo padrão do parque" },
+                  { id: "tematico", label: "Convite Temático", desc: "Design com tema à escolha" },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      handleInputChange("tipo_convite", opt.id);
+                      handleBlur("tipo_convite", opt.id);
+                    }}
+                    className={`p-4 rounded-2xl text-left border-2 transition-all flex flex-col justify-between ${
+                      formData.tipo_convite === opt.id
+                        ? "bg-primary/10 border-primary text-secondary shadow-md"
+                        : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-black text-sm">{opt.label}</span>
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          formData.tipo_convite === opt.id
+                            ? "border-primary bg-primary text-white"
+                            : "border-secondary/30 bg-white"
+                        }`}
+                      >
+                        {formData.tipo_convite === opt.id && (
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium text-secondary/60">
+                      {opt.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <AnimatePresence>
+                {formData.tipo_convite === "tematico" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="pt-4 border-t border-surface-alt"
+                  >
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                      Tema do Convite *
                     </label>
                     <input
                       type="text"
-                      value={formData.decoracao_tema_nome}
+                      value={formData.tema_convite}
                       onChange={(e) =>
-                        handleInputChange("decoracao_tema_nome", e.target.value)
+                        handleInputChange("tema_convite", e.target.value)
                       }
-                      onBlur={(e) =>
-                        handleBlur("decoracao_tema_nome", e.target.value)
-                      }
-                      className="w-full p-2 border rounded"
-                      placeholder="Ex: Safari, Dinossauros, etc."
+                      onBlur={(e) => handleBlur("tema_convite", e.target.value)}
+                      placeholder="Ex: Homem-Aranha, Frozen, Minecraft, etc."
+                      className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
-                  </div>
+                  </motion.div>
                 )}
+              </AnimatePresence>
+            </div>
 
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.pinturas_faciais}
-                    onChange={(e) =>
-                      handleInputChange("pinturas_faciais", e.target.checked)
-                    }
-                    onBlur={(e) =>
-                      handleBlur("pinturas_faciais", e.target.checked)
-                    }
-                    className="w-4 h-4"
-                  />
-                  Pinturas Faciais
-                </label>
+            {/* Bloco 3: Opção de Menu */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 flex items-center justify-center text-amber-600 font-black shrink-0">
+                  <Utensils className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Opção de Menu
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Lanche e snack para as crianças
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  {
+                    id: "sem_menu",
+                    title: "Sem Menu",
+                    price: "11,50€ / criança",
+                    desc: "Apenas lancheira base e entradas",
+                  },
+                  {
+                    id: "com_menu",
+                    title: "Com Menu Completo",
+                    price: "13,50€ / criança",
+                    desc: "Lanche sortido, bebidas e snacks incluídos",
+                  },
+                ].map((menu) => (
+                  <button
+                    key={menu.id}
+                    type="button"
+                    onClick={() => {
+                      handleInputChange("opcao_menu", menu.id);
+                      handleBlur("opcao_menu", menu.id);
+                    }}
+                    className={`p-5 rounded-2xl text-left border-2 transition-all flex flex-col justify-between ${
+                      formData.opcao_menu === menu.id
+                        ? "bg-primary/10 border-primary text-secondary shadow-md"
+                        : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="font-black text-base text-secondary">
+                          {menu.title}
+                        </h4>
+                        <span className="text-xs font-extrabold text-primary">
+                          {menu.price}
+                        </span>
+                      </div>
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          formData.opcao_menu === menu.id
+                            ? "border-primary bg-primary text-white"
+                            : "border-secondary/30 bg-white"
+                        }`}
+                      >
+                        {formData.opcao_menu === menu.id && (
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-secondary/60 mt-1">{menu.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bloco 4: Extras de Menu */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-emerald-600 font-black shrink-0">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Extras de Menu
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Reforce o lanche com snacks adicionais
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { field: "extra_pizza", name: "Pizza", price: "+1,50€ / criança" },
+                  { field: "extra_cachorro", name: "Cachorro Quente", price: "+1,50€ / criança" },
+                  { field: "extra_doces", name: "Doces Sortidos", price: "+1,00€ / criança" },
+                  { field: "extra_fruta", name: "Prato de Fruta", price: "+1,00€ / criança" },
+                  { field: "extra_gelatina", name: "Gelatina", price: "+1,00€ / criança" },
+                ].map((item) => {
+                  const isChecked = (formData as any)[item.field];
+                  return (
+                    <button
+                      key={item.field}
+                      type="button"
+                      onClick={() => {
+                        const nextVal = !isChecked;
+                        handleInputChange(item.field, nextVal);
+                        handleBlur(item.field, nextVal);
+                      }}
+                      className={`p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between ${
+                        isChecked
+                          ? "bg-emerald-50 border-emerald-400 text-emerald-950 shadow-xs"
+                          : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                      }`}
+                    >
+                      <div>
+                        <p className="font-extrabold text-sm">{item.name}</p>
+                        <p className="text-[11px] font-bold text-emerald-700">
+                          {item.price}
+                        </p>
+                      </div>
+                      <div
+                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                          isChecked
+                            ? "bg-emerald-600 border-emerald-600 text-white"
+                            : "bg-white border-secondary/30"
+                        }`}
+                      >
+                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bloco 5: Animação & Decoração */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-600 font-black shrink-0">
+                  <Palette className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Animação & Decoração
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Ambiente e atividades para as crianças
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Decoração Temática */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !formData.decoracao_tematica;
+                    handleInputChange("decoracao_tematica", nextVal);
+                    handleBlur("decoracao_tematica", nextVal);
+                  }}
+                  className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between ${
+                    formData.decoracao_tematica
+                      ? "bg-purple-50 border-purple-300 text-purple-950 shadow-xs"
+                      : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                  }`}
+                >
+                  <span className="font-extrabold text-sm">
+                    Decoração Temática da Mesa/Espaço
+                  </span>
+                  <div
+                    className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                      formData.decoracao_tematica
+                        ? "bg-purple-600 border-purple-600 text-white"
+                        : "bg-white border-secondary/30"
+                    }`}
+                  >
+                    {formData.decoracao_tematica && (
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    )}
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {formData.decoracao_tematica && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="pl-4 border-l-4 border-purple-400"
+                    >
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                        Nome do Tema da Decoração
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.decoracao_tema_nome}
+                        onChange={(e) =>
+                          handleInputChange("decoracao_tema_nome", e.target.value)
+                        }
+                        onBlur={(e) =>
+                          handleBlur("decoracao_tema_nome", e.target.value)
+                        }
+                        placeholder="Ex: Safari, Dinossauros, Princesas Disney, etc."
+                        className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Pinturas Faciais */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !formData.pinturas_faciais;
+                    handleInputChange("pinturas_faciais", nextVal);
+                    handleBlur("pinturas_faciais", nextVal);
+                  }}
+                  className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between ${
+                    formData.pinturas_faciais
+                      ? "bg-purple-50 border-purple-300 text-purple-950 shadow-xs"
+                      : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                  }`}
+                >
+                  <span className="font-extrabold text-sm">
+                    Pinturas Faciais & Modelagem de Balões
+                  </span>
+                  <div
+                    className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                      formData.pinturas_faciais
+                        ? "bg-purple-600 border-purple-600 text-white"
+                        : "bg-white border-secondary/30"
+                    }`}
+                  >
+                    {formData.pinturas_faciais && (
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    )}
+                  </div>
+                </button>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Outros Serviços (Pinhata, Lembranças, etc.)
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                    Outros Serviços Adicionais (Pinhata, Lembranças, etc.)
                   </label>
                   <textarea
+                    rows={2}
                     value={formData.outros_servicos}
                     onChange={(e) =>
                       handleInputChange("outros_servicos", e.target.value)
@@ -541,126 +716,222 @@ export default function ReservaClient() {
                     onBlur={(e) =>
                       handleBlur("outros_servicos", e.target.value)
                     }
-                    className="w-full p-2 border rounded"
-                    rows={2}
+                    placeholder="Descreva se pretender contratar pinhata ou lembranças especiais."
+                    className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-800">
-                Bolo de Aniversário
-              </h3>
-              <label className="flex items-center gap-2 mb-4 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.inclui_bolo}
-                  onChange={(e) =>
-                    handleInputChange("inclui_bolo", e.target.checked)
-                  }
-                  onBlur={(e) => handleBlur("inclui_bolo", e.target.checked)}
-                  className="w-4 h-4"
-                />
-                Incluir Bolo de Aniversário
-              </label>
-              {formData.inclui_bolo && (
-                <div className="pl-6 border-l-2 border-slate-200 ml-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Composição / Recheio (Obrigatório)
-                  </label>
-                  <textarea
-                    value={formData.bolo_composicao}
-                    onChange={(e) =>
-                      handleInputChange("bolo_composicao", e.target.value)
-                    }
-                    onBlur={(e) =>
-                      handleBlur("bolo_composicao", e.target.value)
-                    }
-                    className="w-full p-2 border rounded"
-                    rows={2}
-                  ></textarea>
+            {/* Bloco 6: Bolo de Aniversário */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-pink-500/15 flex items-center justify-center text-pink-600 font-black shrink-0">
+                  <Cake className="w-5 h-5" />
                 </div>
-              )}
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Bolo de Aniversário
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Detalhes e composição do bolo
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !formData.inclui_bolo;
+                    handleInputChange("inclui_bolo", nextVal);
+                    handleBlur("inclui_bolo", nextVal);
+                  }}
+                  className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between ${
+                    formData.inclui_bolo
+                      ? "bg-pink-50 border-pink-300 text-pink-950 shadow-xs"
+                      : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                  }`}
+                >
+                  <span className="font-extrabold text-sm">
+                    Incluir Bolo de Aniversário no Leni's FunPark
+                  </span>
+                  <div
+                    className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                      formData.inclui_bolo
+                        ? "bg-pink-600 border-pink-600 text-white"
+                        : "bg-white border-secondary/30"
+                    }`}
+                  >
+                    {formData.inclui_bolo && (
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    )}
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {formData.inclui_bolo && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="pl-4 border-l-4 border-pink-400"
+                    >
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                        Composição / Recheio do Bolo * (Obrigatório)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={formData.bolo_composicao}
+                        onChange={(e) =>
+                          handleInputChange("bolo_composicao", e.target.value)
+                        }
+                        onBlur={(e) =>
+                          handleBlur("bolo_composicao", e.target.value)
+                        }
+                        placeholder="Ex: Pão de ló com recheio de chocolate e morango"
+                        className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
+                      ></textarea>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-              <label className="block text-sm font-bold text-slate-800 mb-2">
-                Notas Adicionais Gerais
-              </label>
+            {/* Bloco 7: Notas Adicionais */}
+            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-surface-alt">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 flex items-center justify-center text-blue-600 font-black shrink-0">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-secondary">
+                    Notas Adicionais Gerais
+                  </h3>
+                  <p className="text-xs font-semibold text-secondary/50">
+                    Alergias alimentares, restrições ou pedidos especiais
+                  </p>
+                </div>
+              </div>
+
               <textarea
+                rows={3}
                 value={formData.notas_adicionais}
                 onChange={(e) =>
                   handleInputChange("notas_adicionais", e.target.value)
                 }
                 onBlur={(e) => handleBlur("notas_adicionais", e.target.value)}
-                className="w-full p-2 border rounded"
-                rows={3}
+                placeholder="Ex: 2 crianças com intolerância ao glúten, horário de chegada dos pais..."
+                className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
               ></textarea>
             </div>
 
-            <div className="bg-teal-50 p-6 rounded-lg border border-teal-200">
-              {/* <div className="mb-4 text-sm text-teal-800 font-medium">
-                ℹ️ Caução de 50€ obrigatória para validação da reserva.
-              </div> */}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.termos_veracidade}
-                  onChange={(e) =>
-                    handleInputChange("termos_veracidade", e.target.checked)
-                  }
-                  onBlur={(e) =>
-                    handleBlur("termos_veracidade", e.target.checked)
-                  }
-                  className="w-5 h-5 accent-teal-600"
-                />
-                <span className="text-sm font-bold text-slate-800">
-                  Aceito os Termos e garanto a Veracidade dos dados
-                </span>
-              </label>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-slate-200 pt-6">
-            {error && (
-              <div className="text-red-600 mb-4 text-center font-bold bg-red-50 p-3 rounded">
-                {error}
+            {/* Bloco 8: Termos e Submissão Final */}
+            <div className="bg-primary/10 rounded-[2rem] p-6 sm:p-8 border-2 border-primary/30 shadow-xl">
+              <div className="flex items-start gap-3 mb-6">
+                <ShieldCheck className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-black text-secondary text-base">
+                    Confirmação dos Dados
+                  </h4>
+                  <p className="text-xs text-secondary/70 font-medium mt-0.5">
+                    Garantimos a proteção dos dados nos termos da legislação aplicável.
+                  </p>
+                </div>
               </div>
-            )}
-            <button
-              onClick={handleFinalSubmit}
-              disabled={loading || !formData.termos_veracidade}
-              className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-lg w-full font-bold text-lg disabled:opacity-50 transition-colors uppercase tracking-wide"
-            >
-              {loading
-                ? "A selar dados..."
-                : "Concluir Preenchimento da Reserva"}
-            </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const nextVal = !formData.termos_veracidade;
+                  handleInputChange("termos_veracidade", nextVal);
+                  handleBlur("termos_veracidade", nextVal);
+                }}
+                className="w-full p-4 rounded-2xl bg-white border-2 border-primary/30 text-left transition-all flex items-center justify-between mb-6 shadow-xs"
+              >
+                <span className="font-extrabold text-sm text-secondary">
+                  Aceito os Termos e garanto a Veracidade das informações *
+                </span>
+                <div
+                  className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                    formData.termos_veracidade
+                      ? "bg-primary border-primary text-white"
+                      : "bg-white border-secondary/30"
+                  }`}
+                >
+                  {formData.termos_veracidade && (
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  )}
+                </div>
+              </button>
+
+              {error && (
+                <div className="bg-rose-100 border-2 border-rose-300 text-rose-900 p-4 rounded-2xl text-sm font-bold text-center mb-6 flex items-center justify-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleFinalSubmit}
+                disabled={loading || !formData.termos_veracidade}
+                className={`w-full py-4 px-8 rounded-2xl font-black text-lg transition-all uppercase tracking-wide shadow-lg ${
+                  loading || !formData.termos_veracidade
+                    ? "bg-surface-alt text-secondary/40 border-2 border-surface cursor-not-allowed"
+                    : "bg-primary hover:bg-secondary text-white shadow-primary/20 cursor-pointer"
+                }`}
+              >
+                {loading
+                  ? "A guardar informações..."
+                  : "Concluir Preenchimento da Reserva"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // -------------------------------------------------------------
+  // ECRÃ 3: LINK INVÁLIDO OU SUBMETIDO
+  // -------------------------------------------------------------
   if (estadoFormulario !== "aberto") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 pt-24 p-4">
-        <div className="p-8 max-w-md w-full bg-white rounded-xl shadow-md text-center">
+      <div className="min-h-screen bg-surface py-20 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border-4 border-surface-alt text-center">
           {estadoFormulario === "a_verificar" ? (
-            <p className="text-slate-500 font-medium">A verificar o acesso...</p>
+            <div className="py-8">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-secondary/70 font-bold">
+                A verificar a ligação...
+              </p>
+            </div>
           ) : estadoFormulario === "fechado" ? (
             <>
-              <h2 className="text-2xl font-bold mb-4 text-slate-800">Formulário já submetido</h2>
-              <p className="text-slate-600 font-medium leading-relaxed">
-                Os detalhes da sua festa já foram enviados ao Leni's FunPark. Se precisar de alterar
-                alguma coisa, contacte-nos e reabriremos o formulário para si.
+              <div className="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center text-emerald-700 mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-black text-secondary mb-3">
+                Formulário Já Submetido
+              </h2>
+              <p className="text-secondary/70 font-medium text-sm leading-relaxed">
+                Os detalhes da sua festa já foram enviados ao Leni's FunPark. Se
+                precisar de alterar alguma informação, contacte-nos para reabrir
+                o formulário.
               </p>
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-bold mb-4 text-slate-800">Link inválido</h2>
-              <p className="text-slate-600 font-medium leading-relaxed">
-                Este link não é válido. Confirme o link que recebeu ou contacte o Leni's FunPark.
+              <div className="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center text-rose-700 mx-auto mb-4">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-black text-secondary mb-3">
+                Link Inválido
+              </h2>
+              <p className="text-secondary/70 font-medium text-sm leading-relaxed">
+                Este link expirou ou não é válido. Confirme a hiperligação
+                recebida ou entre em contacto com a nossa equipa.
               </p>
             </>
           )}
@@ -669,57 +940,92 @@ export default function ReservaClient() {
     );
   }
 
+  // -------------------------------------------------------------
+  // ECRÃ 4: AUTENTICAÇÃO INICIAL (OTP VIA SMS/EMAIL - STEP 1 & 2)
+  // -------------------------------------------------------------
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50 pt-24 p-4">
-      <div className="p-8 max-w-md w-full bg-white rounded-xl shadow-md text-center">
-        <h2 className="text-2xl font-bold mb-6 text-slate-800">
+    <div className="min-h-screen bg-surface py-20 px-4 flex items-center justify-center">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="max-w-md w-full bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border-4 border-primary/20 text-center"
+      >
+        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-6">
+          <KeyRound className="w-8 h-8" />
+        </div>
+
+        <span className="inline-block px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-2">
+          Leni's FunPark
+        </span>
+
+        <h2 className="text-2xl sm:text-3xl font-black text-secondary mb-3">
           Acesso à Reserva
         </h2>
+        <p className="text-secondary/70 text-xs sm:text-sm font-medium mb-6">
+          Solicite o seu código de validação de 6 dígitos enviado por SMS/Email.
+        </p>
+
         {error && (
-          <div className="text-red-600 mb-4 bg-red-50 p-3 rounded border border-red-200 text-sm">
-            {error}
+          <div className="bg-rose-100 border-2 border-rose-300 text-rose-900 p-3.5 rounded-2xl text-xs font-bold mb-6 flex items-center justify-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         {step === 1 && (
           <button
+            type="button"
             onClick={requestOTP}
             disabled={loading}
-            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg w-full font-semibold"
+            className="w-full bg-primary hover:bg-secondary text-white py-4 px-6 rounded-2xl font-black text-base shadow-lg shadow-primary/20 transition-all uppercase tracking-wide cursor-pointer disabled:opacity-50"
           >
-            {loading ? "A processar..." : "Solicitar Código de Acesso"}
+            {loading ? "A solicitar código..." : "Solicitar Código de Acesso"}
           </button>
         )}
 
         {step === 2 && (
-          <div className="flex flex-col gap-4">
-            <input
-              type="text"
-              maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              placeholder="000000"
-              className="border-2 border-slate-300 p-3 rounded-lg text-center text-3xl tracking-widest"
-            />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary/60 mb-2">
+                Insira o Código (6 Dígitos)
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                className="w-full bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl p-4 text-center text-3xl font-black tracking-[0.3em] text-secondary outline-none transition-all"
+              />
+            </div>
+
             <button
+              type="button"
               onClick={validateOTP}
               disabled={loading || otp.length !== 6}
-              className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg w-full font-semibold"
+              className={`w-full py-4 px-6 rounded-2xl font-black text-base uppercase tracking-wide shadow-lg transition-all ${
+                loading || otp.length !== 6
+                  ? "bg-surface-alt text-secondary/40 border-2 border-surface cursor-not-allowed"
+                  : "bg-primary hover:bg-secondary text-white shadow-primary/20 cursor-pointer"
+              }`}
             >
-              {loading ? "A validar..." : "Validar Acesso"}
+              {loading ? "A validar código..." : "Validar e Entrar"}
             </button>
+
             <button
+              type="button"
               onClick={() => {
                 setStep(1);
                 setError("");
               }}
-              className="text-sm text-slate-500 hover:text-slate-800 underline mt-2"
+              className="text-xs font-bold text-secondary/60 hover:text-primary transition-colors block mx-auto pt-2"
             >
-              Não recebeu ou o código expirou? Pedir novamente.
+              Não recebeu o código? Clique para pedir novamente.
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
+
