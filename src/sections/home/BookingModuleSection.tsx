@@ -8,7 +8,8 @@ export interface BookingModuleSectionProps {
   availableTimes: string[];
   isFetchingTimes?: boolean;
   isSubmitting: boolean;
-  isSubmitted: boolean;
+  paymentDeadline: number | null;
+  onNewBooking: () => void;
   onDayClick: (day: number) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -21,22 +22,25 @@ export default function BookingModuleSection({
   availableTimes,
   isFetchingTimes = false,
   isSubmitting,
-  isSubmitted,
+  paymentDeadline,
+  onNewBooking,
   onDayClick,
   onPrevMonth,
   onNextMonth,
   onSubmit
 }: BookingModuleSectionProps) {
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (isSubmitted && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isSubmitted, timeLeft]);
+    if (paymentDeadline === null) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [paymentDeadline]);
+
+  useEffect(() => {
+    if (paymentDeadline !== null && now >= paymentDeadline) onNewBooking();
+  }, [now, paymentDeadline, onNewBooking]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -55,7 +59,8 @@ export default function BookingModuleSection({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (isSubmitted) {
+  if (paymentDeadline !== null) {
+    const timeLeft = Math.max(0, Math.ceil((paymentDeadline - now) / 1000));
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -91,7 +96,7 @@ export default function BookingModuleSection({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-secondary/70 uppercase">MB WAY</p>
-                  <p className="text-xl font-black text-secondary tracking-wide">911 855 496</p>
+                  <p className="text-xl font-black text-secondary tracking-wide">(+351) 911 855 496</p>
                 </div>
               </div>
 
@@ -111,6 +116,14 @@ export default function BookingModuleSection({
             <div className="mt-8 p-4 bg-primary/10 text-secondary text-sm rounded-xl font-medium border border-primary/20 text-center">
               Após o pagamento, envie o comprovativo pelo WhatsApp para validarmos a sua reserva de imediato!
             </div>
+
+            <button
+              type="button"
+              onClick={onNewBooking}
+              className="mt-6 text-sm font-medium text-secondary/50 hover:text-secondary underline underline-offset-4 transition-colors"
+            >
+              Fazer uma nova reserva
+            </button>
           </motion.div>
         </div>
       </section>

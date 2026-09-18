@@ -373,9 +373,9 @@ export default function Dashboard() {
                           {reserva.estado === 'PENDING_APPROVAL'
                             ? 'Pendente'
                             : reserva.estado === 'AWAITING_DEPOSIT'
-                            ? 'Aguarda Depósito'
+                            ? 'Aguarda Pagamento'
                             : reserva.estado === 'IN_PROGRESS'
-                            ? 'Em Curso'
+                            ? 'Em Preechimento'
                             : reserva.estado === 'REJECTED'
                             ? 'Cancelada'
                             : 'Concluída'}

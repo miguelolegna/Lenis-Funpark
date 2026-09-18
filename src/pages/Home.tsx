@@ -19,12 +19,24 @@ const statusMessageMap = {
   Fechado: 'O parque está encerrado.'
 } as const;
 
+const PAYMENT_DEADLINE_KEY = 'lenis_payment_deadline';
+const PAYMENT_WINDOW_MS = 10 * 60 * 1000;
+
+function readStoredDeadline(): number | null {
+  try {
+    const value = Number(localStorage.getItem(PAYMENT_DEADLINE_KEY));
+    return value > Date.now() ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const { status: parkStatus, loading: isParkStatusLoading } = useParkStatus();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [paymentDeadline, setPaymentDeadline] = useState<number | null>(readStoredDeadline);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [isFetchingTimes, setIsFetchingTimes] = useState(false);
 
@@ -113,13 +125,26 @@ export default function Home() {
         throw error;
       }
       
-      setIsSubmitted(true);
+      const deadline = Date.now() + PAYMENT_WINDOW_MS;
+      try {
+        localStorage.setItem(PAYMENT_DEADLINE_KEY, String(deadline));
+      } catch { /* sem storage: o card funciona só nesta visita */ }
+      setPaymentDeadline(deadline);
     } catch (err) {
       console.error("Erro na submissão da reserva:", err);
       alert("Ocorreu um erro ao comunicar com o servidor. Por favor, tente novamente ou contacte-nos por telefone.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNewBooking = () => {
+    try {
+      localStorage.removeItem(PAYMENT_DEADLINE_KEY);
+    } catch { /* ignorar */ }
+    setPaymentDeadline(null);
+    setSelectedDate(null);
+    setAvailableTimes([]);
   };
 
   return (
@@ -152,7 +177,8 @@ export default function Home() {
         availableTimes={availableTimes}
         isFetchingTimes={isFetchingTimes}
         isSubmitting={isSubmitting}
-        isSubmitted={isSubmitted}
+        paymentDeadline={paymentDeadline}
+        onNewBooking={handleNewBooking}
         onDayClick={handleDayClick}
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
