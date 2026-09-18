@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { pageVariants, pageTransition } from '../lib/animations';
 
@@ -19,13 +19,20 @@ const statusMessageMap = {
   Fechado: 'O parque está encerrado.'
 } as const;
 
-const PAYMENT_DEADLINE_KEY = 'lenis_payment_deadline';
+// Guarda o tempo restante (não a hora-limite) para o timer ficar pausado enquanto o site está fechado
+const PAYMENT_REMAINING_KEY = 'lenis_payment_remaining_ms';
 const PAYMENT_WINDOW_MS = 10 * 60 * 1000;
+
+function saveRemaining(ms: number) {
+  try {
+    localStorage.setItem(PAYMENT_REMAINING_KEY, String(ms));
+  } catch { /* sem storage: o card funciona só nesta visita */ }
+}
 
 function readStoredDeadline(): number | null {
   try {
-    const value = Number(localStorage.getItem(PAYMENT_DEADLINE_KEY));
-    return value > Date.now() ? value : null;
+    const remaining = Number(localStorage.getItem(PAYMENT_REMAINING_KEY));
+    return remaining > 0 ? Date.now() + remaining : null;
   } catch {
     return null;
   }
@@ -39,6 +46,12 @@ export default function Home() {
   const [paymentDeadline, setPaymentDeadline] = useState<number | null>(readStoredDeadline);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [isFetchingTimes, setIsFetchingTimes] = useState(false);
+
+  useEffect(() => {
+    if (paymentDeadline === null) return;
+    const timer = setInterval(() => saveRemaining(Math.max(0, paymentDeadline - Date.now())), 1000);
+    return () => clearInterval(timer);
+  }, [paymentDeadline]);
 
   const fetchAvailableTimes = async (date: Date) => {
     setIsFetchingTimes(true);
@@ -125,11 +138,8 @@ export default function Home() {
         throw error;
       }
       
-      const deadline = Date.now() + PAYMENT_WINDOW_MS;
-      try {
-        localStorage.setItem(PAYMENT_DEADLINE_KEY, String(deadline));
-      } catch { /* sem storage: o card funciona só nesta visita */ }
-      setPaymentDeadline(deadline);
+      saveRemaining(PAYMENT_WINDOW_MS);
+      setPaymentDeadline(Date.now() + PAYMENT_WINDOW_MS);
     } catch (err) {
       console.error("Erro na submissão da reserva:", err);
       alert("Ocorreu um erro ao comunicar com o servidor. Por favor, tente novamente ou contacte-nos por telefone.");
@@ -140,7 +150,7 @@ export default function Home() {
 
   const handleNewBooking = () => {
     try {
-      localStorage.removeItem(PAYMENT_DEADLINE_KEY);
+      localStorage.removeItem(PAYMENT_REMAINING_KEY);
     } catch { /* ignorar */ }
     setPaymentDeadline(null);
     setSelectedDate(null);
