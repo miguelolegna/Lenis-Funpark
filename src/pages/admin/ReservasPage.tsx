@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { nomeMetodoPagamento } from '../../lib/pagamentos';
+import { separarContacto } from '../../lib/contactos';
 import { supabase } from '../../lib/supabase';
 import ReservaAdminView from '../../sections/admin/dashboard/ReservaAdminView';
 
@@ -150,6 +151,60 @@ function recuoDoCard(colunaId: string, r: ReservaKanban & { notas_adicionais?: s
     default:
       return null;
   }
+}
+
+const nomesConvite: Record<string, string> = { lenis: 'Lénis', tematico: 'Temático' };
+
+interface ReservaLinha {
+  data_evento: string;
+  created_at?: string | null;
+  contacto_cliente?: string | null;
+  idade?: number | string | null;
+  metodo_pagamento?: string | null;
+  decoracao_tematica?: boolean | null;
+  decoracao?: boolean | null;
+  decoracao_tema_nome?: string | null;
+  inclui_bolo?: boolean | null;
+  bolo?: boolean | null;
+  tipo_convite?: string | null;
+  tema_convite?: string | null;
+  notas_adicionais?: string | null;
+  outros_servicos?: string | null;
+}
+
+// Dados de uma reserva já prontos para a tabela e para o CSV (sem os dados do menu)
+function dadosTabela(r: ReservaLinha) {
+  const dataEvento = new Date(r.data_evento);
+  const { telemovel, email } = separarContacto(r.contacto_cliente);
+  const decoracao = Boolean(r.decoracao_tematica ?? r.decoracao);
+  const temIdade = r.idade !== null && r.idade !== undefined && r.idade !== '';
+  const notas = r.notas_adicionais === NOTA_CONVITE_AVULSO ? 'Convite avulso' : r.notas_adicionais;
+  return {
+    data: dataEvento.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+    diaSemana: dataEvento.toLocaleDateString('pt-PT', { weekday: 'short' }),
+    hora: dataEvento.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
+    idade: temIdade ? `${r.idade} anos` : '',
+    telemovel,
+    email,
+    caucao: nomeMetodoPagamento(r.metodo_pagamento) ?? '',
+    decoracao,
+    temaDecoracao: decoracao ? r.decoracao_tema_nome || '' : '',
+    bolo: Boolean(r.inclui_bolo ?? r.bolo),
+    convite: nomesConvite[r.tipo_convite ?? ''] ?? 'Nenhum',
+    temaConvite: r.tipo_convite === 'tematico' ? r.tema_convite || '' : '',
+    observacoes: [notas, r.outros_servicos && `Outros serviços: ${r.outros_servicos}`].filter(Boolean).join('\n'),
+    pedidoEm: r.created_at
+      ? new Date(r.created_at).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })
+      : '',
+  };
+}
+
+function SimNao({ valor }: { valor: boolean }) {
+  return valor ? (
+    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">Sim</span>
+  ) : (
+    <span className="text-[11px] font-medium text-secondary/40">Não</span>
+  );
 }
 
 export default function ReservasPage() {
@@ -297,28 +352,48 @@ export default function ReservasPage() {
     }
 
     const headers = [
-      'ID',
-      'Data do Evento',
+      'Data da festa',
+      'Hora',
       'Aniversariante',
-      'Contacto',
+      'Idade',
       'Estado',
-      'Pacote / Menu',
+      'Telemóvel',
+      'Email',
       'Nº Crianças',
+      'Caução',
+      'Decoração',
+      'Tema da decoração',
+      'Pinturas faciais',
       'Bolo',
-      'Convite Digital',
+      'Convite',
+      'Tema do convite',
+      'Observações',
+      'Pedido feito a',
     ];
 
-    const rows = reservas.map((r) => [
-      `"${r.id}"`,
-      `"${new Date(r.data_evento).toLocaleString('pt-PT')}"`,
-      `"${(r.nome_aniversariante || '').replace(/"/g, '""')}"`,
-      `"${(r.contacto_cliente || '').replace(/"/g, '""')}"`,
-      `"${r.estado || ''}"`,
-      `"${(r.opcao_menu || r.menu_escolhido || '—').replace(/"/g, '""')}"`,
-      `"${r.num_criancas || '—'}"`,
-      `"${r.inclui_bolo || r.bolo ? 'Sim' : 'Não'}"`,
-      `"${r.tipo_convite || (r.convite_lenis ? 'Lénis' : 'Nenhum')}"`,
-    ]);
+    const celula = (valor: unknown) => `"${String(valor ?? '').replace(/"/g, '""')}"`;
+    const rows = reservas.map((r) => {
+      const d = dadosTabela(r);
+      return [
+        d.data,
+        d.hora,
+        r.nome_aniversariante || '',
+        d.idade,
+        estadoInfo[r.estado]?.label ?? r.estado,
+        d.telemovel,
+        d.email,
+        r.num_criancas ?? '',
+        d.caucao,
+        d.decoracao ? 'Sim' : 'Não',
+        d.temaDecoracao,
+        r.pinturas_faciais ? 'Sim' : 'Não',
+        d.bolo ? 'Sim' : 'Não',
+        d.convite,
+        d.temaConvite,
+        d.observacoes,
+        d.pedidoEm,
+      ].map(celula);
+    });
 
     const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((e) => e.join(';'))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -610,13 +685,13 @@ export default function ReservasPage() {
         )}
       </div>
 
-      {/* SECÇÃO 2: TABELA DETALHADA (SÓ LEITURA) */}
+      {/* SECÇÃO 2: TABELA DETALHADA (SÓ LEITURA) — tudo o que importa numa linha, sem botões */}
       <div className="bg-white rounded-3xl border-2 border-surface-alt shadow-sm overflow-hidden">
         <div className="p-6 border-b border-surface-alt bg-surface flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h2 className="text-xl font-black text-secondary">Tabela Global de Registos</h2>
             <p className="text-xs font-semibold text-secondary/60">
-              Visão consolidada para consulta, auditoria e conferência
+              Todos os dados de cada reserva numa só linha. Desliza para o lado para ver todas as colunas.
             </p>
           </div>
           <span className="text-xs font-bold text-secondary/60">
@@ -625,77 +700,77 @@ export default function ReservasPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
+          <table className="w-full text-left text-xs">
             <thead className="bg-white text-secondary/60 border-b border-surface-alt">
-              <tr>
-                <th className="p-4 font-bold">Data</th>
-                <th className="p-4 font-bold">Aniversariante</th>
-                <th className="p-4 font-bold">Contacto</th>
-                <th className="p-4 font-bold">Estado</th>
-                <th className="p-4 font-bold">Pacote / Menu</th>
-                <th className="p-4 font-bold text-center">Nº Crianças</th>
-                <th className="p-4 font-bold text-center">Bolo</th>
-                <th className="p-4 font-bold">Convite</th>
+              <tr className="whitespace-nowrap">
+                <th className="p-3 font-bold sticky left-0 bg-white z-10">Data da festa</th>
+                <th className="p-3 font-bold">Aniversariante</th>
+                <th className="p-3 font-bold">Estado</th>
+                <th className="p-3 font-bold">Telemóvel</th>
+                <th className="p-3 font-bold">Email</th>
+                <th className="p-3 font-bold text-center">Crianças</th>
+                <th className="p-3 font-bold">Caução</th>
+                <th className="p-3 font-bold">Decoração</th>
+                <th className="p-3 font-bold text-center">Pinturas faciais</th>
+                <th className="p-3 font-bold text-center">Bolo</th>
+                <th className="p-3 font-bold">Convite</th>
+                <th className="p-3 font-bold">Observações</th>
+                <th className="p-3 font-bold">Pedido feito a</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-alt">
               {reservasFiltradas.map((r) => {
-                const dataEvento = new Date(r.data_evento);
-                const temBolo = r.inclui_bolo || r.bolo;
+                const d = dadosTabela(r);
 
                 return (
-                  <tr key={r.id} className="hover:bg-surface-alt/50 transition-colors">
-                    <td className="p-4 font-bold text-secondary whitespace-nowrap">
-                      {dataEvento.toLocaleDateString('pt-PT', { dateStyle: 'short' })}{' '}
-                      <span className="text-secondary/50 font-normal">
-                        ({dataEvento.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })})
-                      </span>
+                  <tr key={r.id} className="group hover:bg-surface-alt/50 transition-colors align-top">
+                    <td className="p-3 font-bold text-secondary whitespace-nowrap sticky left-0 bg-white group-hover:bg-surface-alt z-10">
+                      <span className="block">{d.data}</span>
+                      <span className="text-secondary/50 font-semibold">{d.diaSemana} • {d.hora}</span>
                     </td>
-                    <td className="p-4 font-bold text-secondary">{r.nome_aniversariante || '—'}</td>
-                    <td className="p-4 text-secondary/80 font-medium">{r.contacto_cliente}</td>
-                    <td className="p-4">
+                    <td className="p-3 whitespace-nowrap">
+                      <span className="block font-bold text-secondary">{r.nome_aniversariante || '—'}</span>
+                      {d.idade && <span className="text-secondary/50 font-semibold">{d.idade}</span>}
+                    </td>
+                    <td className="p-3">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${
                           estadoInfo[r.estado]?.className ?? 'bg-surface-alt text-secondary'
                         }`}
                       >
                         {estadoInfo[r.estado]?.label ?? r.estado}
                       </span>
                     </td>
-                    <td className="p-4 font-medium text-secondary">
-                      {r.opcao_menu === 'com_menu' || r.menu_escolhido === 'MENU_13_50'
-                        ? 'Menu 13,50€'
-                        : r.opcao_menu === 'sem_menu' || r.menu_escolhido === 'MENU_11_50'
-                        ? 'Menu 11,50€'
-                        : '—'}
-                    </td>
-                    <td className="p-4 text-center font-bold text-secondary">
-                      {r.num_criancas || '—'}
-                    </td>
-                    <td className="p-4 text-center">
-                      {temBolo ? (
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                          Sim
-                        </span>
+                    <td className="p-3 text-secondary font-medium whitespace-nowrap">{d.telemovel || '—'}</td>
+                    <td className="p-3 text-secondary font-medium whitespace-nowrap">{d.email || '—'}</td>
+                    <td className="p-3 text-center font-bold text-secondary">{r.num_criancas || '—'}</td>
+                    <td className="p-3 text-secondary font-medium whitespace-nowrap">{d.caucao || '—'}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      {d.decoracao ? (
+                        <>
+                          <SimNao valor />
+                          {d.temaDecoracao && <span className="ml-1.5 font-semibold text-secondary">{d.temaDecoracao}</span>}
+                        </>
                       ) : (
-                        <span className="text-xs font-medium text-secondary/40">Não</span>
+                        <SimNao valor={false} />
                       )}
                     </td>
-                    <td className="p-4">
-                      <span className="text-xs font-semibold text-secondary">
-                        {r.tipo_convite === 'lenis'
-                          ? 'Lénis'
-                          : r.tipo_convite === 'tematico'
-                          ? 'Temático'
-                          : 'Nenhum'}
-                      </span>
+                    <td className="p-3 text-center"><SimNao valor={Boolean(r.pinturas_faciais)} /></td>
+                    <td className="p-3 text-center"><SimNao valor={d.bolo} /></td>
+                    <td className="p-3 text-secondary font-medium whitespace-nowrap">
+                      {d.convite}
+                      {d.temaConvite && <span className="text-secondary/60"> • {d.temaConvite}</span>}
                     </td>
+                    <td className="p-3 text-secondary/80 font-medium min-w-[16rem] max-w-[24rem] whitespace-pre-wrap">
+                      {d.observacoes || '—'}
+                    </td>
+                    <td className="p-3 text-secondary/60 font-medium whitespace-nowrap">{d.pedidoEm || '—'}</td>
                   </tr>
                 );
               })}
               {reservasFiltradas.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-secondary/50 font-medium">
+                  <td colSpan={13} className="p-8 text-center text-secondary/50 font-medium">
                     Nenhum registo encontrado com o filtro atual.
                   </td>
                 </tr>
