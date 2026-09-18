@@ -28,6 +28,38 @@ import {
 import { pageVariants, pageTransition } from '../lib/animations';
 import { supabase } from '../lib/supabase';
 
+const VALIDADE_CODIGO_MS = 5 * 60 * 1000;
+const ESPERA_REENVIO_MS = 60 * 1000;
+
+interface Verificacao {
+  id: string;
+  canal: 'email' | 'sms';
+  destino: string;
+  expiraEm: number;
+  reenviarApos: number;
+}
+
+async function chamarEnvioCodigo(body: Record<string, string>) {
+  const { data, error } = await supabase.functions.invoke('enviar_codigo_mensagem', { body });
+  if (error) {
+    let mensagem = 'Não foi possível enviar a mensagem. Tente novamente ou contacte-nos por email.';
+    let codigoErro: string = error.name;
+    try {
+      const payload = await (error as { context?: Response }).context?.json();
+      if (payload?.message) mensagem = payload.message;
+      if (payload?.error) codigoErro = payload.error;
+    } catch { /* manter a mensagem genérica */ }
+    console.error('[Contactos] Erro em enviar_codigo_mensagem:', codigoErro, error.message);
+    throw new Error(mensagem);
+  }
+  return data as { mensagem_id: string; canal: 'email' | 'sms'; destino: string };
+}
+
+function formatarTempo(ms: number) {
+  const s = Math.ceil(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 export default function Contactos() {
   const [searchParams] = useSearchParams();
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -56,6 +88,19 @@ export default function Contactos() {
   });
   const [formSent, setFormSent] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [armadilha, setArmadilha] = useState(''); // campo invisível: só os bots o preenchem
+  const [verificacao, setVerificacao] = useState<Verificacao | null>(null);
+  const [codigo, setCodigo] = useState('');
+  const [codigoErro, setCodigoErro] = useState<string | null>(null);
+  const [verificando, setVerificando] = useState(false);
+  const [reenviando, setReenviando] = useState(false);
+  const [agora, setAgora] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!verificacao) return;
+    const timer = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [verificacao]);
 
   // Sincronizar caso o utilizador navegue com novo parâmetro
   useEffect(() => {
@@ -77,41 +122,94 @@ export default function Contactos() {
     }
   };
 
+  // A mensagem só chega à equipa depois de o visitante confirmar o código enviado
+  // para o contacto preferido (email → email; WhatsApp/chamada → SMS)
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nome.trim() || !formData.contacto.trim() || !formData.mensagem.trim()) return;
 
     setSubmitting(true);
     setSubmitError(null);
-
-    let categoria: 'escola' | 'instituicao' | 'geral' = 'geral';
-    if (formData.motivo === 'Visitas Escolares') {
-      categoria = 'escola';
-    } else if (formData.motivo === 'Traga a sua Instituição') {
-      categoria = 'instituicao';
+    try {
+      const data = await chamarEnvioCodigo({
+        nome: formData.nome,
+        contacto: formData.contacto,
+        motivo: formData.motivo,
+        preferencia: formData.preferencia,
+        mensagem: formData.mensagem,
+        website: armadilha,
+      });
+      const agoraMs = Date.now();
+      setCodigo('');
+      setCodigoErro(null);
+      setAgora(agoraMs);
+      setVerificacao({
+        id: data.mensagem_id,
+        canal: data.canal,
+        destino: data.destino,
+        expiraEm: agoraMs + VALIDADE_CODIGO_MS,
+        reenviarApos: agoraMs + ESPERA_REENVIO_MS,
+      });
+    } catch (err) {
+      setSubmitError((err as Error).message);
+    } finally {
+      setSubmitting(false);
     }
+  };
 
-    const payload = {
-      nome: formData.nome.trim(),
-      contacto: formData.contacto.trim(),
-      motivo: formData.motivo,
-      categoria,
-      mensagem: formData.mensagem.trim(),
-      preferencia_resposta: formData.preferencia,
-      respondido: false,
-    };
+  const handleVerificarCodigo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verificacao || codigo.length !== 6) return;
 
-    // Sem .select(): os visitantes só podem inserir mensagens, não lê-las
-    const { error } = await supabase.from('mensagens_contacto').insert([payload]);
-    setSubmitting(false);
+    setVerificando(true);
+    setCodigoErro(null);
+    const { data, error } = await supabase.rpc('verificar_mensagem_contacto', {
+      p_mensagem_id: verificacao.id,
+      p_codigo: codigo,
+    });
+    setVerificando(false);
 
     if (error) {
-      console.error('[Contactos] Erro ao enviar mensagem:', error.code, error.message);
-      setSubmitError('Não foi possível enviar a mensagem. Tente novamente ou contacte-nos por email.');
+      console.error('[Contactos] Erro ao verificar o código:', error.code, error.message);
+      setCodigoErro('Não foi possível confirmar o código. Tente novamente.');
       return;
     }
-    setFormSent(true);
+    if (data === 'ok') {
+      setVerificacao(null);
+      setFormSent(true);
+    } else if (data === 'incorreto') {
+      setCodigoErro('Código incorreto. Confirme os 6 dígitos e tente novamente.');
+      setCodigo('');
+    } else {
+      // 'expirado' ou 'bloqueado': a mensagem foi descartada no servidor
+      setVerificacao(null);
+      setSubmitError(
+        data === 'bloqueado'
+          ? 'Demasiadas tentativas com o código errado. A mensagem foi descartada: envie-a novamente.'
+          : 'O código expirou e a mensagem foi descartada. Envie-a novamente.'
+      );
+    }
   };
+
+  const handleReenviarCodigo = async () => {
+    if (!verificacao) return;
+    setReenviando(true);
+    setCodigoErro(null);
+    try {
+      await chamarEnvioCodigo({ acao: 'reenviar', mensagem_id: verificacao.id });
+      setVerificacao({ ...verificacao, reenviarApos: Date.now() + ESPERA_REENVIO_MS });
+      setCodigo('');
+    } catch (err) {
+      setCodigoErro((err as Error).message);
+    } finally {
+      setReenviando(false);
+    }
+  };
+
+  const restanteMs = verificacao ? Math.max(0, verificacao.expiraEm - agora) : 0;
+  const expirou = verificacao !== null && restanteMs === 0;
+  const podeReenviar = verificacao !== null && agora >= verificacao.reenviarApos && !expirou;
+  const contactoPorEmail = formData.preferencia === 'email';
 
   const opcoesAssunto = [
     {
@@ -404,12 +502,95 @@ export default function Contactos() {
                   type="button"
                   onClick={() => {
                     setFormSent(false);
+                    setSubmitError(null);
                     setFormData({ nome: '', contacto: '', motivo: 'Festa de Aniversário', preferencia: 'whatsapp', mensagem: '' });
                   }}
                   className="bg-secondary text-white font-bold px-6 py-3 rounded-xl hover:bg-secondary/90 transition-colors text-sm cursor-pointer"
                 >
                   Enviar Nova Mensagem
                 </button>
+              </div>
+            ) : verificacao ? (
+              <div className="bg-surface p-6 sm:p-8 rounded-2xl border-2 border-primary/40">
+                <div className="w-14 h-14 rounded-full bg-primary/15 text-primary flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                {expirou ? (
+                  <div className="text-center">
+                    <h3 className="text-xl font-black text-secondary mb-2">O código expirou</h3>
+                    <p className="text-secondary/80 font-medium mb-6">
+                      A mensagem não foi confirmada a tempo e foi descartada. Os seus dados continuam preenchidos: pode enviá-la novamente.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setVerificacao(null)}
+                      className="bg-secondary text-white font-bold px-6 py-3 rounded-xl hover:bg-secondary/90 transition-colors text-sm cursor-pointer"
+                    >
+                      Voltar ao formulário
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleVerificarCodigo} className="text-center">
+                    <h3 className="text-xl font-black text-secondary mb-2">Confirme que é mesmo você</h3>
+                    <p className="text-secondary/80 font-medium mb-5">
+                      Enviámos um código de 6 dígitos {verificacao.canal === 'email' ? 'para o email' : 'por SMS para o número'}{' '}
+                      <strong className="text-secondary">{verificacao.destino}</strong>. A mensagem só é enviada depois de o confirmar.
+                    </p>
+                    <label htmlFor="codigo-verificacao" className="sr-only">Código de verificação</label>
+                    <input
+                      id="codigo-verificacao"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      autoFocus
+                      maxLength={6}
+                      value={codigo}
+                      onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      className="w-full max-w-[14rem] mx-auto block text-center text-3xl font-black tracking-[0.4em] px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-secondary"
+                    />
+                    <p className="text-sm font-semibold text-secondary/60 mt-3" aria-live="polite">
+                      Expira em {formatarTempo(restanteMs)}
+                    </p>
+
+                    {codigoErro && (
+                      <p role="alert" className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm font-medium text-red-700">
+                        {codigoErro}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={verificando || codigo.length !== 6}
+                      className="mt-5 w-full bg-accent hover:bg-accent-dark text-white font-black py-3.5 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <Check className="w-5 h-5" />
+                      <span>{verificando ? 'A confirmar...' : 'Confirmar e enviar mensagem'}</span>
+                    </button>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-bold">
+                      <button
+                        type="button"
+                        onClick={handleReenviarCodigo}
+                        disabled={!podeReenviar || reenviando}
+                        className="text-primary hover:underline disabled:text-secondary/40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        {reenviando
+                          ? 'A reenviar...'
+                          : podeReenviar
+                            ? 'Reenviar código'
+                            : `Reenviar código (${formatarTempo(verificacao.reenviarApos - agora)})`}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVerificacao(null)}
+                        className="text-secondary/70 hover:underline cursor-pointer"
+                      >
+                        Corrigir o contacto
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             ) : (
               <form onSubmit={handleFormSubmit} className="space-y-5">
@@ -429,15 +610,17 @@ export default function Contactos() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-secondary mb-2">
-                      Telemóvel ou Email *
+                    <label htmlFor="contacto" className="block text-sm font-bold text-secondary mb-2">
+                      {contactoPorEmail ? 'O seu Email *' : 'O seu Telemóvel *'}
                     </label>
                     <input
-                      type="text"
+                      id="contacto"
+                      type={contactoPorEmail ? 'email' : 'tel'}
+                      autoComplete={contactoPorEmail ? 'email' : 'tel'}
                       required
                       value={formData.contacto}
                       onChange={(e) => setFormData({ ...formData, contacto: e.target.value })}
-                      placeholder="Ex: 920 000 000 ou email@..."
+                      placeholder={contactoPorEmail ? 'Ex: maria@email.com' : 'Ex: 920 000 000'}
                       className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-secondary font-medium"
                     />
                   </div>
@@ -529,6 +712,25 @@ export default function Contactos() {
                       );
                     })}
                   </div>
+                  <p className="text-xs text-secondary/60 font-medium mt-2">
+                    {contactoPorEmail
+                      ? 'Vamos enviar um código para o seu email para confirmar o contacto.'
+                      : 'Vamos enviar um código por SMS para o seu telemóvel para confirmar o contacto.'}
+                  </p>
+                </div>
+
+                {/* Armadilha para bots: invisível para pessoas e leitores de ecrã */}
+                <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+                  <label>
+                    Website
+                    <input
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={armadilha}
+                      onChange={(e) => setArmadilha(e.target.value)}
+                    />
+                  </label>
                 </div>
 
                 <div>
@@ -557,7 +759,7 @@ export default function Contactos() {
                   className="w-full bg-accent hover:bg-accent-dark text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg cursor-pointer disabled:opacity-60"
                 >
                   <Send className="w-5 h-5" />
-                  <span>{submitting ? 'A enviar mensagem...' : 'Enviar Mensagem'}</span>
+                  <span>{submitting ? 'A enviar código...' : 'Enviar Mensagem'}</span>
                 </button>
 
                 <p className="text-xs text-center text-secondary/50 font-medium">

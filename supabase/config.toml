@@ -18,6 +18,11 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/manage_admins/index.ts"
 
+[functions.enviar_codigo_mensagem]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/enviar_codigo_mensagem/index.ts"
+
 [auth.email.template.magic_link]
 subject = "Código de Acesso Admin - Lenis Funpark"
 content_path = "./supabase/templates/magic_link.html"
