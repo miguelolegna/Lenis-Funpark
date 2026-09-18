@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export type SemaforoStatus = 'Livre' | 'Moderado' | 'Cheio' | 'Fechado';
+export type SemaforoStatus = 'Livre' | 'Moderado' | 'Cheio' | 'Reservado' | 'Fechado';
 
 export interface SemaforoWidgetSectionProps {
   status: SemaforoStatus;
@@ -11,6 +11,7 @@ const statusTextColor: Record<SemaforoStatus, string> = {
   Livre: 'text-primary',
   Moderado: 'text-amber-600',
   Cheio: 'text-red-600',
+  Reservado: 'text-violet-600',
   Fechado: 'text-secondary/70'
 };
 

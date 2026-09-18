@@ -12,11 +12,13 @@ import { supabase } from '../lib/supabase';
 import { buildLisbonDateTime } from '../lib/dateUtils';
 import { obterHorariosDisponiveis, obterResumoDia, type ResumoDia } from '../lib/horarios';
 import { useParkStatus } from '../hooks/useParkStatus';
+import { eMetodoPagamento, type MetodoPagamento } from '../lib/pagamentos';
 
 const statusMessageMap = {
   Livre: 'Venha brincar! Temos muito espaço.',
   Moderado: 'O parque está com alguma afluência.',
   Cheio: 'Lotação Completa. Vizite-nos mais tarde.',
+  Reservado: 'O parque está reservado para uma festa privada. Vizite-nos mais tarde.',
   Fechado: 'O parque está encerrado.'
 } as const;
 
@@ -28,6 +30,28 @@ function saveRemaining(ms: number) {
   try {
     localStorage.setItem(PAYMENT_REMAINING_KEY, String(ms));
   } catch { /* sem storage: o card funciona só nesta visita */ }
+}
+
+// Método escolhido no pedido. Em dinheiro não há timer: o cliente tem 24h para ir ao parque,
+// e o aviso fica visível até lá (hora-limite absoluta, não pausa com o site fechado).
+const PAYMENT_METHOD_KEY = 'lenis_payment_method';
+const CASH_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function saveMethod(metodo: MetodoPagamento, dinheiroAte?: number) {
+  try {
+    localStorage.setItem(PAYMENT_METHOD_KEY, JSON.stringify({ metodo, dinheiroAte }));
+  } catch { /* sem storage */ }
+}
+
+function readStoredMethod(): MetodoPagamento | null {
+  try {
+    const guardado = JSON.parse(localStorage.getItem(PAYMENT_METHOD_KEY) || 'null');
+    if (!eMetodoPagamento(guardado?.metodo)) return null;
+    if (guardado.metodo === 'dinheiro' && !(Number(guardado.dinheiroAte) > Date.now())) return null;
+    return guardado.metodo;
+  } catch {
+    return null;
+  }
 }
 
 function readStoredDeadline(): number | null {
@@ -45,6 +69,7 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDeadline, setPaymentDeadline] = useState<number | null>(readStoredDeadline);
+  const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento | null>(readStoredMethod);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [isFetchingTimes, setIsFetchingTimes] = useState(false);
   const [resumoDia, setResumoDia] = useState<ResumoDia | null>(null);
@@ -110,6 +135,8 @@ export default function Home() {
       const contactInfo = `Tel: ${formData.get('client_phone')} | Email: ${formData.get('client_email')}`;
       const notas = formData.get('notes') as string;
       const numPessoas = formData.get('guests') as string;
+      const metodo = formData.get('payment_method');
+      if (!eMetodoPagamento(metodo)) return;
 
       const { error } = await supabase.from('reservas').insert([
         {
@@ -118,7 +145,8 @@ export default function Home() {
           nome_aniversariante: formData.get('client_name') as string,
           num_criancas: parseInt(numPessoas, 10),
           notas_adicionais: notas,
-          tipo_convite: 'lenis'
+          tipo_convite: 'lenis',
+          metodo_pagamento: metodo
         }
       ]);
 
@@ -132,8 +160,14 @@ export default function Home() {
         throw error;
       }
       
-      saveRemaining(PAYMENT_WINDOW_MS);
-      setPaymentDeadline(Date.now() + PAYMENT_WINDOW_MS);
+      setMetodoPagamento(metodo);
+      if (metodo === 'dinheiro') {
+        saveMethod(metodo, Date.now() + CASH_WINDOW_MS);
+      } else {
+        saveMethod(metodo);
+        saveRemaining(PAYMENT_WINDOW_MS);
+        setPaymentDeadline(Date.now() + PAYMENT_WINDOW_MS);
+      }
     } catch (err) {
       console.error("Erro na submissão da reserva:", err);
       alert("Ocorreu um erro ao comunicar com o servidor. Por favor, tente novamente ou contacte-nos por telefone.");
@@ -145,8 +179,10 @@ export default function Home() {
   const handleNewBooking = () => {
     try {
       localStorage.removeItem(PAYMENT_REMAINING_KEY);
+      localStorage.removeItem(PAYMENT_METHOD_KEY);
     } catch { /* ignorar */ }
     setPaymentDeadline(null);
+    setMetodoPagamento(null);
     setSelectedDate(null);
     setAvailableTimes([]);
     setResumoDia(null);
@@ -184,6 +220,7 @@ export default function Home() {
         resumoDia={resumoDia}
         isSubmitting={isSubmitting}
         paymentDeadline={paymentDeadline}
+        metodoPagamento={metodoPagamento}
         onNewBooking={handleNewBooking}
         onDayClick={handleDayClick}
         onPrevMonth={handlePrevMonth}

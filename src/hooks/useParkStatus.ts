@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-export type ParkStatus = 'Livre' | 'Moderado' | 'Cheio' | 'Fechado';
+export type ParkStatus = 'Livre' | 'Moderado' | 'Cheio' | 'Reservado' | 'Fechado';
 
 export interface UseParkStatusResult {
   status: ParkStatus;
@@ -9,8 +9,8 @@ export interface UseParkStatusResult {
 }
 
 /**
- * Converte o valor em maiúsculas da BD ('LIVRE', 'MODERADO', 'CHEIO', 'FECHADO')
- * para a capitalização esperada no frontend ('Livre' | 'Moderado' | 'Cheio' | 'Fechado').
+ * Converte o valor em maiúsculas da BD ('LIVRE', 'MODERADO', 'CHEIO', 'RESERVADO', 'FECHADO')
+ * para a capitalização esperada no frontend.
  */
 function parseParkStatus(rawEstado?: string | null): ParkStatus {
   switch (rawEstado?.toUpperCase()) {
@@ -18,6 +18,8 @@ function parseParkStatus(rawEstado?: string | null): ParkStatus {
       return 'Moderado';
     case 'CHEIO':
       return 'Cheio';
+    case 'RESERVADO':
+      return 'Reservado';
     case 'FECHADO':
       return 'Fechado';
     case 'LIVRE':

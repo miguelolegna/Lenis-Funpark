@@ -127,6 +127,8 @@ export default function Dashboard() {
         return 'text-amber-700 bg-amber-100 border-amber-300';
       case 'Cheio':
         return 'text-red-700 bg-red-100 border-red-300';
+      case 'Reservado':
+        return 'text-violet-700 bg-violet-100 border-violet-300';
       case 'Fechado':
       default:
         return 'text-secondary/70 bg-gray-100 border-gray-300';

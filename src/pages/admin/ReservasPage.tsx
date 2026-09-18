@@ -14,8 +14,10 @@ import {
   Link2,
   Check,
   Eraser,
+  Wallet,
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
+import { nomeMetodoPagamento } from '../../lib/pagamentos';
 import { supabase } from '../../lib/supabase';
 import ReservaAdminView from '../../sections/admin/dashboard/ReservaAdminView';
 
@@ -410,6 +412,12 @@ export default function ReservasPage() {
                                     <Users className="w-3 h-3 text-secondary/50 flex-shrink-0" />
                                     <span>{reserva.num_criancas || '—'} crianças</span>
                                   </p>
+                                  {nomeMetodoPagamento(reserva.metodo_pagamento) && (
+                                    <p className="flex items-center gap-1">
+                                      <Wallet className="w-3 h-3 text-secondary/50 flex-shrink-0" />
+                                      <span>Caução: {nomeMetodoPagamento(reserva.metodo_pagamento)}</span>
+                                    </p>
+                                  )}
                                 </div>
                               </div>
 

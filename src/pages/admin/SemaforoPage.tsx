@@ -51,7 +51,7 @@ export default function SemaforoPage() {
     void fetchStatusMeta();
   }, [fetchStatusMeta, parkStatus]);
 
-  const handleUpdateStatus = async (novoEstadoDB: 'LIVRE' | 'MODERADO' | 'CHEIO' | 'FECHADO') => {
+  const handleUpdateStatus = async (novoEstadoDB: 'LIVRE' | 'MODERADO' | 'CHEIO' | 'RESERVADO' | 'FECHADO') => {
     setUpdating(true);
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -219,6 +219,23 @@ export default function SemaforoPage() {
             )}
           </button>
 
+          {/* Botão Reservado: o parque está ocupado por uma festa */}
+          <button
+            type="button"
+            aria-pressed={parkStatus === 'Reservado'}
+            aria-label="Definir parque como Reservado para uma festa"
+            disabled={updating}
+            onClick={() => handleUpdateStatus('RESERVADO')}
+            title="Há uma festa no parque"
+            className={`w-full py-2.5 px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer text-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:outline-none ${
+              parkStatus === 'Reservado'
+                ? 'bg-violet-500 text-white shadow-[0_0_20px_#8b5cf6] ring-2 ring-violet-300'
+                : 'bg-violet-500/25 text-white/60 hover:bg-violet-500/50 hover:text-white'
+            }`}
+          >
+            Reservado
+          </button>
+
           {/* Botão Fechado */}
           <button
             type="button"
@@ -249,6 +266,8 @@ export default function SemaforoPage() {
                   ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                   : parkStatus === 'Cheio'
                   ? 'bg-red-100 text-red-800 border border-red-300'
+                  : parkStatus === 'Reservado'
+                  ? 'bg-violet-100 text-violet-800 border border-violet-300'
                   : 'bg-gray-100 text-secondary border border-gray-300'
               }`}
             >
