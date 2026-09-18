@@ -61,8 +61,8 @@ export default function Dashboard() {
     const pending = reservas.filter((r) => r.estado === 'PENDING_APPROVAL').length;
     const awaitingDeposit = reservas.filter((r) => r.estado === 'AWAITING_DEPOSIT').length;
     const inProgress = reservas.filter((r) => r.estado === 'IN_PROGRESS').length;
-    const completed = reservas.filter((r) => r.estado === 'COMPLETED' || r.estado === 'LOCKED').length;
-    const rejected = reservas.filter((r) => r.estado === 'REJECTED').length;
+    const completed = reservas.filter((r) => r.estado === 'COMPLETED').length;
+    const rejected = reservas.filter((r) => r.estado === 'REJECTED' || r.estado === 'CANCELLED').length;
 
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -94,7 +94,7 @@ export default function Dashboard() {
     today.setHours(0, 0, 0, 0);
 
     const upcoming = reservas
-      .filter((r) => new Date(r.data_evento) >= today && r.estado !== 'REJECTED')
+      .filter((r) => new Date(r.data_evento) >= today && r.estado !== 'REJECTED' && r.estado !== 'CANCELLED')
       .sort((a, b) => new Date(a.data_evento).getTime() - new Date(b.data_evento).getTime())
       .slice(0, 3);
 
@@ -365,7 +365,9 @@ export default function Dashboard() {
                               ? 'bg-blue-100 text-blue-700'
                               : reserva.estado === 'IN_PROGRESS'
                               ? 'bg-emerald-100 text-emerald-800'
-                              : reserva.estado === 'REJECTED'
+                              : reserva.estado === 'LOCKED'
+                              ? 'bg-violet-100 text-violet-800'
+                              : reserva.estado === 'REJECTED' || reserva.estado === 'CANCELLED'
                               ? 'bg-rose-100 text-rose-700'
                               : 'bg-surface text-secondary'
                           }`}
@@ -375,8 +377,10 @@ export default function Dashboard() {
                             : reserva.estado === 'AWAITING_DEPOSIT'
                             ? 'Aguarda Pagamento'
                             : reserva.estado === 'IN_PROGRESS'
-                            ? 'Em Preechimento'
-                            : reserva.estado === 'REJECTED'
+                            ? 'Em Preenchimento'
+                            : reserva.estado === 'LOCKED'
+                            ? 'Festa em Curso'
+                            : reserva.estado === 'REJECTED' || reserva.estado === 'CANCELLED'
                             ? 'Cancelada'
                             : 'Concluída'}
                         </span> 

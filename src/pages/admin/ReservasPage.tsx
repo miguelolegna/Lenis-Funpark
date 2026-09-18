@@ -10,52 +10,91 @@ import {
   Clock,
   Phone,
   Users,
+  Trash2,
+  Link2,
+  Check,
+  Eraser,
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
 import ReservaAdminView from '../../sections/admin/dashboard/ReservaAdminView';
 
-type EstadoKey = 'PENDING_APPROVAL' | 'AWAITING_DEPOSIT' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED';
+type EstadoKey = 'PENDING_APPROVAL' | 'AWAITING_DEPOSIT' | 'IN_PROGRESS' | 'LOCKED' | 'COMPLETED' | 'CANCELLED';
 
 interface ColunaKanban {
   id: EstadoKey;
+  estados: string[];
   titulo: string;
   badgeClass: string;
   headerBg: string;
+  limpavel?: boolean;
 }
 
 const colunasKanban: ColunaKanban[] = [
   {
     id: 'PENDING_APPROVAL',
+    estados: ['PENDING_APPROVAL'],
     titulo: 'Pendente',
     badgeClass: 'bg-orange-100 text-orange-800 border-orange-200',
     headerBg: 'border-t-4 border-orange-500',
   },
   {
     id: 'AWAITING_DEPOSIT',
-    titulo: 'Aguarda Depósito',
+    estados: ['AWAITING_DEPOSIT'],
+    titulo: 'A aguardar pagamento',
     badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
     headerBg: 'border-t-4 border-blue-500',
   },
   {
     id: 'IN_PROGRESS',
-    titulo: 'Em Curso',
+    estados: ['IN_PROGRESS'],
+    titulo: 'Em preenchimento',
     badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
     headerBg: 'border-t-4 border-emerald-500',
   },
   {
-    id: 'COMPLETED',
-    titulo: 'Concluída',
-    badgeClass: 'bg-teal-100 text-teal-800 border-teal-200',
-    headerBg: 'border-t-4 border-teal-600',
+    id: 'LOCKED',
+    estados: ['LOCKED'],
+    titulo: 'Festa em curso',
+    badgeClass: 'bg-violet-100 text-violet-800 border-violet-200',
+    headerBg: 'border-t-4 border-violet-500',
   },
   {
-    id: 'REJECTED',
-    titulo: 'Cancelada / Recusada',
+    id: 'COMPLETED',
+    estados: ['COMPLETED'],
+    titulo: 'Concluído',
+    badgeClass: 'bg-teal-100 text-teal-800 border-teal-200',
+    headerBg: 'border-t-4 border-teal-600',
+    limpavel: true,
+  },
+  {
+    id: 'CANCELLED',
+    estados: ['CANCELLED', 'REJECTED'],
+    titulo: 'Canceladas',
     badgeClass: 'bg-rose-100 text-rose-800 border-rose-200',
     headerBg: 'border-t-4 border-rose-500',
+    limpavel: true,
   },
 ];
+
+const estadoInfo: Record<string, { label: string; className: string }> = {
+  PENDING_APPROVAL: { label: 'Pendente', className: 'bg-orange-100 text-orange-700' },
+  AWAITING_DEPOSIT: { label: 'A aguardar pagamento', className: 'bg-blue-100 text-blue-700' },
+  IN_PROGRESS: { label: 'Em preenchimento', className: 'bg-emerald-100 text-emerald-800' },
+  LOCKED: { label: 'Festa em curso', className: 'bg-violet-100 text-violet-800' },
+  COMPLETED: { label: 'Concluído', className: 'bg-teal-100 text-teal-800' },
+  CANCELLED: { label: 'Cancelada', className: 'bg-rose-100 text-rose-700' },
+  REJECTED: { label: 'Recusada', className: 'bg-rose-100 text-rose-700' },
+};
+
+const ESTADOS_ATIVOS = ['PENDING_APPROVAL', 'AWAITING_DEPOSIT', 'IN_PROGRESS', 'LOCKED'];
+
+interface ReservaKanban {
+  id: string;
+  estado: string;
+  nome_aniversariante?: string | null;
+  reserva_tokens?: { token_opaco: string }[];
+}
 
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<any[]>([]);
@@ -64,12 +103,12 @@ export default function ReservasPage() {
   const [reservaModal, setReservaModal] = useState<any>(null);
   const [filtroTexto, setFiltroTexto] = useState('');
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const fetchReservas = async () => {
-    setLoading(true);
     const { data, error } = await supabase
       .from('reservas')
-      .select('*')
+      .select('*, reserva_tokens(token_opaco)')
       .order('data_evento', { ascending: true });
 
     if (error) {
@@ -101,16 +140,54 @@ export default function ReservasPage() {
     }
   };
 
-  // Reativar B2C
-  const handleReativarToken = async (id: string) => {
-    if (!window.confirm('Tem a certeza que deseja reativar o acesso de edição para o cliente?')) return;
+  const handleCancelar = async (reserva: ReservaKanban) => {
+    const nome = reserva.nome_aniversariante || 'sem nome';
+    if (!window.confirm(`Cancelar a reserva de "${nome}"? O link do formulário deixa de funcionar.`)) return;
+    await handleUpdateEstado(reserva.id, 'CANCELLED');
+  };
+
+  const handleReabrirFormulario = async (id: string) => {
+    if (!window.confirm('Reabrir o formulário? A reserva volta a "Em preenchimento" e o cliente pode voltar a editar e submeter.')) return;
     setActionError(null);
-    const { error } = await supabase.rpc('reativar_token_b2c', { p_reserva_id: id });
+    const { error } = await supabase.rpc('reabrir_formulario_b2c', { p_reserva_id: id });
     if (error) {
-      console.error('Erro ao reativar token:', error);
-      setActionError('Erro ao reativar acesso B2C: ' + error.message);
+      console.error('Erro ao reabrir formulário:', error);
+      setActionError('Erro ao reabrir formulário: ' + error.message);
     } else {
-      alert('Acesso B2C reativado com sucesso. O cliente já pode voltar a editar.');
+      fetchReservas();
+    }
+  };
+
+  const handleCopiarLink = async (reserva: ReservaKanban) => {
+    setActionError(null);
+    const token = reserva.reserva_tokens?.[0]?.token_opaco;
+    if (!token) {
+      setActionError('Esta reserva ainda não tem link. Recarrega a página e tenta de novo.');
+      return;
+    }
+    const link = `${window.location.origin}/reserva/${token}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(reserva.id);
+      setTimeout(() => setCopiedId((atual) => (atual === reserva.id ? null : atual)), 2000);
+    } catch {
+      setActionError(`Não foi possível copiar automaticamente. Link: ${link}`);
+    }
+  };
+
+  const handleLimparColuna = async (coluna: ColunaKanban, reservasDaColuna: ReservaKanban[]) => {
+    const total = reservasDaColuna.length;
+    const texto = total === 1 ? '1 reserva' : `${total} reservas`;
+    if (!window.confirm(`Apagar definitivamente ${texto} da coluna "${coluna.titulo}"? Esta ação não pode ser desfeita.`)) return;
+    setActionError(null);
+    const { error } = await supabase
+      .from('reservas')
+      .delete()
+      .in('id', reservasDaColuna.map((r) => r.id));
+    if (error) {
+      console.error('Erro ao limpar coluna:', error);
+      setActionError('Erro ao apagar reservas: ' + error.message);
+    } else {
       fetchReservas();
     }
   };
@@ -125,15 +202,22 @@ export default function ReservasPage() {
     e.preventDefault();
   };
 
-  const handleDrop = async (e: React.DragEvent, colunaEstado: EstadoKey) => {
+  const handleDrop = async (e: React.DragEvent, coluna: ColunaKanban) => {
     e.preventDefault();
     const id = e.dataTransfer.getData('text/plain');
     setDraggingId(null);
     if (!id) return;
 
     const reserva = reservas.find((r) => r.id === id);
-    if (reserva && reserva.estado !== colunaEstado) {
-      await handleUpdateEstado(id, colunaEstado);
+    if (!reserva || coluna.estados.includes(reserva.estado)) return;
+
+    if (coluna.id === 'CANCELLED') {
+      await handleCancelar(reserva);
+    } else if (coluna.id === 'IN_PROGRESS' && reserva.estado === 'LOCKED') {
+      // A base de dados devolve a Festa em curso qualquer formulário já submetido; só reabrindo volta
+      await handleReabrirFormulario(reserva.id);
+    } else {
+      await handleUpdateEstado(id, coluna.id);
     }
   };
 
@@ -263,31 +347,39 @@ export default function ReservasPage() {
             A carregar quadro de reservas...
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 pb-2">
             {colunasKanban.map((coluna) => {
-              const reservasDaColuna = reservasFiltradas.filter((r) => {
-                if (coluna.id === 'COMPLETED') {
-                  return r.estado === 'COMPLETED' || r.estado === 'LOCKED';
-                }
-                return r.estado === coluna.id;
-              });
+              const reservasDaColuna = reservasFiltradas.filter((r) => coluna.estados.includes(r.estado));
 
               return (
                 <div
                   key={coluna.id}
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, coluna.id)}
+                  onDrop={(e) => handleDrop(e, coluna)}
                   className={`bg-white rounded-3xl p-4 border-2 border-surface-alt flex flex-col justify-between min-h-[420px] shadow-sm ${coluna.headerBg}`}
                 >
                   <div>
                     {/* Header da Coluna */}
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-surface-alt">
+                    <div className="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-surface-alt">
                       <h3 className="font-extrabold text-sm text-secondary truncate" title={coluna.titulo}>
                         {coluna.titulo}
                       </h3>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-black border ${coluna.badgeClass}`}>
-                        {reservasDaColuna.length}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {coluna.limpavel && reservasDaColuna.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleLimparColuna(coluna, reservasDaColuna)}
+                            className="p-1 rounded-md text-secondary/40 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title={`Limpar coluna "${coluna.titulo}" (apaga definitivamente)`}
+                            aria-label={`Limpar coluna ${coluna.titulo}`}
+                          >
+                            <Eraser className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-black border ${coluna.badgeClass}`}>
+                          {reservasDaColuna.length}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Lista de Cards da Coluna */}
@@ -299,8 +391,9 @@ export default function ReservasPage() {
                       ) : (
                         reservasDaColuna.map((reserva) => {
                           const dataEvento = new Date(reserva.data_evento);
-                          const isCompletedOrLocked =
-                            reserva.estado === 'COMPLETED' || reserva.estado === 'LOCKED';
+                          const isAtiva = ESTADOS_ATIVOS.includes(reserva.estado);
+                          const mostraConvite =
+                            (reserva.estado === 'LOCKED' || reserva.estado === 'COMPLETED') && reserva.convite_token;
 
                           return (
                             <div
@@ -367,38 +460,71 @@ export default function ReservasPage() {
                                   </button>
                                 )}
 
-                                <button
-                                  type="button"
-                                  onClick={() => setReservaModal(reserva)}
-                                  className="w-full py-1 px-2 bg-white hover:bg-surface-alt border border-surface-alt text-secondary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                                >
-                                  <Eye className="w-3 h-3 text-secondary/60" />
-                                  <span>Ver Formulário</span>
-                                </button>
+                                {reserva.estado === 'IN_PROGRESS' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopiarLink(reserva)}
+                                    className="w-full py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                    title="Copiar o link do formulário para enviar ao cliente"
+                                  >
+                                    {copiedId === reserva.id ? (
+                                      <>
+                                        <Check className="w-3 h-3" />
+                                        <span>Link copiado!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Link2 className="w-3 h-3" />
+                                        <span>Copiar link</span>
+                                      </>
+                                    )}
+                                  </button>
+                                )}
 
-                                {isCompletedOrLocked && (
-                                  <div className="flex items-center gap-1">
+                                {reserva.estado === 'LOCKED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleReabrirFormulario(reserva.id)}
+                                    className="w-full py-1.5 px-2 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                    title="Devolve a reserva a Em preenchimento para o cliente voltar a editar"
+                                  >
+                                    <RotateCcw className="w-3 h-3" />
+                                    <span>Reabrir formulário</span>
+                                  </button>
+                                )}
+
+                                {mostraConvite && (
+                                  <a
+                                    href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/convite_digital?token=${reserva.convite_token}`}
+                                    download
+                                    className="w-full py-1 px-2 bg-accent hover:bg-accent/80 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                                    title="Transferir convite digital"
+                                  >
+                                    Convite
+                                  </a>
+                                )}
+
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setReservaModal(reserva)}
+                                    className="flex-1 py-1 px-2 bg-white hover:bg-surface-alt border border-surface-alt text-secondary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                  >
+                                    <Eye className="w-3 h-3 text-secondary/60" />
+                                    <span>Ver Formulário</span>
+                                  </button>
+                                  {isAtiva && (
                                     <button
                                       type="button"
-                                      onClick={() => handleReativarToken(reserva.id)}
-                                      className="flex-1 py-1 px-1 bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] font-bold rounded-lg transition-colors flex items-center justify-center gap-0.5 cursor-pointer"
-                                      title="Reativar acesso do cliente"
+                                      onClick={() => handleCancelar(reserva)}
+                                      className="p-1.5 bg-white hover:bg-rose-50 border border-surface-alt hover:border-rose-200 text-secondary/50 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                      title="Cancelar reserva"
+                                      aria-label={`Cancelar reserva de ${reserva.nome_aniversariante || 'sem nome'}`}
                                     >
-                                      <RotateCcw className="w-2.5 h-2.5" />
-                                      <span>Reativar</span>
+                                      <Trash2 className="w-3.5 h-3.5" />
                                     </button>
-                                    {reserva.convite_token && (
-                                      <a
-                                        href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/convite_digital?token=${reserva.convite_token}`}
-                                        download
-                                        className="flex-1 py-1 px-1 bg-accent hover:bg-accent/80 text-white text-[10px] font-bold rounded-lg transition-colors text-center truncate cursor-pointer"
-                                        title="Transferir convite digital"
-                                      >
-                                        Convite
-                                      </a>
-                                    )}
-                                  </div>
-                                )}
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
@@ -458,19 +584,11 @@ export default function ReservasPage() {
                     <td className="p-4 text-secondary/80 font-medium">{r.contacto_cliente}</td>
                     <td className="p-4">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                          r.estado === 'PENDING_APPROVAL'
-                            ? 'bg-orange-100 text-orange-700'
-                            : r.estado === 'AWAITING_DEPOSIT'
-                            ? 'bg-blue-100 text-blue-700'
-                            : r.estado === 'IN_PROGRESS'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : r.estado === 'REJECTED'
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'bg-teal-100 text-teal-800'
+                        className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                          estadoInfo[r.estado]?.className ?? 'bg-surface-alt text-secondary'
                         }`}
                       >
-                        {r.estado}
+                        {estadoInfo[r.estado]?.label ?? r.estado}
                       </span>
                     </td>
                     <td className="p-4 font-medium text-secondary">
