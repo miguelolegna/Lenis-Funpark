@@ -1,7 +1,7 @@
 // Formulário de contacto: grava a mensagem por verificar e envia um código de 6 dígitos
-// para o contacto preferido (email pelo Resend, telemóvel por SMS pelo Closum).
-// A mensagem só chega ao admin quando o código for validado (RPC verificar_mensagem_contacto);
-// se não for validada em 5 minutos, é apagada (cron limpar_mensagens_por_verificar).
+// para o email do visitante (Resend). A mensagem só chega ao admin quando o código for
+// validado (RPC verificar_mensagem_contacto); se não for validada em 5 minutos, é apagada
+// (cron limpar_mensagens_por_verificar).
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -11,16 +11,12 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const CLOSUM_API_KEY = Deno.env.get("CLOSUM_API_KEY");
-const CLOSUM_SENDER = Deno.env.get("CLOSUM_SENDER") ?? "LenisPark";
 
 const VALIDADE_MS = 5 * 60 * 1000;
 const MAX_POR_IP_HORA = 5;
-const MAX_POR_CONTACTO_HORA = 3;
+const MAX_POR_EMAIL_HORA = 3;
 const MAX_ENVIOS = 3;
 const ESPERA_REENVIO_MS = 60 * 1000;
-
-type Canal = "email" | "sms";
 
 class ErroPedido extends Error {
   constructor(public codigo: string, message: string, public status = 400) {
@@ -39,7 +35,8 @@ function texto(valor: unknown, max: number): string {
   return typeof valor === "string" ? valor.trim().slice(0, max) : "";
 }
 
-// Aceita 912345678, +351 912 345 678, 00351912345678 ou números internacionais com indicativo
+// Aceita 912345678, +351 912 345 678, 00351912345678 ou números internacionais com indicativo.
+// Devolve no formato +351912345678, que é como o admin o lê e usa no WhatsApp.
 function normalizarTelemovel(valor: string): string | null {
   let digitos = valor.replace(/[\s().-]/g, "");
   if (digitos.startsWith("+")) digitos = digitos.slice(1);
@@ -48,7 +45,7 @@ function normalizarTelemovel(valor: string): string | null {
 
   if (!/^\d{9,15}$/.test(digitos)) return null;
   if (digitos.startsWith("351") && !/^3519\d{8}$/.test(digitos)) return null;
-  return digitos;
+  return `+${digitos}`;
 }
 
 function validarEmail(valor: string): string | null {
@@ -56,15 +53,12 @@ function validarEmail(valor: string): string | null {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
 }
 
-function mascarar(destino: string, canal: Canal): string {
-  if (canal === "email") {
-    const [utilizador, dominio] = destino.split("@");
-    return `${utilizador.slice(0, 2)}***@${dominio}`;
-  }
-  return `+${destino.slice(0, -6)}***${destino.slice(-3)}`;
+function mascararEmail(email: string): string {
+  const [utilizador, dominio] = email.split("@");
+  return `${utilizador.slice(0, 2)}***@${dominio}`;
 }
 
-async function enviarEmail(para: string, codigo: string) {
+async function enviarCodigo(para: string, codigo: string) {
   if (!RESEND_API_KEY) {
     console.log(`[MENSAGEM LOCAL] Código ${codigo} para ${para}`);
     return;
@@ -85,36 +79,6 @@ async function enviarEmail(para: string, codigo: string) {
   }
 }
 
-async function enviarSms(para: string, codigo: string) {
-  if (!CLOSUM_API_KEY) {
-    console.log(`[MENSAGEM LOCAL] Código ${codigo} para +${para}`);
-    return;
-  }
-  // Sem acentos: mensagens GSM-7 contam como 1 SMS (160 caracteres)
-  const res = await fetch(
-    `https://api.closum.com/v2/sms/send/?api-key=${encodeURIComponent(CLOSUM_API_KEY)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: `Leni's FunPark: o seu codigo de verificacao e ${codigo}. Valido durante 5 minutos.`,
-        recipient: para,
-        sender: CLOSUM_SENDER,
-      }),
-    },
-  );
-  const corpo = await res.json().catch(() => null);
-  if (!res.ok || corpo?.status !== true) {
-    console.error("[Closum]", res.status, JSON.stringify(corpo));
-    throw new Error("Falha no envio do SMS");
-  }
-}
-
-async function enviarCodigo(canal: Canal, destino: string, codigo: string) {
-  if (canal === "email") await enviarEmail(destino, codigo);
-  else await enviarSms(destino, codigo);
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -132,11 +96,11 @@ serve(async (req) => {
       const mensagemId = texto(body.mensagem_id, 64);
       const { data: mensagem } = await supabase
         .from("mensagens_contacto")
-        .select("id, contacto, preferencia_resposta, verificada, created_at")
+        .select("id, email, verificada, created_at")
         .eq("id", mensagemId)
         .maybeSingle();
 
-      if (!mensagem || mensagem.verificada ||
+      if (!mensagem?.email || mensagem.verificada ||
           Date.now() - new Date(mensagem.created_at).getTime() > VALIDADE_MS) {
         throw new ErroPedido("expirado", "O código expirou. Envie a mensagem novamente.");
       }
@@ -147,26 +111,25 @@ serve(async (req) => {
         .eq("mensagem_id", mensagemId)
         .maybeSingle();
       if (registo && registo.envios >= MAX_ENVIOS) {
-        throw new ErroPedido("limite", "Já reenviámos o código várias vezes. Verifique o contacto indicado.", 429);
+        throw new ErroPedido("limite", "Já reenviámos o código várias vezes. Verifique a caixa de spam.", 429);
       }
       if (registo && Date.now() - new Date(registo.ultimo_envio).getTime() < ESPERA_REENVIO_MS) {
         throw new ErroPedido("espera", "Aguarde um minuto antes de pedir um novo código.", 429);
       }
 
-      const canal: Canal = mensagem.preferencia_resposta === "email" ? "email" : "sms";
       const { data: codigo, error: erroCodigo } = await supabase.rpc("gerar_codigo_mensagem", {
         p_mensagem_id: mensagemId,
         p_ip: ip,
       });
       if (erroCodigo) throw erroCodigo;
-      await enviarCodigo(canal, mensagem.contacto.replace(/^\+/, ""), codigo as string);
+      await enviarCodigo(mensagem.email, codigo as string);
       return resposta({ ok: true });
     }
 
     // ---------------------------------------------------------------- Enviar
     // Campo invisível no formulário: só um bot o preenche
     if (texto(body.website, 200)) {
-      return resposta({ mensagem_id: crypto.randomUUID(), canal: "email", destino: "" });
+      return resposta({ mensagem_id: crypto.randomUUID(), destino: "" });
     }
 
     const nome = texto(body.nome, 100);
@@ -177,21 +140,17 @@ serve(async (req) => {
       throw new ErroPedido("dados", "Preencha todos os campos obrigatórios.");
     }
 
-    const canal: Canal = preferencia === "email" ? "email" : "sms";
-    const destino = canal === "email"
-      ? validarEmail(texto(body.contacto, 200))
-      : normalizarTelemovel(texto(body.contacto, 40));
-    if (!destino) {
-      throw new ErroPedido(
-        "contacto",
-        canal === "email" ? "Indique um email válido." : "Indique um número de telemóvel válido.",
-      );
+    // O código vai sempre por email; quem prefere WhatsApp ou chamada indica também o telemóvel
+    const email = validarEmail(texto(body.email, 200));
+    if (!email) throw new ErroPedido("email", "Indique um email válido.");
+
+    let telemovel: string | null = null;
+    if (preferencia !== "email") {
+      telemovel = normalizarTelemovel(texto(body.telemovel, 40));
+      if (!telemovel) throw new ErroPedido("telemovel", "Indique um número de telemóvel válido.");
     }
 
-    // Guardado como o admin o vai ler: email ou +351912345678
-    const contactoGuardado = canal === "email" ? destino : `+${destino}`;
-
-    // Limites anti-abuso (cada SMS tem custo)
+    // Limites anti-abuso
     const umaHora = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     if (ip) {
       const { count } = await supabase
@@ -203,13 +162,13 @@ serve(async (req) => {
         throw new ErroPedido("limite", "Enviou várias mensagens seguidas. Tente novamente mais tarde.", 429);
       }
     }
-    const { count: porContacto } = await supabase
+    const { count: porEmail } = await supabase
       .from("mensagens_contacto")
       .select("id", { count: "exact", head: true })
-      .eq("contacto", contactoGuardado)
+      .eq("email", email)
       .gte("created_at", umaHora);
-    if ((porContacto ?? 0) >= MAX_POR_CONTACTO_HORA) {
-      throw new ErroPedido("limite", "Já recebemos várias mensagens deste contacto. Tente novamente mais tarde.", 429);
+    if ((porEmail ?? 0) >= MAX_POR_EMAIL_HORA) {
+      throw new ErroPedido("limite", "Já recebemos várias mensagens deste email. Tente novamente mais tarde.", 429);
     }
 
     const categoria = motivo === "Visitas Escolares" ? "escola"
@@ -220,7 +179,8 @@ serve(async (req) => {
       .from("mensagens_contacto")
       .insert({
         nome,
-        contacto: contactoGuardado,
+        contacto: telemovel ?? email,
+        email,
         motivo,
         categoria,
         mensagem: mensagemTexto,
@@ -238,20 +198,18 @@ serve(async (req) => {
         p_ip: ip,
       });
       if (erroCodigo) throw erroCodigo;
-      await enviarCodigo(canal, destino, codigo as string);
+      await enviarCodigo(email, codigo as string);
     } catch (erroEnvio) {
       await supabase.from("mensagens_contacto").delete().eq("id", nova.id);
       console.error("[enviar_codigo_mensagem] Envio falhou:", erroEnvio);
       throw new ErroPedido(
         "envio",
-        canal === "email"
-          ? "Não conseguimos enviar o código para esse email. Confirme o endereço e tente novamente."
-          : "Não conseguimos enviar o SMS para esse número. Confirme o número e tente novamente.",
+        "Não conseguimos enviar o código para esse email. Confirme o endereço e tente novamente.",
         502,
       );
     }
 
-    return resposta({ mensagem_id: nova.id, canal, destino: mascarar(destino, canal) });
+    return resposta({ mensagem_id: nova.id, destino: mascararEmail(email) });
   } catch (erro) {
     if (erro instanceof ErroPedido) {
       return resposta({ error: erro.codigo, message: erro.message }, erro.status);

@@ -2,7 +2,7 @@
 -- Migração 44: Mensagens de contacto só chegam ao admin depois de verificadas
 --   - O site deixa de gravar mensagens diretamente: a Edge Function
 --     enviar_codigo_mensagem grava a mensagem por verificar e envia um código
---     (email pelo Resend, SMS pelo Closum).
+--     para o email do visitante (Resend).
 --   - Só depois de o código ser validado é que a mensagem aparece no admin
 --     e gera notificação.
 --   - Mensagens por verificar há mais de 5 minutos são apagadas.

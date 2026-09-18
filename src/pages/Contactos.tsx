@@ -33,7 +33,6 @@ const ESPERA_REENVIO_MS = 60 * 1000;
 
 interface Verificacao {
   id: string;
-  canal: 'email' | 'sms';
   destino: string;
   expiraEm: number;
   reenviarApos: number;
@@ -52,7 +51,7 @@ async function chamarEnvioCodigo(body: Record<string, string>) {
     console.error('[Contactos] Erro em enviar_codigo_mensagem:', codigoErro, error.message);
     throw new Error(mensagem);
   }
-  return data as { mensagem_id: string; canal: 'email' | 'sms'; destino: string };
+  return data as { mensagem_id: string; destino: string };
 }
 
 function formatarTempo(ms: number) {
@@ -81,7 +80,8 @@ export default function Contactos() {
   // Estado do formulário de mensagem rápida
   const [formData, setFormData] = useState({
     nome: '',
-    contacto: '',
+    email: '',
+    telemovel: '',
     motivo: getInitialMotivo(),
     preferencia: 'whatsapp' as 'whatsapp' | 'email' | 'telefone',
     mensagem: ''
@@ -123,17 +123,19 @@ export default function Contactos() {
   };
 
   // A mensagem só chega à equipa depois de o visitante confirmar o código enviado
-  // para o contacto preferido (email → email; WhatsApp/chamada → SMS)
+  // por email (Resend). Quem prefere WhatsApp ou chamada indica também o telemóvel.
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nome.trim() || !formData.contacto.trim() || !formData.mensagem.trim()) return;
+    if (!formData.nome.trim() || !formData.email.trim() || !formData.mensagem.trim()) return;
+    if (pedeTelemovel && !formData.telemovel.trim()) return;
 
     setSubmitting(true);
     setSubmitError(null);
     try {
       const data = await chamarEnvioCodigo({
         nome: formData.nome,
-        contacto: formData.contacto,
+        email: formData.email,
+        telemovel: pedeTelemovel ? formData.telemovel : '',
         motivo: formData.motivo,
         preferencia: formData.preferencia,
         mensagem: formData.mensagem,
@@ -145,7 +147,6 @@ export default function Contactos() {
       setAgora(agoraMs);
       setVerificacao({
         id: data.mensagem_id,
-        canal: data.canal,
         destino: data.destino,
         expiraEm: agoraMs + VALIDADE_CODIGO_MS,
         reenviarApos: agoraMs + ESPERA_REENVIO_MS,
@@ -209,7 +210,7 @@ export default function Contactos() {
   const restanteMs = verificacao ? Math.max(0, verificacao.expiraEm - agora) : 0;
   const expirou = verificacao !== null && restanteMs === 0;
   const podeReenviar = verificacao !== null && agora >= verificacao.reenviarApos && !expirou;
-  const contactoPorEmail = formData.preferencia === 'email';
+  const pedeTelemovel = formData.preferencia !== 'email';
 
   const opcoesAssunto = [
     {
@@ -503,7 +504,7 @@ export default function Contactos() {
                   onClick={() => {
                     setFormSent(false);
                     setSubmitError(null);
-                    setFormData({ nome: '', contacto: '', motivo: 'Festa de Aniversário', preferencia: 'whatsapp', mensagem: '' });
+                    setFormData({ nome: '', email: '', telemovel: '', motivo: 'Festa de Aniversário', preferencia: 'whatsapp', mensagem: '' });
                   }}
                   className="bg-secondary text-white font-bold px-6 py-3 rounded-xl hover:bg-secondary/90 transition-colors text-sm cursor-pointer"
                 >
@@ -533,8 +534,8 @@ export default function Contactos() {
                   <form onSubmit={handleVerificarCodigo} className="text-center">
                     <h3 className="text-xl font-black text-secondary mb-2">Confirme que é mesmo você</h3>
                     <p className="text-secondary/80 font-medium mb-5">
-                      Enviámos um código de 6 dígitos {verificacao.canal === 'email' ? 'para o email' : 'por SMS para o número'}{' '}
-                      <strong className="text-secondary">{verificacao.destino}</strong>. A mensagem só é enviada depois de o confirmar.
+                      Enviámos um código de 6 dígitos para o email{' '}
+                      <strong className="text-secondary">{verificacao.destino}</strong>. A mensagem só é enviada depois de o confirmar. Se não o encontrar, veja também a pasta de spam.
                     </p>
                     <label htmlFor="codigo-verificacao" className="sr-only">Código de verificação</label>
                     <input
@@ -586,7 +587,7 @@ export default function Contactos() {
                         onClick={() => setVerificacao(null)}
                         className="text-secondary/70 hover:underline cursor-pointer"
                       >
-                        Corrigir o contacto
+                        Corrigir o email
                       </button>
                     </div>
                   </form>
@@ -610,17 +611,17 @@ export default function Contactos() {
                   </div>
 
                   <div>
-                    <label htmlFor="contacto" className="block text-sm font-bold text-secondary mb-2">
-                      {contactoPorEmail ? 'O seu Email *' : 'O seu Telemóvel *'}
+                    <label htmlFor="contacto-email" className="block text-sm font-bold text-secondary mb-2">
+                      O seu Email *
                     </label>
                     <input
-                      id="contacto"
-                      type={contactoPorEmail ? 'email' : 'tel'}
-                      autoComplete={contactoPorEmail ? 'email' : 'tel'}
+                      id="contacto-email"
+                      type="email"
+                      autoComplete="email"
                       required
-                      value={formData.contacto}
-                      onChange={(e) => setFormData({ ...formData, contacto: e.target.value })}
-                      placeholder={contactoPorEmail ? 'Ex: maria@email.com' : 'Ex: 920 000 000'}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="Ex: maria@email.com"
                       className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-secondary font-medium"
                     />
                   </div>
@@ -712,10 +713,25 @@ export default function Contactos() {
                       );
                     })}
                   </div>
+                  {pedeTelemovel && (
+                    <div className="mt-3">
+                      <label htmlFor="contacto-telemovel" className="block text-sm font-bold text-secondary mb-2">
+                        O seu Telemóvel *
+                      </label>
+                      <input
+                        id="contacto-telemovel"
+                        type="tel"
+                        autoComplete="tel"
+                        required
+                        value={formData.telemovel}
+                        onChange={(e) => setFormData({ ...formData, telemovel: e.target.value })}
+                        placeholder="Ex: 920 000 000"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-secondary font-medium"
+                      />
+                    </div>
+                  )}
                   <p className="text-xs text-secondary/60 font-medium mt-2">
-                    {contactoPorEmail
-                      ? 'Vamos enviar um código para o seu email para confirmar o contacto.'
-                      : 'Vamos enviar um código por SMS para o seu telemóvel para confirmar o contacto.'}
+                    Vamos enviar um código para o seu email para confirmar que é mesmo você.
                   </p>
                 </div>
 

@@ -219,7 +219,7 @@ export default function BookingModuleSection({
                     <Info className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
                     <p>
                       {resumoDia.horasPendentes.length === 1
-                        ? `Há um pedido de reserva por confirmar para as ${resumoDia.horasPendentes[0]}. Pode pedir esse horário na mesma, mas só um dos pedidos poderá ser confirmado.`
+                        ? `Há um pedido de reserva por confirmar para as ${resumoDia.horasPendentes[0]}. Pode pedir esse horário na mesma, mas só um dos pedidos poderá ser confirmado. A nossa equipa entrará em contato.`
                         : `Há pedidos de reserva por confirmar para as ${listarHoras(resumoDia.horasPendentes)}. Pode pedir esses horários na mesma, mas só um pedido por horário poderá ser confirmado.`}
                     </p>
                   </div>
