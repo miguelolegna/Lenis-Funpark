@@ -716,7 +716,7 @@ export default function ReservasPage() {
                 <th className="p-3 font-bold">Convite</th>
                 <th className="p-3 font-bold">Observações</th>
                 <th className="p-3 font-bold">Pedido feito a</th>
-                <th className="p-3 font-bold text-center">Link da Reserva</th>
+                <th className="p-3 font-bold text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-alt">
@@ -767,28 +767,39 @@ export default function ReservasPage() {
                     </td>
                     <td className="p-3 text-secondary/60 font-medium whitespace-nowrap">{d.pedidoEm || '—'}</td>
                     <td className="p-3 text-center whitespace-nowrap">
-                      {r.reserva_tokens?.[0]?.token_opaco ? (
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleCopiarLink(r)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt hover:bg-primary/10 text-secondary hover:text-primary border border-surface rounded-lg text-xs font-bold transition-all cursor-pointer"
-                          title="Copiar link do formulário da reserva"
+                          onClick={() => setReservaModal(r)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface hover:bg-surface-alt text-secondary border border-surface-alt rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                          title="Ver formulário completo"
                         >
-                          {copiedId === r.id ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              <span className="text-emerald-600">Link copiado!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Link2 className="w-3.5 h-3.5 text-primary" />
-                              <span>Copiar Link</span>
-                            </>
-                          )}
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Ver Form</span>
                         </button>
-                      ) : (
-                        <span className="text-secondary/40 font-medium">—</span>
-                      )}
+                        {r.reserva_tokens?.[0]?.token_opaco ? (
+                          <button
+                            type="button"
+                            onClick={() => handleCopiarLink(r)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt hover:bg-primary/10 text-secondary hover:text-primary border border-surface rounded-lg text-xs font-bold transition-all cursor-pointer"
+                            title="Copiar link do formulário da reserva"
+                          >
+                            {copiedId === r.id ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                <span className="text-emerald-600">Copiado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Link2 className="w-3.5 h-3.5 text-primary" />
+                                <span>Copiar</span>
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-secondary/40 font-medium inline-block w-[80px]">—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
