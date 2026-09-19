@@ -196,12 +196,32 @@ export default function ReservaAdminView({ reserva, onClose }: ReservaAdminViewP
                 <p className="text-sm font-bold text-secondary">{boloAtivo ? 'Sim' : 'Não'}</p>
               </div>
               {boloAtivo && (
-                <div>
-                  <span className="block text-xs font-semibold text-secondary/60">Composição / Recheio</span>
-                  <p className="text-sm font-medium text-secondary mt-0.5 whitespace-pre-wrap">
-                    {reserva.bolo_composicao || '—'}
-                  </p>
-                </div>
+                <>
+                  <div>
+                    <span className="block text-xs font-semibold text-secondary/60">Massa</span>
+                    <p className="text-sm font-medium text-secondary mt-0.5">
+                      {reserva.bolo_massa || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-semibold text-secondary/60">Recheio</span>
+                    <p className="text-sm font-medium text-secondary mt-0.5">
+                      {reserva.bolo_recheio || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-semibold text-secondary/60">Cobertura</span>
+                    <p className="text-sm font-medium text-secondary mt-0.5">
+                      {reserva.bolo_cobertura || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-semibold text-secondary/60">Especificações / Observações</span>
+                    <p className="text-sm font-medium text-secondary mt-0.5 whitespace-pre-wrap">
+                      {reserva.bolo_composicao || '—'}
+                    </p>
+                  </div>
+                </>
               )}
             </div>
           </div>

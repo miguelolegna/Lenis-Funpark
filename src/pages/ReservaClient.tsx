@@ -18,6 +18,7 @@ import {
   Check,
   Ticket,
   AlertCircle,
+  DollarSign,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -77,6 +78,9 @@ export default function ReservaClient() {
     pinturas_faciais: false,
     outros_servicos: "",
     inclui_bolo: false,
+    bolo_massa: "",
+    bolo_recheio: "",
+    bolo_cobertura: "",
     bolo_composicao: "",
     notas_adicionais: "",
     termos_veracidade: false,
@@ -144,6 +148,9 @@ export default function ReservaClient() {
           pinturas_faciais: reservaData.pinturas_faciais || false,
           outros_servicos: reservaData.outros_servicos || "",
           inclui_bolo: reservaData.inclui_bolo || false,
+          bolo_massa: reservaData.bolo_massa || "",
+          bolo_recheio: reservaData.bolo_recheio || "",
+          bolo_cobertura: reservaData.bolo_cobertura || "",
           bolo_composicao: reservaData.bolo_composicao || "",
           notas_adicionais: reservaData.notas_adicionais || "",
           termos_veracidade: reservaData.termos_veracidade || false,
@@ -174,9 +181,9 @@ export default function ReservaClient() {
   };
 
   const handleFinalSubmit = async () => {
-    if (!formData.nome_aniversariante || !formData.termos_veracidade) {
+    if (!formData.nome_aniversariante) {
       setError(
-        "O Nome do Aniversariante e a Aceitação dos Termos são estritamente obrigatórios para concluir.",
+        "O Nome do Aniversariante é estritamente obrigatório para concluir.",
       );
       return;
     }
@@ -203,7 +210,7 @@ export default function ReservaClient() {
     if (
       field === "inclui_bolo" &&
       value === true &&
-      !formData.bolo_composicao
+      (!formData.bolo_massa || !formData.bolo_recheio || !formData.bolo_cobertura)
     ) {
       return;
     }
@@ -213,9 +220,13 @@ export default function ReservaClient() {
       payload.tema_convite = "";
     if (field === "decoracao_tematica" && value === false)
       payload.decoracao_tema_nome = "";
-    if (field === "inclui_bolo" && value === false)
+    if (field === "inclui_bolo" && value === false) {
+      payload.bolo_massa = "";
+      payload.bolo_recheio = "";
+      payload.bolo_cobertura = "";
       payload.bolo_composicao = "";
-    if (field === "bolo_composicao" && formData.inclui_bolo)
+    }
+    if (["bolo_massa", "bolo_recheio", "bolo_cobertura", "bolo_composicao"].includes(field) && formData.inclui_bolo)
       payload.inclui_bolo = true;
 
     const { error: patchError } = await supabase.rpc("atualizar_reserva_b2c", {
@@ -311,8 +322,7 @@ export default function ReservaClient() {
               Detalhes da <span className="text-accent">Sua Festa</span>
             </h1>
             <p className="text-secondary/70 font-medium text-sm sm:text-base mt-2 max-w-xl mx-auto">
-              Preencha as preferências de convites, menu, bolo e decoração para
-              a celebração no Leni's FunPark.
+              Preencha as preferências de convites, menu, bolo e decoração para a celebração no Leni's FunPark.
             </p>
           </div>
 
@@ -778,23 +788,85 @@ export default function ReservaClient() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pl-4 border-l-4 border-pink-400"
+                      className="pl-4 border-l-4 border-pink-400 space-y-4"
                     >
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                        Composição / Recheio do Bolo * (Obrigatório)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={formData.bolo_composicao}
-                        onChange={(e) =>
-                          handleInputChange("bolo_composicao", e.target.value)
-                        }
-                        onBlur={(e) =>
-                          handleBlur("bolo_composicao", e.target.value)
-                        }
-                        placeholder="Ex: Pão de ló com recheio de chocolate e morango"
-                        className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
-                      ></textarea>
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                          Massa do Bolo
+                        </label>
+                        <select
+                          value={formData.bolo_massa}
+                          onChange={(e) => handleInputChange("bolo_massa", e.target.value)}
+                          onBlur={(e) => handleBlur("bolo_massa", e.target.value)}
+                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
+                        >
+                          <option value="">Selecione uma opção</option>
+                          <option value="Pão de lo">Pão de ló</option>
+                          <option value="Chocolate">Chocolate</option>
+                          <option value="Iogurte">Iogurte</option>
+                          <option value="Cenoura">Cenoura</option>
+                          <option value="Red velvet">Red velvet</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                          Recheio
+                        </label>
+                        <select
+                          value={formData.bolo_recheio}
+                          onChange={(e) => handleInputChange("bolo_recheio", e.target.value)}
+                          onBlur={(e) => handleBlur("bolo_recheio", e.target.value)}
+                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
+                        >
+                          <option value="">Selecione uma opção</option>
+                          <option value="Doce de ovo">Doce de ovo</option>
+                          <option value="Nata">Nata</option>
+                          <option value="Creme Russo">Creme Russo</option>
+                          <option value="Frutos vermelhos">Frutos vermelhos</option>
+                          <option value="Chocolate">Chocolate</option>
+                          <option value="Fruta variada">Fruta variada</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                          Cobertura
+                        </label>
+                        <select
+                          value={formData.bolo_cobertura}
+                          onChange={(e) => handleInputChange("bolo_cobertura", e.target.value)}
+                          onBlur={(e) => handleBlur("bolo_cobertura", e.target.value)}
+                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
+                        >
+                          <option value="">Selecione uma opção</option>
+                          <option value="Imagem">Imagem</option>
+                          <option value="Doce de ovo">Doce de ovo</option>
+                          <option value="Nata">Nata</option>
+                          <option value="Creme Russo">Creme Russo</option>
+                          <option value="Frutos vermelhos">Frutos vermelhos</option>
+                          <option value="Chocolate">Chocolate</option>
+                          <option value="Fruta variada">Fruta variada</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
+                          Especificações / Observações (Opcional)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={formData.bolo_composicao}
+                          onChange={(e) =>
+                            handleInputChange("bolo_composicao", e.target.value)
+                          }
+                          onBlur={(e) =>
+                            handleBlur("bolo_composicao", e.target.value)
+                          }
+                          placeholder="Ex: Nome na imagem do bolo, ou detalhes específicos"
+                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
+                        ></textarea>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -829,31 +901,8 @@ export default function ReservaClient() {
               ></textarea>
             </div>
 
-            {/* Bloco 8: Termos e Submissão Final */}
-            <div className="bg-primary/10 rounded-[2rem] p-6 sm:p-8 border-2 border-primary/30 shadow-xl">
-              <div className="flex items-start gap-3 mb-6">
-                <ShieldCheck className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-black text-secondary text-base">
-                    Confirmação dos Dados
-                  </h4>
-                  <p className="text-xs text-secondary/70 font-medium mt-0.5">
-                    Garantimos a proteção dos dados nos termos da legislação aplicável.
-                  </p>
-                </div>
-              </div>
-
-              <PrivacyTermsCheckbox
-                id="client-reserva-privacy-terms"
-                checked={formData.termos_veracidade}
-                onChange={(nextVal) => {
-                  handleInputChange("termos_veracidade", nextVal);
-                  handleBlur("termos_veracidade", nextVal);
-                }}
-                required
-                className="mb-6"
-              />
-
+            {/* Bloco 8: Submissão Final */}
+            <div className="mt-8">
               {error && (
                 <div className="bg-rose-100 border-2 border-rose-300 text-rose-900 p-4 rounded-2xl text-sm font-bold text-center mb-6 flex items-center justify-center gap-2">
                   <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
@@ -864,9 +913,9 @@ export default function ReservaClient() {
               <button
                 type="button"
                 onClick={handleFinalSubmit}
-                disabled={loading || !formData.termos_veracidade}
+                disabled={loading}
                 className={`w-full py-4 px-8 rounded-2xl font-black text-lg transition-all uppercase tracking-wide shadow-lg ${
-                  loading || !formData.termos_veracidade
+                  loading
                     ? "bg-surface-alt text-secondary/40 border-2 border-surface cursor-not-allowed"
                     : "bg-primary hover:bg-secondary text-white shadow-primary/20 cursor-pointer"
                 }`}

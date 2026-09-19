@@ -80,6 +80,7 @@ export default function PrivacyTermsCheckbox({
           >
             Termos e Condições
           </Link>
+          , e declaro ter conhecimento de que é necessário o pagamento de uma caução de 50€ para confirmar a reserva.
           {required && <span className="text-primary ml-0.5">*</span>}
         </span>
       </label>

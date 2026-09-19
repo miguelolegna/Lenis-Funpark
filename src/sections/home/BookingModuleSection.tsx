@@ -18,6 +18,7 @@ import {
   Check,
   Banknote,
   Wallet,
+  DollarSign,
 } from 'lucide-react';
 import type { ResumoDia } from '../../lib/horarios';
 import { IBAN, MBWAY_NUMERO, metodosPagamento, type MetodoPagamento } from '../../lib/pagamentos';
@@ -320,7 +321,7 @@ export default function BookingModuleSection({
             <CheckCircle2 className="w-20 h-20 text-primary mx-auto mb-4" />
             <h2 className="text-3xl sm:text-4xl font-black text-secondary mb-4">Pedido Registado!</h2>
             <p className="text-secondary/80 font-medium mb-6">
-              Para garantir a sua reserva, por favor efetue o pagamento da caução dentro do tempo limite.
+              Para garantir a sua reserva, por favor efetue o pagamento da caução de <strong>50€</strong> dentro do tempo limite.
             </p>
 
             <div className="bg-surface rounded-2xl p-6 mb-8 border-2 border-primary/20">
