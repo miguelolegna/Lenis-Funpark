@@ -215,6 +215,8 @@ export default function ReservaClient() {
       payload.decoracao_tema_nome = "";
     if (field === "inclui_bolo" && value === false)
       payload.bolo_composicao = "";
+    if (field === "bolo_composicao" && formData.inclui_bolo)
+      payload.inclui_bolo = true;
 
     const { error: patchError } = await supabase.rpc("atualizar_reserva_b2c", {
       p_token_opaco: token,
