@@ -164,7 +164,7 @@ export default function Home() {
           nome_aniversariante: texto('client_name'),
           num_criancas: parseInt(numPessoas, 10),
           notas_adicionais: notas,
-          tipo_convite: 'lenis',
+          tipo_convite: 'nenhum',
           metodo_pagamento: metodo
         }
       ]);

@@ -151,7 +151,7 @@ export default function Header() {
             className="hidden min-[945px]:inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white font-black text-sm px-5 py-2.5 rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer shrink-0"
           >
             <Calendar className="w-4 h-4" />
-            <span>Reservar Agora</span>
+            <span>Fazer Reserva</span>
           </Link>
 
           {/* Hamburger Menu Toggle (Mobile only) */}

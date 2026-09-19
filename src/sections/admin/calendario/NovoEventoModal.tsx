@@ -87,7 +87,7 @@ export default function NovoEventoModal({ dataInicial = '', onClose, onCreated }
           nome_aniversariante: nome.trim(),
           num_criancas: parseInt(numCriancas, 10),
           notas_adicionais: notas.trim() || null,
-          tipo_convite: 'lenis',
+          tipo_convite: 'nenhum',
           estado: 'IN_PROGRESS',
         },
       ])

@@ -24,6 +24,7 @@ WITH CHECK (
     AND respondido_por IS NULL
 );
 
+DROP POLICY IF EXISTS "admin_gere_mensagens" ON public.mensagens_contacto;
 CREATE POLICY "admin_gere_mensagens" ON public.mensagens_contacto
 FOR ALL TO authenticated
 USING (true)
