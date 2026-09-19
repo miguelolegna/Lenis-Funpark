@@ -115,7 +115,7 @@ serve(async (req: Request) => {
 
   // Interceção Condicional Absoluta
   if (reserva.tipo_convite !== 'lenis') {
-    return new Response('Acesso negado: O convite digital automático não está disponível para esta reserva.', { status: 403 });
+    return new Response('Esta reserva possui um convite personalizado, o qual não é gerido por este sistema. O botão destina-se exclusivamente a convites automáticos Lenis."', { status: 403 });
   }
 
   // Extração e tratamento de dados antes da montagem do SVG
