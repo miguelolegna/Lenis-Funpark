@@ -15,6 +15,12 @@ import {
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
+import { horariosFestaDia, rotuloHorario } from '../../lib/horarios';
+
+function parseDataInput(value: string): Date | null {
+  const [y, m, d] = value.split('-').map(Number);
+  return y && m && d ? new Date(y, m - 1, d) : null;
+}
 
 export interface ConviteAvulso {
   id: string;
@@ -32,7 +38,7 @@ const STORAGE_KEY = 'admin_convites_avulsos';
 export default function ConvitesPage() {
   const [nome, setNome] = useState('');
   const [dia, setDia] = useState('');
-  const [hora, setHora] = useState('15:00');
+  const [hora, setHora] = useState('');
   const [telefone, setTelefone] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedConvite, setGeneratedConvite] = useState<ConviteAvulso | null>(null);
@@ -218,13 +224,28 @@ export default function ConvitesPage() {
                 </label>
                 <div className="relative">
                   <Clock className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="time"
+                  <select
                     required
                     value={hora}
                     onChange={(e) => setHora(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary focus:outline-none focus:border-primary transition-colors"
-                  />
+                    disabled={!dia}
+                    className="w-full pl-10 pr-3 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary focus:outline-none focus:border-primary transition-colors appearance-none"
+                  >
+                    <option value="" disabled>
+                      {!dia ? 'Escolhe a data' : 'Escolhe a hora'}
+                    </option>
+                    {(() => {
+                      const dataObj = parseDataInput(dia);
+                      if (!dataObj) return null;
+                      const slots = horariosFestaDia(dataObj);
+                      if (slots.length === 0) {
+                        return <option value="" disabled>Sem horários (Encerrado)</option>;
+                      }
+                      return slots.map(h => (
+                        <option key={h} value={h}>{rotuloHorario(h)}</option>
+                      ));
+                    })()}
+                  </select>
                 </div>
               </div>
             </div>

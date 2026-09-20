@@ -20,7 +20,7 @@ import {
   Wallet,
   DollarSign,
 } from 'lucide-react';
-import type { ResumoDia } from '../../lib/horarios';
+import { rotuloHorario, type ResumoDia } from '../../lib/horarios';
 import { IBAN, MBWAY_NUMERO, metodosPagamento, type MetodoPagamento } from '../../lib/pagamentos';
 import PrivacyTermsCheckbox from '../../components/PrivacyTermsCheckbox';
 
@@ -120,7 +120,7 @@ function CustomTimeSelect({
           </div>
           {selectedTime ? (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-black text-secondary text-base">{selectedTime}</span>
+              <span className="font-black text-secondary text-base">{rotuloHorario(selectedTime)}</span>
               {isPendingSlot(selectedTime) && (
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
                   Pedido por confirmar
@@ -168,7 +168,7 @@ function CustomTimeSelect({
                 >
                   <div className="flex items-center gap-3">
                     <Clock className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-primary'}`} />
-                    <span className="text-base">{time}</span>
+                    <span className="text-base">{rotuloHorario(time)}</span>
                   </div>
 
                   {pending ? (

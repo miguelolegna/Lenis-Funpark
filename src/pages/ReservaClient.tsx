@@ -346,7 +346,7 @@ export default function ReservaClient() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                    Nome do Aniversariante *
+                    Primeiro Nome da Criança *
                   </label>
                   <input
                     type="text"
@@ -358,7 +358,7 @@ export default function ReservaClient() {
                     onBlur={(e) =>
                       handleBlur("nome_aniversariante", e.target.value)
                     }
-                    placeholder="Ex: Gabriel Silva"
+                    placeholder="Ex: Gabriel"
                     className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                   />
                 </div>

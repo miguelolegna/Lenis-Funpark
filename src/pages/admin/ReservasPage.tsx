@@ -287,8 +287,8 @@ export default function ReservasPage() {
       console.error('[Reservas] Erro ao recuar reserva:', error.code, error.message);
       setActionError(
         error.message.includes('Horário indisponível')
-          ? 'Não é possível reativar: já existe uma festa confirmada a menos de 3 horas deste horário.'
-          : error.message.includes('chk_horario_funcionamento')
+          ? 'Não é possível reativar: já existe uma festa confirmada neste horário.'
+          : error.message.includes('Horário fora do horário de funcionamento')
           ? 'Não é possível reativar: o horário desta reserva está fora do horário de funcionamento.'
           : `Não foi possível voltar a reserva para "${recuo.coluna}". Tenta novamente.`
       );

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, CalendarPlus, PartyPopper, CalendarClock, Link2, Check } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { buildLisbonDateTime } from '../../../lib/dateUtils';
-import { obterHorariosDisponiveis } from '../../../lib/horarios';
+import { obterHorariosDisponiveis, rotuloHorario } from '../../../lib/horarios';
 
 type TipoEvento = 'festa' | 'interno';
 
@@ -97,7 +97,7 @@ export default function NovoEventoModal({ dataInicial = '', onClose, onCreated }
     if (error) {
       console.error('[Calendário] Erro ao criar festa:', error.code, error.message);
       const horarioInvalido =
-        error.message.includes('Horário indisponível') || error.message.includes('chk_horario_funcionamento');
+        error.message.includes('Horário indisponível') || error.message.includes('Horário fora do horário de funcionamento');
       throw new ErroAmigavel(
         horarioInvalido
           ? 'Esse horário já não está disponível ou está fora do horário de funcionamento.'
@@ -300,7 +300,7 @@ export default function NovoEventoModal({ dataInicial = '', onClose, onCreated }
                         {!data ? 'Escolhe a data' : aCarregarHorarios ? 'A carregar...' : horarios.length === 0 ? 'Sem horários' : 'Escolhe'}
                       </option>
                       {horarios.map((h) => (
-                        <option key={h} value={h}>{h}</option>
+                        <option key={h} value={h}>{rotuloHorario(h)}</option>
                       ))}
                     </select>
                   </div>

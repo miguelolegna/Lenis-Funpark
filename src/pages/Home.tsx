@@ -170,7 +170,7 @@ export default function Home() {
       ]);
 
       if (error) {
-        if (error.message.includes('Horário indisponível') || error.message.includes('chk_horario_funcionamento')) {
+        if (error.message.includes('Horário indisponível') || error.message.includes('Horário fora do horário de funcionamento')) {
           alert("Pedimos desculpa, mas o horário selecionado acabou de ser reservado ou é inválido. Por favor, escolha outro horário.");
           // Refresh times to remove the taken slot
           if (selectedDate) fetchAvailableTimes(selectedDate);

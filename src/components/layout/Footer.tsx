@@ -50,8 +50,7 @@ export default function Footer() {
               <li className="flex items-start">
                 <MapPin className="text-primary mr-3 mt-1 shrink-0" size={20} />
                 <span>
-                  Zona Industrial do Tortosendo lt.23B Rua F, 6200-823
-                  Tortosendo
+                  Zona Industrial do Tortosendo lt.23B Rua F, 6200-823 Tortosendo
                 </span>
               </li>
               <li className="flex items-start">

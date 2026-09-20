@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resvg, initWasm } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
-import { backgroundBase64 } from "./consts.ts";
+import { backgroundBase64, fontBase64 } from "./consts.ts";
 
 let wasmInitialized = false;
 let fontBuffer: Uint8Array | null = null;
@@ -11,13 +11,18 @@ async function ensureWasmAndFont() {
   if (wasmInitialized && fontBuffer) return;
   if (!initPromise) {
     initPromise = (async () => {
-      const [wasmRes, fontRes] = await Promise.all([
-        fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm"),
-        fetch("https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-700-normal.ttf")
-      ]);
+      const wasmRes = await fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm");
       await initWasm(wasmRes);
-      if (fontRes.ok) {
-        fontBuffer = new Uint8Array(await fontRes.arrayBuffer());
+      
+      const b64Data = fontBase64.split(',')[1];
+      if (b64Data) {
+        const binaryStr = atob(b64Data);
+        const len = binaryStr.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        fontBuffer = bytes;
       }
       wasmInitialized = true;
     })();
@@ -120,13 +125,25 @@ serve(async (req: Request) => {
 
   // Extração e tratamento de dados antes da montagem do SVG
   const eventDateObj = new Date(reserva.data_evento);
-  const dataFormatada = eventDateObj.toLocaleDateString('pt-PT');
-  const horaFormatada = eventDateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-  const parkLocation = Deno.env.get('PARK_LOCATION') || "Zona Industrial do Tortosendo lt.23B Rua F, 6200-823";
+  const dataFormatada = eventDateObj.toLocaleDateString('pt-PT', { timeZone: 'Europe/Lisbon' });
+  const horaFormatada = eventDateObj.toLocaleTimeString('pt-PT', { timeZone: 'Europe/Lisbon', hour: '2-digit', minute: '2-digit' });
+  const parkLocation = Deno.env.get('PARK_LOCATION') || "Zona Industrial do Tortosendo lt.23B, Rua F, 6200-823";
 
-  // Nome do aniversariante em maiúsculas
+  const [h, m] = horaFormatada.split(':').map(Number);
+  const horaFim = `${String(h + 2).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  
+  const formatTimeShort = (timeStr: string) => {
+    const [th, tm] = timeStr.split(':');
+    return tm === '00' ? `${th}h` : `${th}h${tm}`;
+  };
+  const horaInicioCurta = formatTimeShort(horaFormatada);
+  const horaFimCurta = formatTimeShort(horaFim);
+  const rotuloHora = `${horaInicioCurta} - ${horaFimCurta}`;
+
+  // Nome do aniversariante (apenas o primeiro nome) em maiúsculas
   const nomeOriginal = (reserva.nome_aniversariante || '').trim();
-  const nomeDisplay = nomeOriginal.toUpperCase();
+  const primeiroNome = nomeOriginal.split(' ')[0] || '';
+  const nomeDisplay = primeiroNome.toUpperCase();
   
   // Ajuste dinâmico de tamanho de fonte para acomodar nomes longos na faixa (base: 48px)
   const nomeFontSize = nomeDisplay.length > 20 ? 36 : (nomeDisplay.length > 14 ? 42 : 48);
@@ -151,37 +168,42 @@ serve(async (req: Request) => {
   }
 
   const svg = `
-    <svg width="1080" height="1527" viewBox="0 0 1080 1527" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <image href="${backgroundBase64}" width="1080" height="1527" />
-      
-      <!-- NOME DO ANIVERSARIANTE: Texto Principal em Branco -->
-      <text x="576" y="425" font-family="'Arial Black', Impact, sans-serif" font-size="48" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
-        ${escapeXml(nomeDisplay.toUpperCase())}
+    <svg width="1080" height="1527" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <image href="${backgroundBase64}" width="1080" height="1527" />
+    <!-- NOME DO ANIVERSARIANTE: Título Principal, Fonte Sans-serif Limpa, Preto -->
+      <text x="576" y="440" font-family="'Obelix Pro', sans-serif" font-size="65" font-weight="900" fill="#FFFFFF" stroke="#000000" stroke-width="3" filter="url(#shadow3d)" text-anchor="middle" letter-spacing="2">
+        ${escapeXml(nomeDisplay)}
       </text>
       
-      <!-- DATA: Alinhamento pela base para pousar na linha -->
-      <text x="250" y="853" font-family="'Arial Black', Impact, sans-serif" font-size="26" font-weight="900" fill="#0f4c5c">
+    <!-- DATA -->
+      <text x="250" y="835" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
         ${escapeXml(dataFormatada)}
       </text>
       
-      <!-- HORA: Alinhamento pela base -->
-      <text x="285" y="942" font-family="'Arial Black', Impact, sans-serif" font-size="26" font-weight="900" fill="#0f4c5c">
-        ${escapeXml(horaFormatada)}
+    <!-- HORA -->
+      <text x="285" y="922" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
+        ${escapeXml(rotuloHora)}
       </text>
       
-      <!-- LOCAL: Linha 1 indentada após "LOCAL: " -->
-      <text x="290" y="1030" font-family="'Arial Black', Impact, sans-serif" font-size="19" font-weight="900" fill="#0f4c5c">
-        ${escapeXml(localLinha1)}
+    <!-- LOCAL: Linha 1 -->
+      <text x="290" y="1010" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="900" fill="#0f4c5c">
+        Leni's Funpark
       </text>
-      <!-- LOCAL: Linha 2 com margem a 170px -->
+
+    <!-- LOCAL: Linha 2 -->
+      <text x="180" y="1050" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="900" fill="#0f4c5c">
+        Zona Industrial do Tortosendo
+      </text>
+      
+    <!-- LOCAL: Linha 3 -->
       ${localLinha2 ? `
-      <text x="190" y="1095" font-family="'Arial Black', Impact, sans-serif" font-size="19" font-weight="900" fill="#0f4c5c">
-        ${escapeXml(localLinha2)}
+      <text x="180" y="1100" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="900" fill="#0f4c5c">
+        lt.23B Rua F, 6200-823
       </text>` : ''}
 
-      <!-- CONFIRMAÇÃO DE PRESENÇA -->
+    <!-- CONFIRMAÇÃO DE PRESENÇA -->
       ${contactoDisplay ? `
-            <text x="367" y="1230" font-family="'Arial Black', Impact, sans-serif" font-size="24" font-weight="900" fill="#0f4c5c" text-anchor="middle">
+      <text x="367" y="1200" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c" text-anchor="middle">
         ${escapeXml(contactoDisplay)}
       </text>` : ''}
     </svg>
