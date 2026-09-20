@@ -81,7 +81,7 @@ export default function ReservaAdminView({ reserva, onClose }: ReservaAdminViewP
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <span className="block text-xs font-semibold text-secondary/60">Nome do Aniversariante</span>
+                <span className="block text-xs font-semibold text-secondary/60">Primeiro Nome da Criança</span>
                 <p className="text-base font-bold text-secondary">{reserva.nome_aniversariante || '—'}</p>
               </div>
               <div>

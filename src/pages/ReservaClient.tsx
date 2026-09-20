@@ -181,7 +181,7 @@ export default function ReservaClient() {
   const handleFinalSubmit = async () => {
     if (!formData.nome_aniversariante) {
       setError(
-        "O Nome do Aniversariante é estritamente obrigatório para concluir.",
+        "O Primeiro Nome da Criança é estritamente obrigatório para concluir.",
       );
       return;
     }

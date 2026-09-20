@@ -12,6 +12,7 @@ import {
   Phone,
   User,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
@@ -25,6 +26,7 @@ function parseDataInput(value: string): Date | null {
 export interface ConviteAvulso {
   id: string;
   nome: string;
+  idade?: string;
   dia: string;
   hora: string;
   telefone: string;
@@ -37,6 +39,7 @@ const STORAGE_KEY = 'admin_convites_avulsos';
 
 export default function ConvitesPage() {
   const [nome, setNome] = useState('');
+  const [idade, setIdade] = useState('');
   const [dia, setDia] = useState('');
   const [hora, setHora] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -80,6 +83,7 @@ export default function ConvitesPage() {
           .insert([
             {
               nome_aniversariante: nome.trim(),
+              idade: idade ? Number(idade) : null,
               data_evento: combinedDateTime,
               contacto_cliente: telefone.trim(),
               tipo_convite: 'lenis',
@@ -107,6 +111,7 @@ export default function ConvitesPage() {
       const novoConvite: ConviteAvulso = {
         id: conviteId,
         nome: nome.trim(),
+        idade: idade.trim(),
         dia,
         hora,
         telefone: telefone.trim(),
@@ -133,6 +138,15 @@ export default function ConvitesPage() {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2500);
+  };
+
+  const handleDeleteConvite = (id: string) => {
+    if (window.confirm('Tens a certeza que pretendes remover este convite do histórico?')) {
+      setConvites((prev) => prev.filter((c) => c.id !== id));
+      if (generatedConvite?.id === id) {
+        setGeneratedConvite(null);
+      }
+    }
   };
 
   return (
@@ -184,20 +198,38 @@ export default function ConvitesPage() {
           </div>
 
           <form onSubmit={handleGerarConvite} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-secondary uppercase mb-1">
-                Nome do Aniversariante *
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Martim Santos"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary placeholder-secondary/40 focus:outline-none focus:border-primary transition-colors"
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-secondary uppercase mb-1">
+                  Primeiro Nome da Criança *
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Martim"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary placeholder-secondary/40 focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="sm:col-span-1">
+                <label className="block text-xs font-bold text-secondary uppercase mb-1">
+                  Idade
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Ex: 8"
+                    value={idade}
+                    onChange={(e) => setIdade(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary placeholder-secondary/40 focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
               </div>
             </div>
 
@@ -389,6 +421,15 @@ export default function ConvitesPage() {
                         ) : (
                           <Copy className="w-3.5 h-3.5 text-secondary/50" />
                         )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteConvite(item.id)}
+                        className="p-1.5 bg-red-50 border border-red-100 hover:bg-red-100 text-red-500 text-xs font-bold rounded-lg transition-colors flex items-center justify-center cursor-pointer ml-1"
+                        title="Remover do Histórico"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
