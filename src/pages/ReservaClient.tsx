@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import PrivacyTermsCheckbox from "../components/PrivacyTermsCheckbox";
+
 import {
   PartyPopper,
   Sparkles,
@@ -13,12 +13,10 @@ import {
   Palette,
   Cake,
   FileText,
-  ShieldCheck,
   Download,
   Check,
   Ticket,
   AlertCircle,
-  DollarSign,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 

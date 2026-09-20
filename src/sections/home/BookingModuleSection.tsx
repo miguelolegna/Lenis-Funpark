@@ -18,7 +18,6 @@ import {
   Check,
   Banknote,
   Wallet,
-  DollarSign,
 } from 'lucide-react';
 import { rotuloHorario, type ResumoDia } from '../../lib/horarios';
 import { IBAN, MBWAY_NUMERO, metodosPagamento, type MetodoPagamento } from '../../lib/pagamentos';
