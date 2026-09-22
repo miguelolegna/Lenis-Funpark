@@ -172,8 +172,12 @@ export default function ReservaClient() {
         newState.tema_convite = "";
       if (field === "decoracao_tematica" && value === false)
         newState.decoracao_tema_nome = "";
-      if (field === "inclui_bolo" && value === false)
+      if (field === "inclui_bolo" && value === false) {
+        newState.bolo_massa = "";
+        newState.bolo_recheio = "";
+        newState.bolo_cobertura = "";
         newState.bolo_composicao = "";
+      }
       return newState;
     });
   };
@@ -188,30 +192,59 @@ export default function ReservaClient() {
     setLoading(true);
     setError("");
 
-    const { error: rpcError } = await supabase.rpc("selar_reserva_b2c", {
-      p_token_opaco: token,
-    });
+    try {
+      // Garantir a persistência completa de todos os campos do formulário antes de selar a reserva
+      const finalPayload: Record<string, any> = {
+        nome_aniversariante: formData.nome_aniversariante,
+        idade: formData.idade ? parseInt(String(formData.idade), 10) : null,
+        num_criancas: formData.num_criancas ? parseInt(String(formData.num_criancas), 10) : null,
+        tipo_convite: formData.tipo_convite,
+        tema_convite: formData.tipo_convite === "tematico" ? formData.tema_convite : "",
+        opcao_menu: formData.opcao_menu,
+        extra_pizza: formData.extra_pizza,
+        extra_cachorro: formData.extra_cachorro,
+        extra_doces: formData.extra_doces,
+        extra_fruta: formData.extra_fruta,
+        extra_gelatina: formData.extra_gelatina,
+        decoracao_tematica: formData.decoracao_tematica,
+        decoracao_tema_nome: formData.decoracao_tematica ? formData.decoracao_tema_nome : "",
+        pinturas_faciais: formData.pinturas_faciais,
+        outros_servicos: formData.outros_servicos,
+        inclui_bolo: formData.inclui_bolo,
+        bolo_massa: formData.inclui_bolo ? formData.bolo_massa : "",
+        bolo_recheio: formData.inclui_bolo ? formData.bolo_recheio : "",
+        bolo_cobertura: formData.inclui_bolo ? formData.bolo_cobertura : "",
+        bolo_composicao: formData.inclui_bolo ? formData.bolo_composicao : "",
+        notas_adicionais: formData.notas_adicionais,
+      };
 
-    if (rpcError) {
-      setError("Falha de sistema ao guardar a reserva: " + rpcError.message);
+      const { error: saveError } = await supabase.rpc("atualizar_reserva_b2c", {
+        p_token_opaco: token,
+        p_payload: finalPayload,
+      });
+
+      if (saveError) {
+        throw saveError;
+      }
+
+      const { error: rpcError } = await supabase.rpc("selar_reserva_b2c", {
+        p_token_opaco: token,
+      });
+
+      if (rpcError) {
+        throw rpcError;
+      }
+
+      setIsCompleted(true);
+    } catch (err: any) {
+      setError("Falha de sistema ao guardar a reserva: " + (err.message || err));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setIsCompleted(true);
-    setLoading(false);
   };
 
   const handleBlur = async (field: string, value: any) => {
     if (!reservaId) return;
-
-    if (
-      field === "inclui_bolo" &&
-      value === true &&
-      (!formData.bolo_massa || !formData.bolo_recheio || !formData.bolo_cobertura)
-    ) {
-      return;
-    }
 
     const payload: Record<string, any> = { [field]: value };
     if (field === "tipo_convite" && value !== "tematico")
@@ -224,8 +257,9 @@ export default function ReservaClient() {
       payload.bolo_cobertura = "";
       payload.bolo_composicao = "";
     }
-    if (["bolo_massa", "bolo_recheio", "bolo_cobertura", "bolo_composicao"].includes(field) && formData.inclui_bolo)
+    if (["bolo_massa", "bolo_recheio", "bolo_cobertura", "bolo_composicao"].includes(field)) {
       payload.inclui_bolo = true;
+    }
 
     const { error: patchError } = await supabase.rpc("atualizar_reserva_b2c", {
       p_token_opaco: token,
@@ -379,7 +413,7 @@ export default function ReservaClient() {
 
                 <div>
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                    Nº Estimado de Crianças
+                    Nº de Crianças
                   </label>
                   <input
                     type="number"
@@ -794,7 +828,11 @@ export default function ReservaClient() {
                         </label>
                         <select
                           value={formData.bolo_massa}
-                          onChange={(e) => handleInputChange("bolo_massa", e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleInputChange("bolo_massa", val);
+                            handleBlur("bolo_massa", val);
+                          }}
                           onBlur={(e) => handleBlur("bolo_massa", e.target.value)}
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >
@@ -813,7 +851,11 @@ export default function ReservaClient() {
                         </label>
                         <select
                           value={formData.bolo_recheio}
-                          onChange={(e) => handleInputChange("bolo_recheio", e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleInputChange("bolo_recheio", val);
+                            handleBlur("bolo_recheio", val);
+                          }}
                           onBlur={(e) => handleBlur("bolo_recheio", e.target.value)}
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >
@@ -833,7 +875,11 @@ export default function ReservaClient() {
                         </label>
                         <select
                           value={formData.bolo_cobertura}
-                          onChange={(e) => handleInputChange("bolo_cobertura", e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleInputChange("bolo_cobertura", val);
+                            handleBlur("bolo_cobertura", val);
+                          }}
                           onBlur={(e) => handleBlur("bolo_cobertura", e.target.value)}
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >

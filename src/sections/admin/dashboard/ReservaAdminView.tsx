@@ -41,7 +41,14 @@ export default function ReservaAdminView({ reserva, onClose }: ReservaAdminViewP
   if (reserva.extra_gelatina) extras.push('Gelatina (+1.00€)');
 
   const decoracaoAtiva = Boolean(reserva.decoracao_tematica ?? reserva.decoracao);
-  const boloAtivo = Boolean(reserva.inclui_bolo ?? reserva.bolo);
+  const boloAtivo = Boolean(
+    reserva.inclui_bolo ||
+    reserva.bolo ||
+    reserva.bolo_massa ||
+    reserva.bolo_recheio ||
+    reserva.bolo_cobertura ||
+    reserva.bolo_composicao
+  );
   const termosAceites = Boolean(reserva.termos_veracidade ?? reserva.veracidade_confirmada);
 
   return (

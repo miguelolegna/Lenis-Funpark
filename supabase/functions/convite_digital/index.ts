@@ -202,11 +202,11 @@ serve(async (req: Request) => {
       
       <!-- IDADE -->
       ${reserva.idade ? `
-      <text x="945" y="605" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="90" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle">
+      <text x="955" y="605" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="90" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle">
         ${escapeXml(String(reserva.idade))}
       </text>
       <!-- ANOS -->
-      <text x="945" y="655" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="34" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
+      <text x="955" y="655" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="34" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
         ANOS
       </text>` : ''}
 

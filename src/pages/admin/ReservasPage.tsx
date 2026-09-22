@@ -166,6 +166,10 @@ interface ReservaLinha {
   decoracao_tema_nome?: string | null;
   inclui_bolo?: boolean | null;
   bolo?: boolean | null;
+  bolo_massa?: string | null;
+  bolo_recheio?: string | null;
+  bolo_cobertura?: string | null;
+  bolo_composicao?: string | null;
   tipo_convite?: string | null;
   tema_convite?: string | null;
   notas_adicionais?: string | null;
@@ -189,7 +193,7 @@ function dadosTabela(r: ReservaLinha) {
     caucao: nomeMetodoPagamento(r.metodo_pagamento) ?? '',
     decoracao,
     temaDecoracao: decoracao ? r.decoracao_tema_nome || '' : '',
-    bolo: Boolean(r.inclui_bolo ?? r.bolo),
+    bolo: Boolean(r.inclui_bolo || r.bolo || r.bolo_massa || r.bolo_recheio || r.bolo_cobertura || r.bolo_composicao),
     convite: nomesConvite[r.tipo_convite ?? ''] ?? 'Nenhum',
     temaConvite: r.tipo_convite === 'tematico' ? r.tema_convite || '' : '',
     observacoes: [notas, r.outros_servicos && `Outros serviços: ${r.outros_servicos}`].filter(Boolean).join('\n'),

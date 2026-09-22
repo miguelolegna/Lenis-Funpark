@@ -279,8 +279,7 @@ export default function BookingModuleSection({
               </div>
               <p className="text-lg font-black text-secondary">Pagamento em dinheiro</p>
               <p className="text-secondary/80 font-medium">
-                Para garantir a sua reserva, dirija-se ao Leni's FunPark nas <strong>próximas 24 horas</strong> e
-                pague a caução na receção.
+                Para garantir a sua reserva, dirija-se ao Leni's FunPark nas <strong>próximas 24 horas</strong> e pague a caução, no valor de <strong>50€</strong>, na receção.
               </p>
               <p className="text-sm text-secondary/60 font-semibold">
                 3ª a 6ª: 14h00 às 20h00 • Sáb., Dom. e Feriados: 10h00 às 20h00
