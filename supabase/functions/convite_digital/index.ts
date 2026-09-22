@@ -186,43 +186,43 @@ serve(async (req: Request) => {
       <image href="${backgroundBase64}" width="1080" height="1527" />
       
       <!-- NOME DO ANIVERSARIANTE -->
-      <text x="576" y="465" font-family="'Obelix Pro', sans-serif" font-size="65" font-weight="900" fill="#FFFFFF" stroke="#000000" stroke-width="3" filter="url(#shadow3d)" text-anchor="middle" letter-spacing="2">
+      <text x="576" y="460" font-family="'Obelix Pro', sans-serif" font-size="65" font-weight="900" fill="#FFFFFF" stroke="#000000" stroke-width="3" filter="url(#shadow3d)" text-anchor="middle" letter-spacing="2">
         ${escapeXml(nomeDisplay)}
       </text>
       
       <!-- DATA -->
-      <text x="250" y="855" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
+      <text x="250" y="860" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
         ${escapeXml(dataFormatada)}
       </text>
       
       <!-- HORA -->
-      <text x="285" y="945" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
+      <text x="285" y="950" font-family="'Arial', 'Helvetica', sans-serif" font-size="28" font-weight="900" fill="#0f4c5c">
         ${escapeXml(rotuloHora)}
       </text>
       
       <!-- IDADE -->
       ${reserva.idade ? `
-      <text x="955" y="605" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="90" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle">
+      <text x="970" y="605" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="90" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle">
         ${escapeXml(String(reserva.idade))}
       </text>
       <!-- ANOS -->
-      <text x="955" y="655" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="34" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
+      <text x="965" y="655" font-family="'Obelix Pro', 'Arial Black', sans-serif" font-size="34" font-weight="900" stroke="#000000" stroke-width="2" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
         ANOS
       </text>` : ''}
 
       <!-- LOCAL: Linha 1 -->
-      <text x="290" y="1035" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="900" fill="#0f4c5c">
+      <text x="290" y="1040" font-family="'Arial', 'Helvetica', sans-serif" font-size="24" font-weight="900" fill="#0f4c5c">
         Leni's Funpark
       </text>
 
       <!-- LOCAL: Linha 2 -->
-      <text x="180" y="1065" font-family="'Arial', 'Helvetica', sans-serif" font-size="18" font-weight="900" fill="#0f4c5c">
+      <text x="180" y="1070" font-family="'Arial', 'Helvetica', sans-serif" font-size="18" font-weight="900" fill="#0f4c5c">
         Zona Industrial do Tortosendo
       </text>
       
       <!-- LOCAL: Linha 3 -->
       ${localLinha2 ? `
-      <text x="180" y="1095" font-family="'Arial', 'Helvetica', sans-serif" font-size="18" font-weight="900" fill="#0f4c5c">
+      <text x="180" y="1100" font-family="'Arial', 'Helvetica', sans-serif" font-size="18" font-weight="900" fill="#0f4c5c">
         lt.23B Rua F, 6200-823
       </text>` : ''}
 

@@ -185,7 +185,7 @@ export default function ReservaClient() {
   const handleFinalSubmit = async () => {
     if (!formData.nome_aniversariante) {
       setError(
-        "O Primeiro Nome da Criança é estritamente obrigatório para concluir.",
+        "O Primeiro Nome do Aniversariante é estritamente obrigatório para concluir.",
       );
       return;
     }
@@ -197,9 +197,12 @@ export default function ReservaClient() {
       const finalPayload: Record<string, any> = {
         nome_aniversariante: formData.nome_aniversariante,
         idade: formData.idade ? parseInt(String(formData.idade), 10) : null,
-        num_criancas: formData.num_criancas ? parseInt(String(formData.num_criancas), 10) : null,
+        num_criancas: formData.num_criancas
+          ? parseInt(String(formData.num_criancas), 10)
+          : null,
         tipo_convite: formData.tipo_convite,
-        tema_convite: formData.tipo_convite === "tematico" ? formData.tema_convite : "",
+        tema_convite:
+          formData.tipo_convite === "tematico" ? formData.tema_convite : "",
         opcao_menu: formData.opcao_menu,
         extra_pizza: formData.extra_pizza,
         extra_cachorro: formData.extra_cachorro,
@@ -207,7 +210,9 @@ export default function ReservaClient() {
         extra_fruta: formData.extra_fruta,
         extra_gelatina: formData.extra_gelatina,
         decoracao_tematica: formData.decoracao_tematica,
-        decoracao_tema_nome: formData.decoracao_tematica ? formData.decoracao_tema_nome : "",
+        decoracao_tema_nome: formData.decoracao_tematica
+          ? formData.decoracao_tema_nome
+          : "",
         pinturas_faciais: formData.pinturas_faciais,
         outros_servicos: formData.outros_servicos,
         inclui_bolo: formData.inclui_bolo,
@@ -237,7 +242,9 @@ export default function ReservaClient() {
 
       setIsCompleted(true);
     } catch (err: any) {
-      setError("Falha de sistema ao guardar a reserva: " + (err.message || err));
+      setError(
+        "Falha de sistema ao guardar a reserva: " + (err.message || err),
+      );
     } finally {
       setLoading(false);
     }
@@ -257,7 +264,14 @@ export default function ReservaClient() {
       payload.bolo_cobertura = "";
       payload.bolo_composicao = "";
     }
-    if (["bolo_massa", "bolo_recheio", "bolo_cobertura", "bolo_composicao"].includes(field)) {
+    if (
+      [
+        "bolo_massa",
+        "bolo_recheio",
+        "bolo_cobertura",
+        "bolo_composicao",
+      ].includes(field)
+    ) {
       payload.inclui_bolo = true;
     }
 
@@ -323,8 +337,8 @@ export default function ReservaClient() {
                   Convite Temático ({formData.tema_convite})
                 </p>
                 <p className="text-xs mt-1 text-amber-800">
-                  A nossa equipa de design irá preparar o convite personalizado e
-                  enviá-lo por email.
+                  A nossa equipa de design irá preparar o convite personalizado
+                  e enviá-lo por email.
                 </p>
               </div>
             </div>
@@ -354,7 +368,8 @@ export default function ReservaClient() {
               Detalhes da <span className="text-accent">Sua Festa</span>
             </h1>
             <p className="text-secondary/70 font-medium text-sm sm:text-base mt-2 max-w-xl mx-auto">
-              Preencha as preferências de convites, menu, bolo e decoração para a celebração no Leni's FunPark.
+              Preencha as preferências de convites, menu, bolo e decoração para
+              a celebração no Leni's FunPark.
             </p>
           </div>
 
@@ -378,7 +393,7 @@ export default function ReservaClient() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                    Primeiro Nome da Criança *
+                    Primeiro Nome do Aniversariante *
                   </label>
                   <input
                     type="text"
@@ -448,9 +463,21 @@ export default function ReservaClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 {[
-                  { id: "nenhum", label: "Sem Convite", desc: "Não necessito de convite" },
-                  { id: "lenis", label: "Convite Leni's", desc: "Modelo padrão do parque" },
-                  { id: "tematico", label: "Convite Temático", desc: "Design com tema à escolha" },
+                  {
+                    id: "nenhum",
+                    label: "Sem Convite",
+                    desc: "Não necessito de convite",
+                  },
+                  {
+                    id: "lenis",
+                    label: "Convite Leni's",
+                    desc: "Modelo padrão do parque",
+                  },
+                  {
+                    id: "tematico",
+                    label: "Convite Temático",
+                    desc: "Design com tema à escolha",
+                  },
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -577,7 +604,9 @@ export default function ReservaClient() {
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-secondary/60 mt-1">{menu.desc}</p>
+                    <p className="text-xs text-secondary/60 mt-1">
+                      {menu.desc}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -601,11 +630,31 @@ export default function ReservaClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
-                  { field: "extra_pizza", name: "Pizza", price: "+1,50€ / criança" },
-                  { field: "extra_cachorro", name: "Cachorro Quente", price: "+1,50€ / criança" },
-                  { field: "extra_doces", name: "Doces Sortidos", price: "+1,00€ / criança" },
-                  { field: "extra_fruta", name: "Prato de Fruta", price: "+1,00€ / criança" },
-                  { field: "extra_gelatina", name: "Gelatina", price: "+1,00€ / criança" },
+                  {
+                    field: "extra_pizza",
+                    name: "Pizza",
+                    price: "+1,50€ / criança",
+                  },
+                  {
+                    field: "extra_cachorro",
+                    name: "Cachorro Quente",
+                    price: "+1,50€ / criança",
+                  },
+                  {
+                    field: "extra_doces",
+                    name: "Doces Sortidos",
+                    price: "+1,00€ / criança",
+                  },
+                  {
+                    field: "extra_fruta",
+                    name: "Prato de Fruta",
+                    price: "+1,00€ / criança",
+                  },
+                  {
+                    field: "extra_gelatina",
+                    name: "Gelatina",
+                    price: "+1,00€ / criança",
+                  },
                 ].map((item) => {
                   const isChecked = (formData as any)[item.field];
                   return (
@@ -636,7 +685,9 @@ export default function ReservaClient() {
                             : "bg-white border-secondary/30"
                         }`}
                       >
-                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        {isChecked && (
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        )}
                       </div>
                     </button>
                   );
@@ -706,7 +757,10 @@ export default function ReservaClient() {
                         type="text"
                         value={formData.decoracao_tema_nome}
                         onChange={(e) =>
-                          handleInputChange("decoracao_tema_nome", e.target.value)
+                          handleInputChange(
+                            "decoracao_tema_nome",
+                            e.target.value,
+                          )
                         }
                         onBlur={(e) =>
                           handleBlur("decoracao_tema_nome", e.target.value)
@@ -833,7 +887,9 @@ export default function ReservaClient() {
                             handleInputChange("bolo_massa", val);
                             handleBlur("bolo_massa", val);
                           }}
-                          onBlur={(e) => handleBlur("bolo_massa", e.target.value)}
+                          onBlur={(e) =>
+                            handleBlur("bolo_massa", e.target.value)
+                          }
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >
                           <option value="">Selecione uma opção</option>
@@ -856,14 +912,18 @@ export default function ReservaClient() {
                             handleInputChange("bolo_recheio", val);
                             handleBlur("bolo_recheio", val);
                           }}
-                          onBlur={(e) => handleBlur("bolo_recheio", e.target.value)}
+                          onBlur={(e) =>
+                            handleBlur("bolo_recheio", e.target.value)
+                          }
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >
                           <option value="">Selecione uma opção</option>
                           <option value="Doce de ovo">Doce de ovo</option>
                           <option value="Nata">Nata</option>
                           <option value="Creme Russo">Creme Russo</option>
-                          <option value="Frutos vermelhos">Frutos vermelhos</option>
+                          <option value="Frutos vermelhos">
+                            Frutos vermelhos
+                          </option>
                           <option value="Chocolate">Chocolate</option>
                           <option value="Fruta variada">Fruta variada</option>
                         </select>
@@ -880,7 +940,9 @@ export default function ReservaClient() {
                             handleInputChange("bolo_cobertura", val);
                             handleBlur("bolo_cobertura", val);
                           }}
-                          onBlur={(e) => handleBlur("bolo_cobertura", e.target.value)}
+                          onBlur={(e) =>
+                            handleBlur("bolo_cobertura", e.target.value)
+                          }
                           className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
                         >
                           <option value="">Selecione uma opção</option>
@@ -888,7 +950,9 @@ export default function ReservaClient() {
                           <option value="Doce de ovo">Doce de ovo</option>
                           <option value="Nata">Nata</option>
                           <option value="Creme Russo">Creme Russo</option>
-                          <option value="Frutos vermelhos">Frutos vermelhos</option>
+                          <option value="Frutos vermelhos">
+                            Frutos vermelhos
+                          </option>
                           <option value="Chocolate">Chocolate</option>
                           <option value="Fruta variada">Fruta variada</option>
                         </select>
@@ -1110,4 +1174,3 @@ export default function ReservaClient() {
     </div>
   );
 }
-

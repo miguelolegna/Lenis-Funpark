@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Ticket,
   Send,
@@ -13,13 +13,13 @@ import {
   User,
   Sparkles,
   Trash2,
-} from 'lucide-react';
-import { pageVariants, pageTransition } from '../../lib/animations';
-import { supabase } from '../../lib/supabase';
-import { horariosFestaDia, rotuloHorario } from '../../lib/horarios';
+} from "lucide-react";
+import { pageVariants, pageTransition } from "../../lib/animations";
+import { supabase } from "../../lib/supabase";
+import { horariosFestaDia, rotuloHorario } from "../../lib/horarios";
 
 function parseDataInput(value: string): Date | null {
-  const [y, m, d] = value.split('-').map(Number);
+  const [y, m, d] = value.split("-").map(Number);
   return y && m && d ? new Date(y, m - 1, d) : null;
 }
 
@@ -35,16 +35,17 @@ export interface ConviteAvulso {
   link: string;
 }
 
-const STORAGE_KEY = 'admin_convites_avulsos';
+const STORAGE_KEY = "admin_convites_avulsos";
 
 export default function ConvitesPage() {
-  const [nome, setNome] = useState('');
-  const [idade, setIdade] = useState('');
-  const [dia, setDia] = useState('');
-  const [hora, setHora] = useState('');
-  const [telefone, setTelefone] = useState('');
+  const [nome, setNome] = useState("");
+  const [idade, setIdade] = useState("");
+  const [dia, setDia] = useState("");
+  const [hora, setHora] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [generatedConvite, setGeneratedConvite] = useState<ConviteAvulso | null>(null);
+  const [generatedConvite, setGeneratedConvite] =
+    useState<ConviteAvulso | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [convites, setConvites] = useState<ConviteAvulso[]>(() => {
@@ -63,7 +64,7 @@ export default function ConvitesPage() {
   const handleGerarConvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome || !dia || !hora || !telefone) {
-      alert('Por favor preencha todos os 4 campos obrigatórios.');
+      alert("Por favor preencha todos os 4 campos obrigatórios.");
       return;
     }
 
@@ -76,31 +77,32 @@ export default function ConvitesPage() {
       const combinedDateTime = new Date(`${dia}T${hora}:00`).toISOString();
 
       // Inserir na tabela reservas com estado COMPLETED e tipo_convite 'lenis' para permitir geração na Edge Function
-      let linkUrl = '';
+      let linkUrl = "";
       try {
         const { data: reservaCriada, error: insertError } = await supabase
-          .from('reservas')
+          .from("reservas")
           .insert([
             {
               nome_aniversariante: nome.trim(),
               idade: idade ? Number(idade) : null,
               data_evento: combinedDateTime,
               contacto_cliente: telefone.trim(),
-              tipo_convite: 'lenis',
+              tipo_convite: "lenis",
               convite_lenis: true,
-              estado: 'COMPLETED',
+              estado: "COMPLETED",
               convite_token: conviteId,
-              notas_adicionais: 'Convite avulso emitido manualmente pelo Back-Office.',
+              notas_adicionais:
+                "Convite avulso emitido manualmente pelo Back-Office.",
             },
           ])
-          .select('id, convite_token')
+          .select("id, convite_token")
           .single();
 
         if (!insertError && reservaCriada?.convite_token) {
           linkUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/convite_digital?token=${reservaCriada.convite_token}`;
         }
       } catch (err) {
-        console.warn('Fallback para modo offline de convite:', err);
+        console.warn("Fallback para modo offline de convite:", err);
       }
 
       // Se falhou o insert por RLS ou tabela, fallback para URL parametrizada
@@ -124,11 +126,14 @@ export default function ConvitesPage() {
       setGeneratedConvite(novoConvite);
 
       // Limpar formulário
-      setNome('');
-      setTelefone('');
+      setNome("");
+      setTelefone("");
     } catch (err: any) {
-      console.error('Erro ao gerar convite:', err);
-      alert('Ocorreu um erro ao gerar o convite: ' + (err.message || 'Erro desconhecido'));
+      console.error("Erro ao gerar convite:", err);
+      alert(
+        "Ocorreu um erro ao gerar o convite: " +
+          (err.message || "Erro desconhecido"),
+      );
     } finally {
       setLoading(false);
     }
@@ -141,7 +146,11 @@ export default function ConvitesPage() {
   };
 
   const handleDeleteConvite = (id: string) => {
-    if (window.confirm('Tens a certeza que pretendes remover este convite do histórico?')) {
+    if (
+      window.confirm(
+        "Tens a certeza que pretendes remover este convite do histórico?",
+      )
+    ) {
       setConvites((prev) => prev.filter((c) => c.id !== id));
       if (generatedConvite?.id === id) {
         setGeneratedConvite(null);
@@ -176,7 +185,8 @@ export default function ConvitesPage() {
 
         <div className="flex items-center gap-2">
           <span className="px-4 py-1.5 rounded-2xl text-xs font-extrabold bg-surface-alt border border-surface-alt text-secondary">
-            {convites.length} {convites.length === 1 ? 'convite emitido' : 'convites emitidos'}
+            {convites.length}{" "}
+            {convites.length === 1 ? "convite emitido" : "convites emitidos"}
           </span>
         </div>
       </div>
@@ -190,7 +200,9 @@ export default function ConvitesPage() {
               <Send className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-secondary">Criar Convite Avulso</h2>
+              <h2 className="text-lg font-black text-secondary">
+                Criar Convite Avulso
+              </h2>
               <p className="text-xs text-secondary/60 font-medium">
                 Gera o convite oficial digital sem necessidade de reserva prévia
               </p>
@@ -201,7 +213,7 @@ export default function ConvitesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-secondary uppercase mb-1">
-                  Primeiro Nome da Criança *
+                  Primeiro Nome do Aniversariante *
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -264,17 +276,23 @@ export default function ConvitesPage() {
                     className="w-full pl-10 pr-3 py-2.5 bg-surface-alt/40 border border-surface-alt rounded-xl text-sm font-semibold text-secondary focus:outline-none focus:border-primary transition-colors appearance-none"
                   >
                     <option value="" disabled>
-                      {!dia ? 'Escolhe a data' : 'Escolhe a hora'}
+                      {!dia ? "Escolhe a data" : "Escolhe a hora"}
                     </option>
                     {(() => {
                       const dataObj = parseDataInput(dia);
                       if (!dataObj) return null;
                       const slots = horariosFestaDia(dataObj);
                       if (slots.length === 0) {
-                        return <option value="" disabled>Sem horários (Encerrado)</option>;
+                        return (
+                          <option value="" disabled>
+                            Sem horários (Encerrado)
+                          </option>
+                        );
                       }
-                      return slots.map(h => (
-                        <option key={h} value={h}>{rotuloHorario(h)}</option>
+                      return slots.map((h) => (
+                        <option key={h} value={h}>
+                          {rotuloHorario(h)}
+                        </option>
                       ));
                     })()}
                   </select>
@@ -305,7 +323,9 @@ export default function ConvitesPage() {
               className="w-full py-3 bg-primary hover:bg-secondary text-white text-sm font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Ticket className="w-4 h-4" />
-              <span>{loading ? 'A gerar convite...' : 'Gerar Convite Digital'}</span>
+              <span>
+                {loading ? "A gerar convite..." : "Gerar Convite Digital"}
+              </span>
             </button>
           </form>
 
@@ -319,7 +339,8 @@ export default function ConvitesPage() {
                 </span>
               </div>
               <p className="text-xs text-secondary/70 font-medium">
-                O convite para <strong>{generatedConvite.nome}</strong> está pronto para envio.
+                O convite para <strong>{generatedConvite.nome}</strong> está
+                pronto para envio.
               </p>
 
               <div className="flex flex-col gap-2 pt-1">
@@ -334,7 +355,9 @@ export default function ConvitesPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleCopy(generatedConvite.id, generatedConvite.link)}
+                  onClick={() =>
+                    handleCopy(generatedConvite.id, generatedConvite.link)
+                  }
                   className="w-full py-2 bg-white border border-surface-alt text-secondary text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-surface-alt transition-colors cursor-pointer"
                 >
                   {copiedId === generatedConvite.id ? (
@@ -362,7 +385,9 @@ export default function ConvitesPage() {
                 <History className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-secondary">Convites Gerados</h2>
+                <h2 className="text-lg font-black text-secondary">
+                  Convites Gerados
+                </h2>
                 <p className="text-xs text-secondary/60">
                   Histórico de links emitidos para regeneração rápida
                 </p>
@@ -375,7 +400,9 @@ export default function ConvitesPage() {
               <div className="py-16 text-center text-secondary/40 font-semibold">
                 <Ticket className="w-10 h-10 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">Nenhum convite avulso gerado ainda.</p>
-                <p className="text-xs mt-1">Preenche o formulário ao lado para emitir o primeiro convite.</p>
+                <p className="text-xs mt-1">
+                  Preenche o formulário ao lado para emitir o primeiro convite.
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -385,7 +412,9 @@ export default function ConvitesPage() {
                     className="p-4 rounded-2xl bg-surface-alt/30 border border-surface-alt hover:border-primary/30 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div>
-                      <h3 className="font-black text-sm text-secondary truncate">{item.nome}</h3>
+                      <h3 className="font-black text-sm text-secondary truncate">
+                        {item.nome}
+                      </h3>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-secondary/70 mt-1">
                         <span className="font-bold text-primary">
                           {item.dia} às {item.hora}
@@ -394,7 +423,9 @@ export default function ConvitesPage() {
                         <span>{item.telefone}</span>
                         <span className="text-secondary/40">•</span>
                         <span className="text-secondary/50 text-[11px]">
-                          {new Date(item.created_at).toLocaleDateString('pt-PT')}
+                          {new Date(item.created_at).toLocaleDateString(
+                            "pt-PT",
+                          )}
                         </span>
                       </div>
                     </div>
