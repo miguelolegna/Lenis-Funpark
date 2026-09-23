@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, CalendarPlus, PartyPopper, CalendarClock, Link2, Check } from 'lucide-react';
+import CustomDatePicker from '../../../components/CustomDatePicker';
 import { supabase } from '../../../lib/supabase';
 import { buildLisbonDateTime } from '../../../lib/dateUtils';
 import { obterHorariosDisponiveis, rotuloHorario } from '../../../lib/horarios';
@@ -285,7 +286,7 @@ export default function NovoEventoModal({ dataInicial = '', onClose, onCreated }
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>Data *</label>
-                    <input type="date" required value={data} onChange={(e) => setData(e.target.value)} className={inputClass} />
+                    <CustomDatePicker value={data} onChange={setData} />
                   </div>
                   <div>
                     <label className={labelClass}>Hora *</label>
@@ -334,7 +335,7 @@ export default function NovoEventoModal({ dataInicial = '', onClose, onCreated }
                 </div>
                 <div>
                   <label className={labelClass}>Data *</label>
-                  <input type="date" required value={data} onChange={(e) => setData(e.target.value)} className={inputClass} />
+                  <CustomDatePicker value={data} onChange={setData} />
                 </div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-secondary cursor-pointer">
                   <input type="checkbox" checked={diaInteiro} onChange={(e) => setDiaInteiro(e.target.checked)} className="w-4 h-4 accent-primary" />

@@ -52,6 +52,7 @@ export default function ReservaAdminView({
     reserva.bolo_massa ||
     reserva.bolo_recheio ||
     reserva.bolo_cobertura ||
+    reserva.bolo_cobertura_base ||
     reserva.bolo_composicao,
   );
   const termosAceites = Boolean(
@@ -153,7 +154,7 @@ export default function ReservaAdminView({
                     Tema do Convite
                   </span>
                   <p className="text-sm font-bold text-secondary">
-                    {reserva.tema_convite || "—"}
+                    {reserva.tema_convite || reserva.tema_personalizado || "—"}
                   </p>
                 </div>
               )}
@@ -206,9 +207,9 @@ export default function ReservaAdminView({
                   </span>
                   <p className="text-sm font-bold text-secondary">
                     {decoracaoAtiva ? "Sim" : "Não"}
-                    {decoracaoAtiva && reserva.decoracao_tema_nome ? (
+                    {decoracaoAtiva && (reserva.decoracao_tema_nome || reserva.tema_personalizado) ? (
                       <span className="ml-1 text-secondary/70 font-normal">
-                        ({reserva.decoracao_tema_nome})
+                        ({reserva.decoracao_tema_nome || reserva.tema_personalizado})
                       </span>
                     ) : null}
                   </p>
@@ -275,6 +276,16 @@ export default function ReservaAdminView({
                       {reserva.bolo_cobertura || "—"}
                     </p>
                   </div>
+                  {reserva.bolo_cobertura === "Imagem" && (
+                    <div>
+                      <span className="block text-xs font-semibold text-secondary/60">
+                        Cobertura (Base da Imagem)
+                      </span>
+                      <p className="text-sm font-medium text-secondary mt-0.5">
+                        {reserva.bolo_cobertura_base || "—"}
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <span className="block text-xs font-semibold text-secondary/60">
                       Especificações / Observações

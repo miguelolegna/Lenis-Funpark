@@ -17,6 +17,7 @@ import {
   Check,
   Ticket,
   AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -79,6 +80,7 @@ export default function ReservaClient() {
     bolo_massa: "",
     bolo_recheio: "",
     bolo_cobertura: "",
+    bolo_cobertura_base: "",
     bolo_composicao: "",
     notas_adicionais: "",
     termos_veracidade: false,
@@ -149,6 +151,7 @@ export default function ReservaClient() {
           bolo_massa: reservaData.bolo_massa || "",
           bolo_recheio: reservaData.bolo_recheio || "",
           bolo_cobertura: reservaData.bolo_cobertura || "",
+          bolo_cobertura_base: reservaData.bolo_cobertura_base || "",
           bolo_composicao: reservaData.bolo_composicao || "",
           notas_adicionais: reservaData.notas_adicionais || "",
           termos_veracidade: reservaData.termos_veracidade || false,
@@ -176,7 +179,11 @@ export default function ReservaClient() {
         newState.bolo_massa = "";
         newState.bolo_recheio = "";
         newState.bolo_cobertura = "";
+        newState.bolo_cobertura_base = "";
         newState.bolo_composicao = "";
+      }
+      if (field === "bolo_cobertura" && value !== "Imagem") {
+        newState.bolo_cobertura_base = "";
       }
       return newState;
     });
@@ -219,6 +226,7 @@ export default function ReservaClient() {
         bolo_massa: formData.inclui_bolo ? formData.bolo_massa : "",
         bolo_recheio: formData.inclui_bolo ? formData.bolo_recheio : "",
         bolo_cobertura: formData.inclui_bolo ? formData.bolo_cobertura : "",
+        bolo_cobertura_base: formData.inclui_bolo ? formData.bolo_cobertura_base : "",
         bolo_composicao: formData.inclui_bolo ? formData.bolo_composicao : "",
         notas_adicionais: formData.notas_adicionais,
       };
@@ -262,13 +270,18 @@ export default function ReservaClient() {
       payload.bolo_massa = "";
       payload.bolo_recheio = "";
       payload.bolo_cobertura = "";
+      payload.bolo_cobertura_base = "";
       payload.bolo_composicao = "";
+    }
+    if (field === "bolo_cobertura" && value !== "Imagem") {
+      payload.bolo_cobertura_base = "";
     }
     if (
       [
         "bolo_massa",
         "bolo_recheio",
         "bolo_cobertura",
+        "bolo_cobertura_base",
         "bolo_composicao",
       ].includes(field)
     ) {
@@ -880,83 +893,132 @@ export default function ReservaClient() {
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
                           Massa do Bolo
                         </label>
-                        <select
-                          value={formData.bolo_massa}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            handleInputChange("bolo_massa", val);
-                            handleBlur("bolo_massa", val);
-                          }}
-                          onBlur={(e) =>
-                            handleBlur("bolo_massa", e.target.value)
-                          }
-                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
-                        >
-                          <option value="">Selecione uma opção</option>
-                          <option value="Pão de lo">Pão de ló</option>
-                          <option value="Chocolate">Chocolate</option>
-                          <option value="Iogurte">Iogurte</option>
-                          <option value="Cenoura">Cenoura</option>
-                          <option value="Red velvet">Red velvet</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={formData.bolo_massa}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleInputChange("bolo_massa", val);
+                              handleBlur("bolo_massa", val);
+                            }}
+                            onBlur={(e) =>
+                              handleBlur("bolo_massa", e.target.value)
+                            }
+                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
+                          >
+                            <option value="">Selecione uma opção</option>
+                            <option value="Pão de lo">Pão de ló</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Iogurte">Iogurte</option>
+                            <option value="Cenoura">Cenoura</option>
+                            <option value="Red velvet">Red velvet</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
                           Recheio
                         </label>
-                        <select
-                          value={formData.bolo_recheio}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            handleInputChange("bolo_recheio", val);
-                            handleBlur("bolo_recheio", val);
-                          }}
-                          onBlur={(e) =>
-                            handleBlur("bolo_recheio", e.target.value)
-                          }
-                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
-                        >
-                          <option value="">Selecione uma opção</option>
-                          <option value="Doce de ovo">Doce de ovo</option>
-                          <option value="Nata">Nata</option>
-                          <option value="Creme Russo">Creme Russo</option>
-                          <option value="Frutos vermelhos">
-                            Frutos vermelhos
-                          </option>
-                          <option value="Chocolate">Chocolate</option>
-                          <option value="Fruta variada">Fruta variada</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={formData.bolo_recheio}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleInputChange("bolo_recheio", val);
+                              handleBlur("bolo_recheio", val);
+                            }}
+                            onBlur={(e) =>
+                              handleBlur("bolo_recheio", e.target.value)
+                            }
+                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
+                          >
+                            <option value="">Selecione uma opção</option>
+                            <option value="Doce de ovo">Doce de ovo</option>
+                            <option value="Nata">Nata</option>
+                            <option value="Creme Russo">Creme Russo</option>
+                            <option value="Frutos vermelhos">
+                              Frutos vermelhos
+                            </option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Fruta variada">Fruta variada</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
                           Cobertura
                         </label>
-                        <select
-                          value={formData.bolo_cobertura}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            handleInputChange("bolo_cobertura", val);
-                            handleBlur("bolo_cobertura", val);
-                          }}
-                          onBlur={(e) =>
-                            handleBlur("bolo_cobertura", e.target.value)
-                          }
-                          className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary outline-none transition-all cursor-pointer"
-                        >
-                          <option value="">Selecione uma opção</option>
-                          <option value="Imagem">Imagem</option>
-                          <option value="Doce de ovo">Doce de ovo</option>
-                          <option value="Nata">Nata</option>
-                          <option value="Creme Russo">Creme Russo</option>
-                          <option value="Frutos vermelhos">
-                            Frutos vermelhos
-                          </option>
-                          <option value="Chocolate">Chocolate</option>
-                          <option value="Fruta variada">Fruta variada</option>
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={formData.bolo_cobertura}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleInputChange("bolo_cobertura", val);
+                              handleBlur("bolo_cobertura", val);
+                            }}
+                            onBlur={(e) =>
+                              handleBlur("bolo_cobertura", e.target.value)
+                            }
+                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
+                          >
+                            <option value="">Selecione uma opção</option>
+                            <option value="Imagem">Imagem</option>
+                            <option value="Doce de ovo">Doce de ovo</option>
+                            <option value="Nata">Nata</option>
+                            <option value="Creme Russo">Creme Russo</option>
+                            <option value="Frutos vermelhos">
+                              Frutos vermelhos
+                            </option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Fruta variada">Fruta variada</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
+                        </div>
                       </div>
+
+                      <AnimatePresence>
+                        {formData.bolo_cobertura === "Imagem" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2 mt-4">
+                              Cobertura por baixo da Imagem
+                            </label>
+                            <div className="relative">
+                              <select
+                                value={formData.bolo_cobertura_base}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  handleInputChange("bolo_cobertura_base", val);
+                                  handleBlur("bolo_cobertura_base", val);
+                                }}
+                                onBlur={(e) =>
+                                  handleBlur("bolo_cobertura_base", e.target.value)
+                                }
+                                className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
+                              >
+                                <option value="">Selecione uma opção</option>
+                                <option value="Doce de ovo">Doce de ovo</option>
+                                <option value="Nata">Nata</option>
+                                <option value="Creme Russo">Creme Russo</option>
+                                <option value="Frutos vermelhos">
+                                  Frutos vermelhos
+                                </option>
+                                <option value="Chocolate">Chocolate</option>
+                                <option value="Fruta variada">Fruta variada</option>
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">

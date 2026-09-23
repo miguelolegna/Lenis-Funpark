@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { PartyPopper, GraduationCap, CheckCircle2, Building2, Clock } from 'lucide-react';
 
 export interface B2COfertaSectionProps {
@@ -7,6 +7,19 @@ export interface B2COfertaSectionProps {
 }
 
 export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSectionProps) {
+  const navigate = useNavigate();
+
+  const handleNavigateAndScroll = (hash: string, pkgType?: string) => {
+    if (pkgType) onCheckAvailability?.(pkgType);
+    navigate('/');
+    setTimeout(() => {
+      const element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 300);
+  };
+
   return (
     <section className="py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,13 +55,12 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <Link 
-                to="/#reservas"
-                onClick={() => onCheckAvailability?.('Aniversários')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors text-center inline-block shadow-md hover:shadow-lg"
+              <button 
+                onClick={() => handleNavigateAndScroll('reservas', 'Aniversários')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-primary text-white hover:bg-secondary transition-colors text-center inline-block shadow-md hover:shadow-lg cursor-pointer"
               >
                 Verificar Disponibilidade
-              </Link>
+              </button>
             </div>
           </motion.div>
 
@@ -150,13 +162,12 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
                 ))}
               </ul>
               
-              <Link 
-                to="/#semaforo"
-                onClick={() => onCheckAvailability?.('A Qualquer Hora')}
-                className="w-full py-4 rounded-xl font-bold text-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-center inline-block shadow-md hover:shadow-lg"
+              <button 
+                onClick={() => handleNavigateAndScroll('semaforo', 'A Qualquer Hora')}
+                className="w-full py-4 rounded-xl font-bold text-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-center inline-block shadow-md hover:shadow-lg cursor-pointer"
               >
                 Ver Lotação no Semáforo
-              </Link>
+              </button>
             </div>
           </motion.div>
         </div>
