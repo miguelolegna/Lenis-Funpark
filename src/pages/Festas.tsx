@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 
+import SEO from '../components/SEO';
 import HeroSection from '../sections/festas/HeroSection';
 import B2COfertaSection from '../sections/festas/B2COfertaSection';
 
@@ -25,6 +26,11 @@ export default function Festas() {
       transition={pageTransition}
       className="w-full"
     >
+      <SEO 
+        title="Festas de Aniversário - Leni's Funpark"
+        description="Organiza a melhor festa de aniversário para o teu filho! Menus especiais, lanche e muita diversão nos nossos trampolins e piscina de bolas."
+        url="https://lenisfunpark.com/festas"
+      />
       <HeroSection />
 
       <B2COfertaSection />

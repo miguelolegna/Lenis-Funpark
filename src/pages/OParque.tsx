@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { pageVariants, pageTransition } from '../lib/animations';
 
+import SEO from '../components/SEO';
 import HeroSection from '../sections/o-parque/HeroSection';
 import TourVisualSection from '../sections/o-parque/TourVisualSection';
 import HistoriaMissaoSection from '../sections/o-parque/HistoriaMissaoSection';
@@ -43,6 +44,11 @@ export default function OParque() {
       transition={pageTransition}
       className="w-full"
     >
+      <SEO 
+        title="O Parque - Leni's Funpark"
+        description="Conhece o espaço do Leni's Funpark. Trampolins, piscina de bolas, escorregas e muito mais. A nossa equipa de diversão está à tua espera!"
+        url="https://lenisfunpark.com/parque"
+      />
       <HeroSection />
       
       <TourVisualSection />

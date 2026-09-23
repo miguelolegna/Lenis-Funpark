@@ -9,9 +9,9 @@ export default function SobrePreviewSection({}: SobrePreviewSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-4xl font-black text-secondary mb-6">Criamos momentos de <span className="text-primary">alegria inesquecível</span></h2>
+            <h2 className="text-4xl font-black text-secondary mb-6">O Melhor <span className="text-primary">Parque de Diversões</span> Indoor</h2>
             <p className="text-lg text-secondary/70 mb-8 leading-relaxed">
-              Mais do que um parque, somos o ponto de encontro perfeito para as famílias da Cova da Beira. Um espaço seguro, 100% climatizado e desenhado para que as crianças gastem energia enquanto os pais relaxam.
+              O Leni's Funpark é a referência de lazer infantil em Portugal (Cova da Beira). Com mais de 1000m² dedicados à diversão e centenas de festas de aniversário de sucesso por ano, oferecemos o espaço mais seguro, 100% climatizado e desenhado para as famílias.
             </p>
             <ul className="space-y-4">
               {[

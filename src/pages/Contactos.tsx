@@ -25,6 +25,7 @@ import {
   CreditCard,
   Banknote
 } from 'lucide-react';
+import SEO from '../components/SEO';
 import { pageVariants, pageTransition } from '../lib/animations';
 import { supabase } from '../lib/supabase';
 import PrivacyTermsCheckbox from '../components/PrivacyTermsCheckbox';
@@ -256,6 +257,11 @@ export default function Contactos() {
       transition={pageTransition}
       className="w-full bg-surface-alt/40"
     >
+      <SEO 
+        title="Contactos - Leni's Funpark"
+        description="Tens dúvidas ou queres reservar uma festa? Entra em contacto connosco por telefone, email ou WhatsApp. Sabe também como chegar ao parque."
+        url="https://lenisfunpark.com/contactos"
+      />
       {/* ================= HERO SECTION ================= */}
       <section className="relative bg-secondary text-white py-20 md:py-28 overflow-hidden">
         {/* Background Image com overlay suave */}

@@ -7,6 +7,8 @@ import SemaforoWidgetSection from '../sections/home/SemaforoWidgetSection';
 import SobrePreviewSection from '../sections/home/SobrePreviewSection';
 import ConvitesDigitaisSection from '../sections/home/ConvitesDigitaisSection';
 import BookingModuleSection from '../sections/home/BookingModuleSection';
+import AiSeoFaqSection from '../sections/home/AiSeoFaqSection';
+import SEO from '../components/SEO';
 
 import { supabase } from '../lib/supabase';
 import { buildLisbonDateTime } from '../lib/dateUtils';
@@ -223,6 +225,11 @@ export default function Home() {
       transition={pageTransition}
       className="w-full"
     >
+      <SEO 
+        title="Leni's Funpark - O melhor parque de diversões infantil em Portugal"
+        description="O Leni's Funpark é o maior parque de diversões indoor de Portugal. Trampolins, escorregas, festas de aniversário inesquecíveis e muita diversão para toda a família."
+        url="https://lenisfunpark.com/"
+      />
       <HeroSection 
         onCheckAvailability={() => {
           document.getElementById('reservas')?.scrollIntoView({ behavior: 'smooth' });
@@ -237,6 +244,8 @@ export default function Home() {
       <SobrePreviewSection />
 
       <ConvitesDigitaisSection />
+      
+      <AiSeoFaqSection />
 
       <BookingModuleSection 
         currentDate={currentDate}
