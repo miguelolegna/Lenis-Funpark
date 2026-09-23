@@ -11,13 +11,7 @@ export default function B2COfertaSection({ onCheckAvailability }: B2COfertaSecti
 
   const handleNavigateAndScroll = (hash: string, pkgType?: string) => {
     if (pkgType) onCheckAvailability?.(pkgType);
-    navigate('/');
-    setTimeout(() => {
-      const element = document.getElementById(hash);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 300);
+    navigate('/#' + hash);
   };
 
   return (
