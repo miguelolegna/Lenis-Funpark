@@ -142,7 +142,6 @@ export default function CustomDatePicker({ value, onChange, disabled }: CustomDa
                 <div key={`empty-${index}`} className="aspect-square" />
               ))}
               {daysInMonth.map((day) => {
-                const dateObj = new Date(year, month, day);
                 // Highlight current selected value
                 let isSelected = false;
                 if (value) {

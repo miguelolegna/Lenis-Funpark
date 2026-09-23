@@ -8,7 +8,7 @@ export default function ScrollToTop() {
     if (hash) {
       const id = hash.replace('#', '');
       let attempts = 0;
-      let timer: NodeJS.Timeout;
+      let timer: ReturnType<typeof setTimeout>;
 
       const checkAndScroll = () => {
         const element = document.getElementById(id);
