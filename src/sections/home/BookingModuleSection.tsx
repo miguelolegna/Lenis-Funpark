@@ -18,6 +18,7 @@ import {
   Check,
   Banknote,
   Wallet,
+  Cake,
 } from 'lucide-react';
 import { rotuloHorario, type ResumoDia } from '../../lib/horarios';
 import { IBAN, MBWAY_NUMERO, metodosPagamento, type MetodoPagamento } from '../../lib/pagamentos';
@@ -547,16 +548,16 @@ export default function BookingModuleSection({
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-secondary mb-2 flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-primary" />
-                      Nº de Pessoas *
+                      <Cake className="w-4 h-4 text-primary" />
+                      Idade da Criança *
                     </label>
                     <input
-                      name="guests"
+                      name="idade_crianca"
                       type="number"
                       min="1"
-                      max="100"
+                      max="99"
                       required
-                      placeholder="Ex: 15"
+                      placeholder="Ex: 8"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
                   </div>

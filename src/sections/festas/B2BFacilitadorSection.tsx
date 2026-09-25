@@ -58,11 +58,11 @@ export default function B2BFacilitadorSection({ isSubmitting, isSubmitted, onSub
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-secondary mb-2">Data Prevista *</label>
+                  <label className="block text-sm font-bold text-secondary mb-2">Data Prevista*</label>
                   <input name="target_date" required type="date" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-secondary mb-2">Nº Estimado de Pessoas *</label>
+                  <label className="block text-sm font-bold text-secondary mb-2">Nº de Pessoas*</label>
                   <select name="estimated_participants" required defaultValue="" className="w-full bg-white border-2 border-surface-alt rounded-xl px-4 py-3 focus:border-primary outline-none transition-colors">
                     <option value="" disabled>Selecione um intervalo...</option>
                     <option value="20-50">20 a 50 pessoas</option>

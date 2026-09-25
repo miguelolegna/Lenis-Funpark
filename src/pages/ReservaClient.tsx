@@ -80,7 +80,7 @@ export default function ReservaClient() {
     bolo_massa: "",
     bolo_recheio: "",
     bolo_cobertura: "",
-    bolo_cobertura_base: "",
+    bolo_com_imagem: false,
     bolo_composicao: "",
     notas_adicionais: "",
     termos_veracidade: false,
@@ -150,8 +150,8 @@ export default function ReservaClient() {
           inclui_bolo: reservaData.inclui_bolo || false,
           bolo_massa: reservaData.bolo_massa || "",
           bolo_recheio: reservaData.bolo_recheio || "",
-          bolo_cobertura: reservaData.bolo_cobertura || "",
-          bolo_cobertura_base: reservaData.bolo_cobertura_base || "",
+          bolo_cobertura: reservaData.bolo_cobertura === "Imagem" ? (reservaData.bolo_cobertura_base || "") : (reservaData.bolo_cobertura || ""),
+          bolo_com_imagem: reservaData.bolo_cobertura === "Imagem",
           bolo_composicao: reservaData.bolo_composicao || "",
           notas_adicionais: reservaData.notas_adicionais || "",
           termos_veracidade: reservaData.termos_veracidade || false,
@@ -179,11 +179,8 @@ export default function ReservaClient() {
         newState.bolo_massa = "";
         newState.bolo_recheio = "";
         newState.bolo_cobertura = "";
-        newState.bolo_cobertura_base = "";
+        newState.bolo_com_imagem = false;
         newState.bolo_composicao = "";
-      }
-      if (field === "bolo_cobertura" && value !== "Imagem") {
-        newState.bolo_cobertura_base = "";
       }
       return newState;
     });
@@ -225,8 +222,8 @@ export default function ReservaClient() {
         inclui_bolo: formData.inclui_bolo,
         bolo_massa: formData.inclui_bolo ? formData.bolo_massa : "",
         bolo_recheio: formData.inclui_bolo ? formData.bolo_recheio : "",
-        bolo_cobertura: formData.inclui_bolo ? formData.bolo_cobertura : "",
-        bolo_cobertura_base: formData.inclui_bolo ? formData.bolo_cobertura_base : "",
+        bolo_cobertura: formData.inclui_bolo ? (formData.bolo_com_imagem ? "Imagem" : formData.bolo_cobertura) : "",
+        bolo_cobertura_base: formData.inclui_bolo && formData.bolo_com_imagem ? formData.bolo_cobertura : "",
         bolo_composicao: formData.inclui_bolo ? formData.bolo_composicao : "",
         notas_adicionais: formData.notas_adicionais,
       };
@@ -261,7 +258,22 @@ export default function ReservaClient() {
   const handleBlur = async (field: string, value: any) => {
     if (!reservaId) return;
 
-    const payload: Record<string, any> = { [field]: value };
+    let payload: Record<string, any> = { [field]: value };
+    
+    if (field === "bolo_cobertura") {
+      payload = {
+        bolo_cobertura: formData.bolo_com_imagem ? "Imagem" : value,
+        bolo_cobertura_base: formData.bolo_com_imagem ? value : "",
+        inclui_bolo: true
+      };
+    } else if (field === "bolo_com_imagem") {
+      payload = {
+        bolo_cobertura: value ? "Imagem" : formData.bolo_cobertura,
+        bolo_cobertura_base: value ? formData.bolo_cobertura : "",
+        inclui_bolo: true
+      };
+    }
+
     if (field === "tipo_convite" && value !== "tematico")
       payload.tema_convite = "";
     if (field === "decoracao_tematica" && value === false)
@@ -273,15 +285,12 @@ export default function ReservaClient() {
       payload.bolo_cobertura_base = "";
       payload.bolo_composicao = "";
     }
-    if (field === "bolo_cobertura" && value !== "Imagem") {
-      payload.bolo_cobertura_base = "";
-    }
     if (
       [
         "bolo_massa",
         "bolo_recheio",
         "bolo_cobertura",
-        "bolo_cobertura_base",
+        "bolo_com_imagem",
         "bolo_composicao",
       ].includes(field)
     ) {
@@ -966,7 +975,6 @@ export default function ReservaClient() {
                             className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
                           >
                             <option value="">Selecione uma opção</option>
-                            <option value="Imagem">Imagem</option>
                             <option value="Doce de ovo">Doce de ovo</option>
                             <option value="Nata">Nata</option>
                             <option value="Creme Russo">Creme Russo</option>
@@ -980,45 +988,34 @@ export default function ReservaClient() {
                         </div>
                       </div>
 
-                      <AnimatePresence>
-                        {formData.bolo_cobertura === "Imagem" && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2 mt-4">
-                              Cobertura por baixo da Imagem
-                            </label>
-                            <div className="relative">
-                              <select
-                                value={formData.bolo_cobertura_base}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  handleInputChange("bolo_cobertura_base", val);
-                                  handleBlur("bolo_cobertura_base", val);
-                                }}
-                                onBlur={(e) =>
-                                  handleBlur("bolo_cobertura_base", e.target.value)
-                                }
-                                className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
-                              >
-                                <option value="">Selecione uma opção</option>
-                                <option value="Doce de ovo">Doce de ovo</option>
-                                <option value="Nata">Nata</option>
-                                <option value="Creme Russo">Creme Russo</option>
-                                <option value="Frutos vermelhos">
-                                  Frutos vermelhos
-                                </option>
-                                <option value="Chocolate">Chocolate</option>
-                                <option value="Fruta variada">Fruta variada</option>
-                              </select>
-                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = !formData.bolo_com_imagem;
+                          handleInputChange("bolo_com_imagem", nextVal);
+                          handleBlur("bolo_com_imagem", nextVal);
+                        }}
+                        className={`w-full p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between mt-4 ${
+                          formData.bolo_com_imagem
+                            ? "bg-pink-50 border-pink-300 text-pink-950 shadow-xs"
+                            : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                        }`}
+                      >
+                        <span className="font-extrabold text-sm">
+                          Com Imagem Personalizada
+                        </span>
+                        <div
+                          className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                            formData.bolo_com_imagem
+                              ? "bg-pink-600 border-pink-600 text-white"
+                              : "bg-white border-secondary/30"
+                          }`}
+                        >
+                          {formData.bolo_com_imagem && (
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          )}
+                        </div>
+                      </button>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">

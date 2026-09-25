@@ -11,12 +11,31 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const isReservaClient = location.pathname.startsWith('/reserva');
 
   const globalFaqs = [
-    {q: "É obrigatório o uso de meias?", a: <><strong>Sim</strong>, por questões de higiene e segurança é obrigatório o uso de meias antiderrapantes. Podem trazer as vossas ou adquirir no parque.</>},
-    {q: "Qual a idade mínima para brincar no parque?", a: <>O Leni's FunPark está preparado para receber pequenos aventureiros a partir dos <strong>5 anos de idade</strong>, garantindo assim que aproveitam as nossas atrações com a máxima segurança e diversão.</>},
-    {q: "Qual o limite mínimo de convidados para uma festa?", a: <>Temos um mínimo de <strong>10 convidados</strong> por festa. Caso o seu grupo seja mais pequeno, a festa pode realizar-se na mesma! O valor cobrado será, no entanto, o equivalente ao pacote base de 10 crianças.</>},
-    {q: "Qual o máximo de pessoas que posso convidar?", a: <>Para garantir a melhor experiência e segurança de todos, os nossos pacotes base cobrem até <strong>25 pessoas</strong>. Para grupos maiores, por favor entre em contacto connosco! Iremos avaliar a possibilidade e apresentar um orçamento à medida das suas necessidades.</>},
-    {q: "Têm parque de estacionamento?", a: <>Sim, dispomos de <strong>estacionamento gratuito</strong> no local com lugares suficientes para os dias de maior afluência.</>}
-  ];
+    {
+      q: "É obrigatório usar meias no Leni's FunPark?", 
+      a: <><strong>Sim.</strong> O uso de meias antiderrapantes é estritamente obrigatório por normas de higiene e segurança. Pode trazer meias próprias ou adquiri-las na receção do nosso parque indoor.</>
+    },
+    {
+      q: "Qual é a idade mínima para aceder aos equipamentos do parque?", 
+      a: <>A idade mínima é de <strong>5 anos</strong>. Todos os trampolins e atividades estão dimensionados e certificados para garantir a segurança de crianças a partir desta faixa etária.</>
+    },
+    {
+      q: "Qual é o limite de convidados para uma festa de aniversário infantil?", 
+      a: <>O pacote base cobra sempre um mínimo de <strong>10 crianças</strong>. O limite padrão para garantir a segurança no espaço é de <strong>25 pessoas</strong>. Para grupos superiores, contacte-nos para avaliarmos a viabilidade.</>
+    },
+    {
+      q: "O parque de diversões tem estacionamento próprio?", 
+      a: <><strong>Sim.</strong> O Leni's FunPark dispõe de estacionamento gratuito no local, na Zona Industrial do Tortosendo, com lotação adequada para os dias de maior afluência.</>
+    },
+    {
+      q: "Onde se localiza o Leni's FunPark?", 
+      a: <>O parque está localizado na <strong>Zona Industrial do Tortosendo (Covilhã)</strong>. Somos um espaço de diversões indoor, 100% climatizado, a servir a região da Cova da Beira.</>
+    },
+    {
+      q: "Que atrações e equipamentos indoor estão disponíveis?", 
+      a: <>O espaço oferece <strong>trampolins interativos, piscinas de bolas, escorregas gigantes, campo de futebol indoor e matraquilos</strong>. Todos os equipamentos cumprem as rigorosas normas de segurança europeias.</>
+    }
+];
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans selection:bg-primary selection:text-white">

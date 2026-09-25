@@ -7,7 +7,6 @@ import SemaforoWidgetSection from '../sections/home/SemaforoWidgetSection';
 import SobrePreviewSection from '../sections/home/SobrePreviewSection';
 import ConvitesDigitaisSection from '../sections/home/ConvitesDigitaisSection';
 import BookingModuleSection from '../sections/home/BookingModuleSection';
-import AiSeoFaqSection from '../sections/home/AiSeoFaqSection';
 import SEO from '../components/SEO';
 
 import { supabase } from '../lib/supabase';
@@ -148,7 +147,7 @@ export default function Home() {
       const texto = (campo: string) => String(formData.get(campo) ?? '').trim();
       const contactInfo = `Tel: ${texto('client_phone')} | Email: ${texto('client_email').toLowerCase()}`;
       const notas = texto('notes');
-      const numPessoas = texto('guests');
+      const idadeStr = texto('idade_crianca');
       const metodo = formData.get('payment_method');
       if (!eMetodoPagamento(metodo)) return;
 
@@ -164,7 +163,7 @@ export default function Home() {
           data_evento: dataEventoISO,
           contacto_cliente: contactInfo,
           nome_aniversariante: texto('client_name'),
-          num_criancas: parseInt(numPessoas, 10),
+          idade: parseInt(idadeStr, 10) || null,
           notas_adicionais: notas,
           tipo_convite: 'nenhum',
           metodo_pagamento: metodo
@@ -244,8 +243,6 @@ export default function Home() {
       <SobrePreviewSection />
 
       <ConvitesDigitaisSection />
-      
-      <AiSeoFaqSection />
 
       <BookingModuleSection 
         currentDate={currentDate}
