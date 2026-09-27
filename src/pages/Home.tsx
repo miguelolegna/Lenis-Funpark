@@ -85,7 +85,25 @@ export default function Home() {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [isFetchingTimes, setIsFetchingTimes] = useState(false);
   const [resumoDia, setResumoDia] = useState<ResumoDia | null>(null);
+  const [isReservasBloqueadas, setIsReservasBloqueadas] = useState(false);
+  const [mensagemBloqueio, setMensagemBloqueio] = useState('');
   const pedidoHorariosAtual = useRef(0);
+
+  useEffect(() => {
+    async function fetchConfig() {
+      const { data, error } = await supabase
+        .from('configuracoes_sistema')
+        .select('reservas_bloqueadas, mensagem_bloqueio')
+        .eq('id', 1)
+        .single();
+        
+      if (!error && data) {
+        setIsReservasBloqueadas(data.reservas_bloqueadas);
+        setMensagemBloqueio(data.mensagem_bloqueio);
+      }
+    }
+    fetchConfig();
+  }, []);
 
   useEffect(() => {
     if (paymentDeadline === null) return;
@@ -253,6 +271,8 @@ export default function Home() {
         isSubmitting={isSubmitting}
         paymentDeadline={paymentDeadline}
         metodoPagamento={metodoPagamento}
+        isReservasBloqueadas={isReservasBloqueadas}
+        mensagemBloqueio={mensagemBloqueio}
         onNewBooking={handleNewBooking}
         onDayClick={handleDayClick}
         onPrevMonth={handlePrevMonth}

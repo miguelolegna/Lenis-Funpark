@@ -48,6 +48,8 @@ export interface BookingModuleSectionProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isReservasBloqueadas?: boolean;
+  mensagemBloqueio?: string;
 }
 
 function CustomTimeSelect({
@@ -208,6 +210,8 @@ export default function BookingModuleSection({
   onPrevMonth,
   onNextMonth,
   onSubmit,
+  isReservasBloqueadas = false,
+  mensagemBloqueio = '',
 }: BookingModuleSectionProps) {
   const [now, setNow] = useState(() => Date.now());
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -261,6 +265,28 @@ export default function BookingModuleSection({
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  if (isReservasBloqueadas) {
+    return (
+      <section id="reservas" className="scroll-mt-28 py-24 bg-surface">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-[2rem] p-8 sm:p-12 shadow-2xl border-4 border-amber-500"
+          >
+            <Info className="w-20 h-20 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-3xl sm:text-4xl font-black text-secondary mb-4">Aviso</h2>
+            <div className="bg-amber-50 rounded-2xl p-6 border-2 border-amber-200">
+              <p className="text-lg font-bold text-amber-900">
+                {mensagemBloqueio || 'As reservas encontram-se temporariamente suspensas. Por favor, tente mais tarde.'}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
 
   if (metodoPagamento === 'dinheiro' && paymentDeadline === null) {
     return (

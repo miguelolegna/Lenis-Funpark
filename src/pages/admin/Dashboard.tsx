@@ -10,6 +10,9 @@ import {
   ArrowUpRight,
   Eye,
   Calendar,
+  Settings,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
@@ -22,6 +25,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [reservaModal, setReservaModal] = useState<any>(null);
   const [adminCount, setAdminCount] = useState<number>(1);
+  const [sysConfig, setSysConfig] = useState({ reservas_bloqueadas: false, mensagem_bloqueio: '' });
 
   const fetchReservas = async () => {
     setLoading(true);
@@ -53,7 +57,19 @@ export default function Dashboard() {
       }
     };
     fetchAdminStats();
+
+    const fetchConfig = async () => {
+      const { data } = await supabase.from('configuracoes_sistema').select('*').eq('id', 1).single();
+      if (data) setSysConfig(data);
+    };
+    fetchConfig();
   }, []);
+
+  const toggleBloqueioReservas = async () => {
+    const newValue = !sysConfig.reservas_bloqueadas;
+    setSysConfig((prev) => ({ ...prev, reservas_bloqueadas: newValue }));
+    await supabase.from('configuracoes_sistema').update({ reservas_bloqueadas: newValue }).eq('id', 1);
+  };
 
   // Cálculos de Métricas
   const stats = useMemo(() => {
@@ -436,7 +452,7 @@ export default function Dashboard() {
       </div>
 
       {/* Atalhos Operacionais */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <Link
           to="/admin/convites"
           className="p-5 rounded-3xl bg-white border-2 border-surface-alt shadow-sm hover:border-primary/40 transition-all group"
@@ -481,6 +497,39 @@ export default function Dashboard() {
             Consulte mensagens e pedidos de visitas escolares.
           </p>
         </Link>
+
+        {/* Bloqueio de Reservas (Apenas Toggle) */}
+        <div className="p-5 rounded-3xl bg-white border-2 border-surface-alt shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-secondary">Bloqueio de Reservas</span>
+              <Settings className="w-4 h-4 text-secondary/40" />
+            </div>
+            <p className="text-xs text-secondary/60 mb-4">
+              Suspenda temporariamente a marcação de novas reservas no site.
+            </p>
+          </div>
+          <button
+            onClick={toggleBloqueioReservas}
+            className={`w-full py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+              sysConfig.reservas_bloqueadas
+                ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+            }`}
+          >
+            {sysConfig.reservas_bloqueadas ? (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                Reservas Bloqueadas (Desbloquear)
+              </>
+            ) : (
+              <>
+                <Unlock className="w-3.5 h-3.5" />
+                Reservas Livres (Bloquear)
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Modal de Leitura de Reserva */}
