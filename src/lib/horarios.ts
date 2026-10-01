@@ -46,6 +46,75 @@ export function horariosFestaDia(date: Date): string[] {
   return HORARIOS_SEMANA;
 }
 
+export interface HorarioFuncionamento {
+  abertura: string;
+  fecho: string;
+}
+
+/** Horário de funcionamento do parque num dia, ou null se estiver encerrado. */
+export function horarioFuncionamentoDia(date: Date): HorarioFuncionamento | null {
+  const dayOfWeek = date.getDay();
+  if (dayOfWeek === 1) return null; // Segunda-feira: encerrado
+  if (dayOfWeek === 0 || dayOfWeek === 6 || eFeriado(date)) return { abertura: '10:00', fecho: '20:00' };
+  return { abertura: '14:00', fecho: '20:00' };
+}
+
+/** Data e hora atuais em Lisboa, independentemente do fuso do dispositivo. */
+function agoraEmLisboa(agora: Date): { dia: Date; minutos: number } {
+  const partes = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Lisbon',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(agora)
+      .map((p) => [p.type, p.value])
+  );
+  return {
+    dia: new Date(Number(partes.year), Number(partes.month) - 1, Number(partes.day)),
+    minutos: Number(partes.hour) * 60 + Number(partes.minute),
+  };
+}
+
+function paraMinutos(hora: string): number {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
+export interface EstadoHorarioParque {
+  aberto: boolean;
+  /** Horário de hoje, ou null se hoje estiver encerrado. */
+  hoje: HorarioFuncionamento | null;
+  /** Próxima abertura, quando o parque está fechado (ex.: "amanhã às 14:00"). */
+  proximaAbertura: string | null;
+}
+
+/** Indica se o parque está dentro do horário de funcionamento (hora de Lisboa). */
+export function estadoHorarioParque(agora: Date = new Date()): EstadoHorarioParque {
+  const { dia, minutos } = agoraEmLisboa(agora);
+  const hoje = horarioFuncionamentoDia(dia);
+  const aberto = !!hoje && minutos >= paraMinutos(hoje.abertura) && minutos < paraMinutos(hoje.fecho);
+  if (aberto) return { aberto, hoje, proximaAbertura: null };
+
+  if (hoje && minutos < paraMinutos(hoje.abertura)) {
+    return { aberto, hoje, proximaAbertura: `hoje às ${hoje.abertura}` };
+  }
+
+  for (let i = 1; i <= 7; i++) {
+    const outroDia = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate() + i);
+    const horario = horarioFuncionamentoDia(outroDia);
+    if (!horario) continue;
+    const quando =
+      i === 1 ? 'amanhã' : outroDia.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+    return { aberto, hoje, proximaAbertura: `${quando} às ${horario.abertura}` };
+  }
+  return { aberto, hoje, proximaAbertura: null };
+}
+
 /** "14:00" → "14:00 – 16:00" */
 export function rotuloHorario(inicio: string): string {
   const [h, m] = inicio.split(':').map(Number);

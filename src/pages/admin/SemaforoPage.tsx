@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { pageVariants, pageTransition } from '../../lib/animations';
 import { supabase } from '../../lib/supabase';
 import { useParkStatus } from '../../hooks/useParkStatus';
 
 export default function SemaforoPage() {
-  const { status: parkStatus } = useParkStatus();
+  const { status: estadoPublico, estadoManual: parkStatus, horario } = useParkStatus();
   const [updating, setUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -135,6 +135,33 @@ export default function SemaforoPage() {
           Clica diretamente na cor para atualizar a lotação pública
         </p>
 
+        {/* Horário de funcionamento: fora dele o público vê sempre "Fechado" */}
+        <div
+          className={`mb-6 p-3 rounded-2xl border text-xs font-bold flex items-start gap-2 text-left ${
+            horario.aberto
+              ? 'bg-primary/10 border-primary/25 text-secondary'
+              : 'bg-gray-100 border-gray-300 text-secondary'
+          }`}
+        >
+          <Clock className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p>
+              {horario.hoje
+                ? `Hoje: ${horario.hoje.abertura} às ${horario.hoje.fecho}`
+                : 'Hoje: encerrado'}
+              {' · '}
+              {horario.aberto ? 'Parque aberto' : 'Fora do horário'}
+            </p>
+            {!horario.aberto && (
+              <p className="font-medium text-secondary/70">
+                O semáforo público mostra «Fechado» automaticamente
+                {horario.proximaAbertura ? ` até ${horario.proximaAbertura}` : ''}. O estado escolhido abaixo
+                aplica-se na abertura.
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* O Semáforo Interativo */}
         <div
           role="group"
@@ -257,21 +284,21 @@ export default function SemaforoPage() {
         {/* Estado Ativo e Auditoria */}
         <div className="mt-6 pt-5 border-t border-surface-alt space-y-2">
           <div className="flex items-center justify-center gap-2 text-xs font-bold text-secondary">
-            <span className="text-secondary/60">Estado ativo:</span>
+            <span className="text-secondary/60">Estado público:</span>
             <span
               className={`px-3 py-1 rounded-full text-xs font-black ${
-                parkStatus === 'Livre'
+                estadoPublico === 'Livre'
                   ? 'bg-primary/15 text-primary border border-primary/25'
-                  : parkStatus === 'Moderado'
+                  : estadoPublico === 'Moderado'
                   ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                  : parkStatus === 'Cheio'
+                  : estadoPublico === 'Cheio'
                   ? 'bg-red-100 text-red-800 border border-red-300'
-                  : parkStatus === 'Reservado'
+                  : estadoPublico === 'Reservado'
                   ? 'bg-violet-100 text-violet-800 border border-violet-300'
                   : 'bg-gray-100 text-secondary border border-gray-300'
               }`}
             >
-              {parkStatus}
+              {estadoPublico}
             </span>
           </div>
 

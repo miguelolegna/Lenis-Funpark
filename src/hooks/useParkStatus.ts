@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { estadoHorarioParque, type EstadoHorarioParque } from '../lib/horarios';
 
 export type ParkStatus = 'Livre' | 'Moderado' | 'Cheio' | 'Reservado' | 'Fechado';
 
 export interface UseParkStatusResult {
+  /** Estado mostrado ao público: "Fechado" fora do horário de funcionamento. */
   status: ParkStatus;
+  /** Estado definido pelo administrador, aplicado durante o horário de funcionamento. */
+  estadoManual: ParkStatus;
+  horario: EstadoHorarioParque;
   loading: boolean;
 }
 
@@ -31,6 +36,13 @@ function parseParkStatus(rawEstado?: string | null): ParkStatus {
 export function useParkStatus(): UseParkStatusResult {
   const [status, setStatus] = useState<ParkStatus>('Livre');
   const [loading, setLoading] = useState(true);
+  const [horario, setHorario] = useState(() => estadoHorarioParque());
+
+  // Reavaliar o horário a cada 30 s para abrir/fechar à hora certa sem recarregar a página
+  useEffect(() => {
+    const intervalo = setInterval(() => setHorario(estadoHorarioParque()), 30_000);
+    return () => clearInterval(intervalo);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -90,7 +102,12 @@ export function useParkStatus(): UseParkStatusResult {
     };
   }, []);
 
-  return { status, loading };
+  return {
+    status: horario.aberto ? status : 'Fechado',
+    estadoManual: status,
+    horario,
+    loading,
+  };
 }
 
 export default useParkStatus;
