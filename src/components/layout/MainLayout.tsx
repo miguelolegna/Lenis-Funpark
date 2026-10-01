@@ -16,8 +16,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       a: <><strong>Sim.</strong> O uso de meias antiderrapantes é estritamente obrigatório por normas de higiene e segurança. Pode trazer meias próprias ou adquiri-las na receção do nosso parque indoor.</>
     },
     {
-      q: "Qual é a idade mínima para aceder aos equipamentos do parque?", 
-      a: <>A idade mínima é de <strong>5 anos</strong>. Todos os trampolins e atividades estão dimensionados e certificados para garantir a segurança de crianças a partir desta faixa etária.</>
+      q: "As crianças podem entrar sozinhas no parque?",
+      a: <>A partir dos <strong>5 anos</strong>, as crianças podem entrar sozinhas. Até aos <strong>4 anos</strong>, têm obrigatoriamente de estar acompanhadas por um adulto.</>
     },
     {
       q: "Qual é o limite de convidados para uma festa de aniversário infantil?", 
