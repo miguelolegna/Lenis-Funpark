@@ -63,7 +63,7 @@ const MENSAGENS_LIMITE: Record<string, string> = {
     'Já tem 2 pedidos de reserva por confirmar. Aguarde o nosso contacto antes de fazer novos pedidos, ou fale connosco pelo WhatsApp.',
   LIMITE_DIARIO:
     'Atingiu o limite de pedidos de reserva por hoje. Se precisar de ajuda, contacte-nos por telefone ou WhatsApp.',
-  PEDIDO_INVALIDO: 'Confirme o nome, o email, o telemóvel e o número de pessoas, e tente novamente.',
+  PEDIDO_INVALIDO: 'Confirme o nome, o email, o telemóvel e a idade da criança, e tente novamente.',
 };
 
 function readStoredDeadline(): number | null {

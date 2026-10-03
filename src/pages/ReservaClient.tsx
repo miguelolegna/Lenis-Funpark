@@ -17,9 +17,26 @@ import {
   Check,
   Ticket,
   AlertCircle,
-  ChevronDown,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import OpcaoDropdown from "../components/OpcaoDropdown";
+
+const OPCOES_MASSA = [
+  { value: "Pão de lo", label: "Pão de ló" },
+  { value: "Chocolate", label: "Chocolate" },
+  { value: "Iogurte", label: "Iogurte" },
+  { value: "Cenoura", label: "Cenoura" },
+  { value: "Red velvet", label: "Red velvet" },
+];
+
+const OPCOES_RECHEIO_COBERTURA = [
+  { value: "Doce de ovo", label: "Doce de ovo" },
+  { value: "Nata", label: "Nata" },
+  { value: "Creme Russo", label: "Creme Russo" },
+  { value: "Frutos vermelhos", label: "Frutos vermelhos" },
+  { value: "Chocolate", label: "Chocolate" },
+  { value: "Fruta variada", label: "Fruta variada" },
+];
 
 export default function ReservaClient() {
   const { token } = useParams<{ token: string }>();
@@ -463,6 +480,12 @@ export default function ReservaClient() {
                     placeholder="Ex: 15"
                     className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                   />
+                  <div className="mt-3 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                    <p>
+                      Preço por criança: <strong className="text-primary">13,50 €</strong>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -556,6 +579,12 @@ export default function ReservaClient() {
                       placeholder="Ex: Homem-Aranha, Frozen, Minecraft, etc."
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
+                    <div className="mt-3 p-3.5 rounded-2xl bg-accent/10 border-2 border-accent/25 text-accent-dark flex items-start gap-2.5 text-xs font-bold">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <p>
+                        O convite temático tem um custo de <strong>3,50 €</strong>.
+                      </p>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -824,6 +853,29 @@ export default function ReservaClient() {
                   </div>
                 </button>
 
+                {/* Nota de custo dos serviços extra */}
+                <AnimatePresence>
+                  {(formData.decoracao_tematica || formData.pinturas_faciais) && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-3.5 rounded-2xl bg-accent/10 border-2 border-accent/25 text-accent-dark flex items-start gap-2.5 text-xs font-bold">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <p>
+                          Cada serviço tem um custo adicional de{" "}
+                          <strong>+20 €</strong>.{" "}
+                          {formData.decoracao_tematica && formData.pinturas_faciais
+                            ? "Com os dois serviços selecionados, acresce 40 € ao valor da festa."
+                            : "Acresce 20 € ao valor da festa."}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div>
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
                     Outros Serviços Adicionais (Pinhata, Lembranças, etc.)
@@ -898,95 +950,35 @@ export default function ReservaClient() {
                       exit={{ opacity: 0, height: 0 }}
                       className="pl-4 border-l-4 border-pink-400 space-y-4"
                     >
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                          Massa do Bolo
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={formData.bolo_massa}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              handleInputChange("bolo_massa", val);
-                              handleBlur("bolo_massa", val);
-                            }}
-                            onBlur={(e) =>
-                              handleBlur("bolo_massa", e.target.value)
-                            }
-                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
-                          >
-                            <option value="">Selecione uma opção</option>
-                            <option value="Pão de lo">Pão de ló</option>
-                            <option value="Chocolate">Chocolate</option>
-                            <option value="Iogurte">Iogurte</option>
-                            <option value="Cenoura">Cenoura</option>
-                            <option value="Red velvet">Red velvet</option>
-                          </select>
-                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
-                        </div>
-                      </div>
+                      <OpcaoDropdown
+                        label="Massa do Bolo"
+                        value={formData.bolo_massa}
+                        options={OPCOES_MASSA}
+                        onChange={(val) => {
+                          handleInputChange("bolo_massa", val);
+                          handleBlur("bolo_massa", val);
+                        }}
+                      />
 
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                          Recheio
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={formData.bolo_recheio}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              handleInputChange("bolo_recheio", val);
-                              handleBlur("bolo_recheio", val);
-                            }}
-                            onBlur={(e) =>
-                              handleBlur("bolo_recheio", e.target.value)
-                            }
-                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
-                          >
-                            <option value="">Selecione uma opção</option>
-                            <option value="Doce de ovo">Doce de ovo</option>
-                            <option value="Nata">Nata</option>
-                            <option value="Creme Russo">Creme Russo</option>
-                            <option value="Frutos vermelhos">
-                              Frutos vermelhos
-                            </option>
-                            <option value="Chocolate">Chocolate</option>
-                            <option value="Fruta variada">Fruta variada</option>
-                          </select>
-                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
-                        </div>
-                      </div>
+                      <OpcaoDropdown
+                        label="Recheio"
+                        value={formData.bolo_recheio}
+                        options={OPCOES_RECHEIO_COBERTURA}
+                        onChange={(val) => {
+                          handleInputChange("bolo_recheio", val);
+                          handleBlur("bolo_recheio", val);
+                        }}
+                      />
 
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                          Cobertura
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={formData.bolo_cobertura}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              handleInputChange("bolo_cobertura", val);
-                              handleBlur("bolo_cobertura", val);
-                            }}
-                            onBlur={(e) =>
-                              handleBlur("bolo_cobertura", e.target.value)
-                            }
-                            className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 pr-12 font-medium text-secondary outline-none transition-all cursor-pointer appearance-none"
-                          >
-                            <option value="">Selecione uma opção</option>
-                            <option value="Doce de ovo">Doce de ovo</option>
-                            <option value="Nata">Nata</option>
-                            <option value="Creme Russo">Creme Russo</option>
-                            <option value="Frutos vermelhos">
-                              Frutos vermelhos
-                            </option>
-                            <option value="Chocolate">Chocolate</option>
-                            <option value="Fruta variada">Fruta variada</option>
-                          </select>
-                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50 pointer-events-none" />
-                        </div>
-                      </div>
+                      <OpcaoDropdown
+                        label="Cobertura"
+                        value={formData.bolo_cobertura}
+                        options={OPCOES_RECHEIO_COBERTURA}
+                        onChange={(val) => {
+                          handleInputChange("bolo_cobertura", val);
+                          handleBlur("bolo_cobertura", val);
+                        }}
+                      />
 
                       <button
                         type="button"
