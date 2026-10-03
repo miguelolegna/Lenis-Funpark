@@ -483,7 +483,10 @@ export default function ReservaClient() {
                   <div className="mt-3 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
                     <p>
-                      Preço por criança: <strong className="text-primary">13,50 €</strong>
+                      Preço por criança:{" "}
+                      <strong className="text-primary">
+                        {formData.opcao_menu === "sem_menu" ? "11,50 €" : "13,50 €"}
+                      </strong>
                     </p>
                   </div>
                 </div>
@@ -579,10 +582,11 @@ export default function ReservaClient() {
                       placeholder="Ex: Homem-Aranha, Frozen, Minecraft, etc."
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-bold text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
-                    <div className="mt-3 p-3.5 rounded-2xl bg-accent/10 border-2 border-accent/25 text-accent-dark flex items-start gap-2.5 text-xs font-bold">
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div className="mt-3 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
                       <p>
-                        O convite temático tem um custo de <strong>3,50 €</strong>.
+                        O convite temático tem um custo de{" "}
+                        <strong className="text-primary">3,50 €</strong>.
                       </p>
                     </div>
                   </motion.div>
@@ -684,12 +688,12 @@ export default function ReservaClient() {
                   {
                     field: "extra_pizza",
                     name: "Pizza",
-                    price: "+1,50€ / criança",
+                    price: "+2,00€ / criança",
                   },
                   {
                     field: "extra_cachorro",
                     name: "Cachorro Quente",
-                    price: "+1,50€ / criança",
+                    price: "+2,00€ / criança",
                   },
                   {
                     field: "extra_doces",
@@ -699,7 +703,7 @@ export default function ReservaClient() {
                   {
                     field: "extra_fruta",
                     name: "Prato de Fruta",
-                    price: "+1,00€ / criança",
+                    price: "+1,50€ / criança",
                   },
                   {
                     field: "extra_gelatina",
@@ -777,9 +781,14 @@ export default function ReservaClient() {
                       : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
                   }`}
                 >
-                  <span className="font-extrabold text-sm">
-                    Decoração Temática da Mesa/Espaço
-                  </span>
+                  <div>
+                    <p className="font-extrabold text-sm">
+                      Decoração Temática da Mesa/Espaço
+                    </p>
+                    <p className="text-[11px] font-bold text-purple-700">
+                      +50,00€ (qualquer tema)
+                    </p>
+                  </div>
                   <div
                     className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
                       formData.decoracao_tematica
@@ -837,9 +846,12 @@ export default function ReservaClient() {
                       : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
                   }`}
                 >
-                  <span className="font-extrabold text-sm">
-                    Pinturas Faciais & Modelagem de Balões
-                  </span>
+                  <div>
+                    <p className="font-extrabold text-sm">Pinturas Faciais</p>
+                    <p className="text-[11px] font-bold text-purple-700">
+                      +20,00€
+                    </p>
+                  </div>
                   <div
                     className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
                       formData.pinturas_faciais
@@ -862,14 +874,16 @@ export default function ReservaClient() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-3.5 rounded-2xl bg-accent/10 border-2 border-accent/25 text-accent-dark flex items-start gap-2.5 text-xs font-bold">
-                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <div className="p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
                         <p>
-                          Cada serviço tem um custo adicional de{" "}
-                          <strong>+20 €</strong>.{" "}
-                          {formData.decoracao_tematica && formData.pinturas_faciais
-                            ? "Com os dois serviços selecionados, acresce 40 € ao valor da festa."
-                            : "Acresce 20 € ao valor da festa."}
+                          Acresce{" "}
+                          <strong className="text-primary">
+                            {(formData.decoracao_tematica ? 50 : 0) +
+                              (formData.pinturas_faciais ? 20 : 0)}{" "}
+                            €
+                          </strong>{" "}
+                          ao valor da festa.
                         </p>
                       </div>
                     </motion.div>
@@ -877,9 +891,12 @@ export default function ReservaClient() {
                 </AnimatePresence>
 
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary mb-2">
-                    Outros Serviços Adicionais (Pinhata, Lembranças, etc.)
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-secondary">
+                    Outros Serviços Adicionais
                   </label>
+                  <p className="text-[11px] font-bold text-purple-700 mt-1 mb-2">
+                    Pinhata: +30,00€
+                  </p>
                   <textarea
                     rows={2}
                     value={formData.outros_servicos}
@@ -926,9 +943,14 @@ export default function ReservaClient() {
                       : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
                   }`}
                 >
-                  <span className="font-extrabold text-sm">
-                    Incluir Bolo de Aniversário no Leni's FunPark
-                  </span>
+                  <div>
+                    <p className="font-extrabold text-sm">
+                      Incluir Bolo de Aniversário no Leni's FunPark
+                    </p>
+                    <p className="text-[11px] font-bold text-pink-700">
+                      22,00€ / kg
+                    </p>
+                  </div>
                   <div
                     className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
                       formData.inclui_bolo

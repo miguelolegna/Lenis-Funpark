@@ -37,10 +37,10 @@ export default function ReservaAdminView({
 
   // Extras ativos
   const extras: string[] = [];
-  if (reserva.extra_pizza) extras.push("Pizza (+1.50€)");
-  if (reserva.extra_cachorro) extras.push("Cachorro (+1.50€)");
+  if (reserva.extra_pizza) extras.push("Pizza (+2.00€)");
+  if (reserva.extra_cachorro) extras.push("Cachorro (+2.00€)");
   if (reserva.extra_doces) extras.push("Doces (+1.00€)");
-  if (reserva.extra_fruta) extras.push("Fruta (+1.00€)");
+  if (reserva.extra_fruta) extras.push("Fruta (+1.50€)");
   if (reserva.extra_gelatina) extras.push("Gelatina (+1.00€)");
 
   const decoracaoAtiva = Boolean(
