@@ -17,8 +17,10 @@ import {
   Check,
   Ticket,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { exportarReservaPDF } from "../lib/exportarReservaPDF";
 import OpcaoDropdown from "../components/OpcaoDropdown";
 
 const OPCOES_MASSA = [
@@ -47,6 +49,10 @@ export default function ReservaClient() {
   const [reservaId, setReservaId] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [conviteToken, setConviteToken] = useState<string | null>(null);
+  // Dados da reserva vindos do servidor (data da festa, contacto) para o PDF final
+  const [reservaServidor, setReservaServidor] = useState<Record<string, unknown>>({});
+  const [aGerarPDF, setAGerarPDF] = useState(false);
+  const [erroPDF, setErroPDF] = useState("");
   const [estadoFormulario, setEstadoFormulario] = useState<
     "a_verificar" | "aberto" | "fechado" | "invalido"
   >("a_verificar");
@@ -100,6 +106,7 @@ export default function ReservaClient() {
     bolo_com_imagem: false,
     bolo_composicao: "",
     notas_adicionais: "",
+    consentimento_saude: false,
     termos_veracidade: false,
     convite_token: "",
   });
@@ -147,6 +154,7 @@ export default function ReservaClient() {
       if (fetchError) throw fetchError;
 
       if (reservaData) {
+        setReservaServidor(reservaData);
         setConviteToken(reservaData.convite_token);
         setFormData({
           nome_aniversariante: reservaData.nome_aniversariante || "",
@@ -171,6 +179,7 @@ export default function ReservaClient() {
           bolo_com_imagem: reservaData.bolo_cobertura === "Imagem",
           bolo_composicao: reservaData.bolo_composicao || "",
           notas_adicionais: reservaData.notas_adicionais || "",
+          consentimento_saude: reservaData.consentimento_saude || false,
           termos_veracidade: reservaData.termos_veracidade || false,
           convite_token: reservaData.convite_token || "",
         });
@@ -203,6 +212,54 @@ export default function ReservaClient() {
     });
   };
 
+  // Payload completo do formulário (gravação final e PDF)
+  const construirPayload = (): Record<string, any> => ({
+    nome_aniversariante: formData.nome_aniversariante,
+    idade: formData.idade ? parseInt(String(formData.idade), 10) : null,
+    num_criancas: formData.num_criancas
+      ? parseInt(String(formData.num_criancas), 10)
+      : null,
+    tipo_convite: formData.tipo_convite,
+    tema_convite:
+      formData.tipo_convite === "tematico" ? formData.tema_convite : "",
+    opcao_menu: formData.opcao_menu,
+    extra_pizza: formData.extra_pizza,
+    extra_cachorro: formData.extra_cachorro,
+    extra_doces: formData.extra_doces,
+    extra_fruta: formData.extra_fruta,
+    extra_gelatina: formData.extra_gelatina,
+    decoracao_tematica: formData.decoracao_tematica,
+    decoracao_tema_nome: formData.decoracao_tematica
+      ? formData.decoracao_tema_nome
+      : "",
+    pinturas_faciais: formData.pinturas_faciais,
+    outros_servicos: formData.outros_servicos,
+    inclui_bolo: formData.inclui_bolo,
+    bolo_massa: formData.inclui_bolo ? formData.bolo_massa : "",
+    bolo_recheio: formData.inclui_bolo ? formData.bolo_recheio : "",
+    bolo_cobertura: formData.inclui_bolo ? (formData.bolo_com_imagem ? "Imagem" : formData.bolo_cobertura) : "",
+    bolo_cobertura_base: formData.inclui_bolo && formData.bolo_com_imagem ? formData.bolo_cobertura : "",
+    bolo_composicao: formData.inclui_bolo ? formData.bolo_composicao : "",
+    notas_adicionais: formData.notas_adicionais,
+    consentimento_saude: formData.consentimento_saude,
+  });
+
+  const descarregarPDF = async () => {
+    setAGerarPDF(true);
+    setErroPDF("");
+    try {
+      await exportarReservaPDF(
+        { ...reservaServidor, ...construirPayload(), termos_veracidade: true },
+        { variante: "cliente" },
+      );
+    } catch (err) {
+      console.error("[PDF] Falha ao gerar o resumo da reserva:", err);
+      setErroPDF("Não foi possível gerar o PDF. Tente novamente.");
+    } finally {
+      setAGerarPDF(false);
+    }
+  };
+
   const handleFinalSubmit = async () => {
     if (!formData.nome_aniversariante) {
       setError(
@@ -215,35 +272,7 @@ export default function ReservaClient() {
 
     try {
       // Garantir a persistência completa de todos os campos do formulário antes de selar a reserva
-      const finalPayload: Record<string, any> = {
-        nome_aniversariante: formData.nome_aniversariante,
-        idade: formData.idade ? parseInt(String(formData.idade), 10) : null,
-        num_criancas: formData.num_criancas
-          ? parseInt(String(formData.num_criancas), 10)
-          : null,
-        tipo_convite: formData.tipo_convite,
-        tema_convite:
-          formData.tipo_convite === "tematico" ? formData.tema_convite : "",
-        opcao_menu: formData.opcao_menu,
-        extra_pizza: formData.extra_pizza,
-        extra_cachorro: formData.extra_cachorro,
-        extra_doces: formData.extra_doces,
-        extra_fruta: formData.extra_fruta,
-        extra_gelatina: formData.extra_gelatina,
-        decoracao_tematica: formData.decoracao_tematica,
-        decoracao_tema_nome: formData.decoracao_tematica
-          ? formData.decoracao_tema_nome
-          : "",
-        pinturas_faciais: formData.pinturas_faciais,
-        outros_servicos: formData.outros_servicos,
-        inclui_bolo: formData.inclui_bolo,
-        bolo_massa: formData.inclui_bolo ? formData.bolo_massa : "",
-        bolo_recheio: formData.inclui_bolo ? formData.bolo_recheio : "",
-        bolo_cobertura: formData.inclui_bolo ? (formData.bolo_com_imagem ? "Imagem" : formData.bolo_cobertura) : "",
-        bolo_cobertura_base: formData.inclui_bolo && formData.bolo_com_imagem ? formData.bolo_cobertura : "",
-        bolo_composicao: formData.inclui_bolo ? formData.bolo_composicao : "",
-        notas_adicionais: formData.notas_adicionais,
-      };
+      const finalPayload = construirPayload();
 
       const { error: saveError } = await supabase.rpc("atualizar_reserva_b2c", {
         p_token_opaco: token,
@@ -383,8 +412,28 @@ export default function ReservaClient() {
             </div>
           )}
 
+          <button
+            type="button"
+            onClick={descarregarPDF}
+            disabled={aGerarPDF}
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-primary/5 text-primary border-2 border-primary px-6 py-4 rounded-2xl font-black text-base transition-all uppercase tracking-wide mb-4 disabled:opacity-60 disabled:cursor-wait"
+          >
+            {aGerarPDF ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <FileText className="w-5 h-5" />
+            )}
+            <span>Descarregar Resumo em PDF</span>
+          </button>
+          {erroPDF && (
+            <p className="text-xs font-bold text-rose-700 -mt-2 mb-4">
+              {erroPDF}
+            </p>
+          )}
+
           <div className="p-4 bg-surface-alt rounded-2xl text-xs font-bold text-secondary/60">
-            Pode fechar esta página com segurança.
+            Guarde o PDF antes de sair: depois de fechar esta página, o
+            formulário deixa de estar acessível.
           </div>
         </motion.div>
       </div>
@@ -1080,6 +1129,40 @@ export default function ReservaClient() {
                 placeholder="Ex: 2 crianças com intolerância ao glúten, horário de chegada dos pais..."
                 className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
               ></textarea>
+
+              {/* Consentimento opcional para dados de saúde (RGPD art. 9.º) */}
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={formData.consentimento_saude}
+                onClick={() => {
+                  const nextVal = !formData.consentimento_saude;
+                  handleInputChange("consentimento_saude", nextVal);
+                  handleBlur("consentimento_saude", nextVal);
+                }}
+                className={`w-full mt-4 p-4 rounded-2xl text-left border-2 transition-all flex items-start gap-3 ${
+                  formData.consentimento_saude
+                    ? "bg-primary/5 border-primary/60"
+                    : "bg-surface-alt/60 hover:bg-surface-alt border-surface"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 mt-0.5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                    formData.consentimento_saude
+                      ? "bg-primary border-primary text-white"
+                      : "bg-white border-secondary/30"
+                  }`}
+                >
+                  {formData.consentimento_saude && (
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  )}
+                </div>
+                <span className="text-xs sm:text-sm font-semibold text-secondary leading-snug">
+                  Autorizo o tratamento das informações de saúde (por exemplo,
+                  alergias) que eu indicar nas notas, apenas para a preparação
+                  da festa.
+                </span>
+              </button>
             </div>
 
             {/* Bloco 8: Submissão Final */}
