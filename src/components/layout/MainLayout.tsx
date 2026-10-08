@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import MapSection from './MapSection';
 import FAQ from '../FAQ';
+import CookieBanner from '../CookieBanner';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -54,6 +55,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <Footer />
         </>
       )}
+      {!isAdmin && <CookieBanner />}
     </div>
   );
 }

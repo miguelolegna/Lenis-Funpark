@@ -79,6 +79,7 @@ export default function B2BFacilitadorSection({ isSubmitting, isSubmitted, onSub
 
               <PrivacyTermsCheckbox
                 id="b2b-privacy-terms"
+                variante="privacidade"
                 checked={concordaTermos}
                 onChange={setConcordaTermos}
                 required

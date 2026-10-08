@@ -10,7 +10,12 @@ export interface PrivacyTermsCheckboxProps {
   disabled?: boolean;
   error?: string;
   className?: string;
+  // "privacidade": formulários de contacto/orçamento; "reserva": pedido de reserva (termos + caução)
+  variante?: 'reserva' | 'privacidade';
 }
+
+const classeLink =
+  'text-primary underline hover:text-secondary font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-sm';
 
 export default function PrivacyTermsCheckbox({
   checked,
@@ -20,8 +25,20 @@ export default function PrivacyTermsCheckbox({
   required = true,
   disabled = false,
   error,
-  className = ''
+  className = '',
+  variante = 'reserva'
 }: PrivacyTermsCheckboxProps) {
+  const linkPrivacidade = (
+    <Link
+      to="/politica-privacidade"
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className={classeLink}
+    >
+      Política de Privacidade
+    </Link>
+  );
   return (
     <div className={`space-y-1.5 ${className}`}>
       <label
@@ -60,27 +77,24 @@ export default function PrivacyTermsCheckbox({
         </div>
 
         <span className="text-xs sm:text-sm font-semibold text-secondary leading-snug">
-          Ao submeter este formulário, concordo com a{' '}
-          <Link
-            to="/politica-privacidade"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-primary underline hover:text-secondary font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-sm"
-          >
-            Política de Privacidade
-          </Link>{' '}
-          e com os{' '}
-          <Link
-            to="/termos-condicoes"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-primary underline hover:text-secondary font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-sm"
-          >
-            Termos e Condições
-          </Link>
-          , e declaro ter conhecimento de que é necessário o pagamento de uma caução de 50€ para confirmar a reserva.
+          {variante === 'privacidade' ? (
+            <>Li e aceito a {linkPrivacidade}.</>
+          ) : (
+            <>
+              Li e aceito os{' '}
+              <Link
+                to="/termos-condicoes"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={classeLink}
+              >
+                Termos e Condições
+              </Link>{' '}
+              e a {linkPrivacidade}, e tomo conhecimento de que a reserva só fica confirmada com o pagamento de uma
+              caução de 50 €.
+            </>
+          )}
           {required && <span className="text-primary ml-0.5">*</span>}
         </span>
       </label>

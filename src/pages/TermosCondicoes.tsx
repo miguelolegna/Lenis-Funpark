@@ -1,109 +1,165 @@
-import { motion } from 'framer-motion';
-import { FileText, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 }
-};
+import { FileText } from 'lucide-react';
+import LegalPage, { Seccao, Lista, Tabela, LinkExterno, LinkInterno } from '../components/LegalPage';
 
 export default function TermosCondicoes() {
   return (
-    <motion.div
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      className="py-12 md:py-20 bg-surface min-h-screen"
+    <LegalPage
+      titulo="Termos e Condições"
+      descricao="Condições de reserva, caução, cancelamento e utilização do Leni's FunPark para festas de aniversário e eventos."
+      url="/termos-condicoes"
+      icon={FileText}
+      corIcone="accent"
+      ultimaAtualizacao="outubro de 2026"
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-secondary/70 hover:text-primary font-bold mb-8 transition-colors text-sm"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar ao Início
-        </Link>
+      <Seccao titulo="1. Identificação">
+        <p>
+          O Leni's FunPark é explorado pela Pereira &amp; Garcia, Lda., NIPC 518532372, com sede na Zona Industrial do
+          Tortosendo, lt. 23B, Rua F, 6200-823 Tortosendo. Contactos:{' '}
+          <a
+            href="mailto:pereira.garcia2025@gmail.com"
+            className="text-primary underline hover:text-secondary font-bold"
+          >
+            pereira.garcia2025@gmail.com
+          </a>{' '}
+          · (+351) 920 259 886.
+        </p>
+      </Seccao>
 
-        <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-surface-alt space-y-8">
-          <div className="flex items-center gap-4 pb-6 border-b border-surface-alt">
-            <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-              <FileText className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-black text-secondary">
-                Termos e Condições
-              </h1>
-              <p className="text-sm font-semibold text-secondary/60 mt-1">
-                Última atualização: Setembro de 2026 | Leni's FunPark
-              </p>
-            </div>
-          </div>
+      <Seccao titulo="2. Âmbito">
+        <p>
+          Estes termos aplicam-se à utilização do website e às reservas de festas de aniversário e eventos. A utilização
+          do parque rege-se também pelo <LinkInterno to="/regulamento">Regulamento Interno</LinkInterno>.
+        </p>
+      </Seccao>
 
-          <div className="space-y-6 text-secondary/85 leading-relaxed font-medium">
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">1. Aceitação dos Termos</h2>
-              <p>
-                Ao aceder a este website, efetuar uma reserva ou utilizar as instalações do <strong>Leni's FunPark</strong>, o utilizador concorda expressamente em cumprir os presentes Termos e Condições, bem como com o Regulamento Interno do parque.
-              </p>
-            </section>
+      <Seccao titulo="3. Reservas">
+        <Lista
+          itens={[
+            'O pedido feito no site é uma pré-reserva, sujeita à disponibilidade do espaço.',
+            'A nossa equipa contacta-o para confirmar os detalhes.',
+            <>
+              A reserva só fica confirmada após o pagamento de uma <strong>caução de 50 €</strong>, no prazo de 24 horas
+              após esse contacto, por MB WAY, transferência bancária ou em dinheiro na receção.
+            </>,
+            <>
+              No caso de pagamento da caução por MB WAY ou transferência bancária, é{' '}
+              <strong>
+                obrigatório o envio do comprovativo via WhatsApp com a indicação expressa do dia e hora da festa
+              </strong>{' '}
+              para que a reserva seja identificada e confirmada.
+            </>,
+            'Sem pagamento da caução nesse prazo, a data volta a ficar disponível.',
+          ]}
+        />
+      </Seccao>
 
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">2. Regras de Utilização do Parque</h2>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span><strong>Peúgas Antiderrapantes Obrigatórias:</strong> Por razões de higiene e segurança, o uso de peúgas antiderrapantes é obrigatório para todas as crianças e adultos que acedam às zonas de brincadeira e trampolins.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span><strong>Supervisão dos Adultos:</strong> Os adultos/responsáveis devem manter a supervisão adequada das crianças a seu cargo durante todo o período de permanência no parque.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <span><strong>Segurança e Comportamento:</strong> É expressamente proibido correr com comida ou bebida nas zonas de diversão, empurrar ou adotar comportamentos que coloquem em risco a integridade física própria ou de terceiros.</span>
-                </li>
-              </ul>
-            </section>
+      <Seccao titulo="4. Caução">
+        <p>
+          A caução garante a reserva e eventuais danos. É acertada no final da festa e descontada no valor total, desde
+          que não haja danos nas instalações nem incumprimento destas condições.
+        </p>
+      </Seccao>
 
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">3. Reservas e Pagamentos de Caução</h2>
-              <p className="mb-2">As reservas de festas de aniversário e eventos realizam-se mediante o seguinte processo:</p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>O envio do pedido de reserva através da plataforma constitui uma pré-reserva sujeita a confirmação de disponibilidade por parte da equipa do parque.</li>
-                <li>Para confirmação definitiva da reserva, é necessário o pagamento da caução estipulada no prazo máximo de <strong>24 horas</strong> após o contacto da nossa equipa.</li>
-                <li>Em caso de não pagamento da caução no prazo estipulado, a data e horário pretendidos ficarão novamente disponíveis para outros clientes.</li>
-              </ul>
-            </section>
+      <Seccao titulo="5. Cancelamentos e alterações">
+        <Tabela
+          cabecalho={['Situação', 'O que acontece']}
+          linhas={[
+            ['Cliente cancela até 7 dias antes da festa', 'Caução devolvida na totalidade'],
+            ['Cliente cancela a menos de 7 dias da festa', 'Caução não é devolvida'],
+            ['Cliente pede alteração de data', 'Possível a qualquer momento, se houver vaga na nova data'],
+            [
+              'Parque cancela por motivo que lhe seja imputável',
+              'Proposta de nova data ou devolução integral da caução, à escolha do cliente',
+            ],
+          ]}
+        />
+        <p>Cancelamentos e pedidos de alteração devem ser feitos por email ou WhatsApp, para ficarem registados.</p>
+      </Seccao>
 
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">4. Veracidade das Informações</h2>
-              <p>
-                O cliente garante que todas as informações prestadas nos formulários do website (nome, contactos, número de participantes e dados dos aniversariantes) são verdadeiras, exatas e atualizadas.
-              </p>
-            </section>
+      <Seccao titulo="6. Direito de livre resolução">
+        <p>
+          As reservas de festas são serviços de lazer com data marcada. Por isso, não se aplica o direito de livre
+          resolução de 14 dias (artigo 17.º, n.º 1, alínea l) do Decreto-Lei n.º 24/2014). Aplicam-se as regras de
+          cancelamento acima.
+        </p>
+      </Seccao>
 
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">5. Alterações e Cancelamentos</h2>
-              <p>
-                Qualquer pedido de alteração de data ou cancelamento de reserva deve ser comunicado à equipa do Leni's FunPark com a antecedência mínima fixada no ato da confirmação da reserva.
-              </p>
-            </section>
+      <Seccao titulo="7. Condições da festa">
+        <Lista
+          itens={[
+            'A festa dura 2 horas: 1h30 de brincadeira e 30 minutos de lanche no final.',
+            'Os horários de início e fim devem ser respeitados.',
+            'Mínimo de 10 e máximo de 25 crianças. Crianças adicionais precisam de autorização prévia da gerência e têm custo extra.',
+            'Idade mínima: 5 anos. Crianças até aos 4 anos têm de estar acompanhadas por um adulto, com custo adicional.',
+            'A presença de adultos tem custo extra.',
+            'O aniversariante não paga.',
+            'É permitido trazer bolo e comida para o aniversário.',
+            'É obrigatório o uso de meias antiderrapantes nas áreas de jogo.',
+          ]}
+        />
+      </Seccao>
 
-            <section>
-              <h2 className="text-xl font-black text-secondary mb-3">6. Contactos Legais</h2>
-              <p>
-                Para esclarecimento de qualquer questão relacionada com os presentes Termos e Condições, pode contactar-nos através do email{' '}
-                <a href="mailto:pereira.garcia2025@gmail.com" className="text-primary underline hover:text-secondary font-bold">
-                  pereira.garcia2025@gmail.com
-                </a>{' '}
-                ou do telemóvel <strong>(+351) 920 259 886</strong>.
-              </p>
-            </section>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+      <Seccao titulo="8. Preços e pagamento">
+        <p>
+          Os preços dos packs e extras são os da tabela em vigor, comunicada no ato da reserva. O valor total da festa é
+          pago no final, em numerário, Multibanco ou MB WAY, descontando a caução.
+        </p>
+      </Seccao>
+
+      <Seccao titulo="9. Pack Essencial">
+        <p>
+          O Pack Essencial inclui apenas a entrada no parque, sem lanche. Não inclui utensílios (pratos, copos, talheres,
+          toalhas ou outros materiais). A montagem, organização e limpeza da zona da festa são da responsabilidade do
+          cliente, que deve deixar o espaço como o encontrou e retirar todos os resíduos e materiais.
+        </p>
+      </Seccao>
+
+      <Seccao titulo="10. Danos">
+        <p>
+          Os danos causados nas instalações, equipamentos, brinquedos ou materiais do parque durante a festa são da
+          responsabilidade do cliente. Os custos de reparação ou substituição são descontados da caução. Se o valor dos
+          danos for superior, será pedido o pagamento da diferença.
+        </p>
+      </Seccao>
+
+      <Seccao titulo="11. Supervisão, seguros e responsabilidade">
+        <Lista
+          itens={[
+            'A supervisão das crianças é partilhada entre a equipa do parque e os responsáveis legais presentes.',
+            'O parque tem os seguros obrigatórios por lei, incluindo responsabilidade civil e acidentes pessoais.',
+            'O parque não se responsabiliza por objetos perdidos, esquecidos ou danificados.',
+            'É proibido o uso de materiais perigosos ou não autorizados.',
+          ]}
+        />
+      </Seccao>
+
+      <Seccao titulo="12. Fotografias">
+        <p>
+          O parque só fotografa ou filma festas para as redes sociais com autorização prévia e escrita do responsável.
+          Ver a <LinkInterno to="/politica-privacidade">Política de Privacidade</LinkInterno>.
+        </p>
+      </Seccao>
+
+      <Seccao titulo="13. Veracidade dos dados">
+        <p>O cliente garante que os dados indicados nos formulários são verdadeiros e atualizados.</p>
+      </Seccao>
+
+      <Seccao titulo="14. Reclamações e resolução de litígios">
+        <p>
+          Pode apresentar reclamação no{' '}
+          <LinkExterno href="https://www.livroreclamacoes.pt/Inicio/">Livro de Reclamações Eletrónico</LinkExterno> ou no
+          livro físico disponível no parque.
+        </p>
+        <p>
+          Em caso de litígio de consumo, pode recorrer ao CNIACC – Centro Nacional de Informação e Arbitragem de
+          Conflitos de Consumo (<LinkExterno href="https://www.cniacc.pt">www.cniacc.pt</LinkExterno>). Mais informação no
+          Portal do Consumidor (<LinkExterno href="https://www.consumidor.gov.pt">www.consumidor.gov.pt</LinkExterno>).
+        </p>
+      </Seccao>
+
+      <Seccao titulo="15. Lei aplicável">
+        <p>Estes termos regem-se pela lei portuguesa.</p>
+      </Seccao>
+    </LegalPage>
   );
 }

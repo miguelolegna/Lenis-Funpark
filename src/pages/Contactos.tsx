@@ -779,6 +779,7 @@ export default function Contactos() {
 
                 <PrivacyTermsCheckbox
                   id="contactos-privacy-terms"
+                  variante="privacidade"
                   checked={concordaTermos}
                   onChange={setConcordaTermos}
                   required

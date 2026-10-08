@@ -1,6 +1,9 @@
 import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { useCookieConsent } from "../../lib/cookieConsent";
 
 export default function Footer() {
+  const { abrirPainel } = useCookieConsent();
+
   return (
     <footer className="bg-dark text-white pt-16 pb-8 mt-auto">
       <div className="max-w-7xl mx-auto px-4">
@@ -93,13 +96,27 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/politica-privacidade#cookies" className="hover:text-primary transition-colors">
+                <a href="/politica-cookies" className="hover:text-primary transition-colors">
                   Política de Cookies
                 </a>
               </li>
               <li>
+                <button
+                  type="button"
+                  onClick={abrirPainel}
+                  className="hover:text-primary transition-colors cursor-pointer text-left"
+                >
+                  Gerir cookies
+                </button>
+              </li>
+              <li>
                 <a href="/termos-condicoes" className="hover:text-primary transition-colors">
                   Termos e Condições
+                </a>
+              </li>
+              <li>
+                <a href="/regulamento" className="hover:text-primary transition-colors">
+                  Regulamento Interno
                 </a>
               </li>
               <li>
@@ -117,15 +134,21 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-surface-alt/80 text-sm mb-4 md:mb-0">
-            &copy; 2026 Leni's FunPark.
-          </p>
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center md:items-end gap-4">
+          <div className="text-center md:text-left">
+            <p className="text-surface-alt/80 text-sm">
+              &copy; 2026 Leni's FunPark.
+            </p>
+            <p className="text-surface-alt/60 text-xs mt-1">
+              Leni's FunPark é uma marca de Pereira &amp; Garcia, Lda. · NIPC 518532372 · Sede: Zona
+              Industrial do Tortosendo, lt. 23B, Rua F, 6200-823 Tortosendo
+            </p>
+          </div>
           <a
             href="https://layoutagency.pt/"
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors"
+            className="text-xs text-surface-alt/60 hover:text-surface-alt transition-colors shrink-0"
           >
             Desenvolvido por Layout Agency
           </a>

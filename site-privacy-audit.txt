@@ -1,0 +1,79 @@
+# Auditoria Técnica e de Privacidade: Leni's FunPark
+
+1. Sumário Executivo
+O site do Leni's FunPark é uma Single Page Application (SPA) desenvolvida em React (Vite). A aplicação não possui backend próprio nativo; recorre inteiramente à plataforma Supabase como Backend-as-a-Service (BaaS) para gestão de base de dados, autenticação de administradores e chamadas Edge Functions para lógicas de negócio e envio de e-mails via Resend. A aplicação não realiza rastreamento (tracking) comercial de utilizadores nem possui sistemas de marketing incorporados. A maior parte das interações resume-se ao pedido e preenchimento detalhado de reservas de festas, que inclui recolha indireta de dados referentes a menores. O pagamento das reservas não é automatizado. O site também utiliza um iframe externo para mostrar um mapa através do Google Maps.
+
+2. Arquitetura Geral do Sistema
+- Frontend: React com Vite, TypeScript, Tailwind CSS, React Router DOM. Não é efetuado Server-Side Rendering.
+- Backend / Base de Dados: Supabase (instância cloud PostgreSQL).
+- Intermediários e Cloud Functions: Supabase Edge Functions para envio de OTPs e geração de convites em PDF/Imagem.
+- Alojamento: Estático (Vercel, Netlify ou similar).
+- Comunicações Externas: E-mail gerido via Resend (integrado via Edge Functions).
+- Outras Infraestruturas: Google Maps para renderização visual do mapa.
+
+3. Mecanismos de Autenticação e Gestão de Sessões
+- Autenticação de Administradores: Apenas o painel de administração (/admin) possui um sistema de login tradicional (email/password) providenciado de forma nativa pelo Supabase Auth.
+- Autenticação e Verificação de Clientes (B2C): O sistema não impõe a criação de contas com password. As identidades são confirmadas através da receção de um código OTP enviado via email no momento. O acesso a vistas seguras (como o detalhe da reserva em ReservaClient.tsx) processa-se usando tokens opacos (UUIDs enviados por URL) em junção com códigos temporários validados via Remote Procedure Calls (RPC) do Supabase.
+
+4. Formulários e Recolha Direta de Dados
+Os dados recolhidos pelo sistema distribuem-se por quatro pontos essenciais:
+- Formulário de Contactos (/contactos): Nome, Email (usado para validação com envio de código), Telemóvel (se selecionado o contacto via este meio), Motivo do contacto e Mensagem.
+- Formulário de Intenção de Reserva (BookingModuleSection.tsx): Nome do Responsável, Telemóvel, Email, Data e Hora pretendida, Método de Pagamento.
+- Formulário de Personalização da Festa (ReservaClient.tsx): Exige validação via OTP para aceder. Pede Primeiro Nome do Aniversariante, Idade a Celebrar, N.º de Crianças estimadas, Opções de menu (sem ou com extras), Características do Bolo (massa, recheio), Preferências de Decoração e um campo de Notas Adicionais.
+- Criação de Convites Avulsos (Painel Admin - ConvitesPage.tsx): A equipa do parque regista manualmente Primeiro Nome do Aniversariante, Idade, Dia/Hora, e um telefone de contacto do cliente para emitir convites em massa.
+
+5. Gestão de Cookies, LocalStorage e SessionStorage
+Não foram identificados explicitamente cookies de primeira parte instalados via document.cookie e não existe painel gestor de cookies de retenção. No entanto, o sistema confia fortemente na web storage nativa:
+- LocalStorage sb-[ID]-auth-token: Criado pelo Supabase para reter as credenciais temporárias do utilizador com sessão iniciada (admin).
+- LocalStorage PAYMENT_REMAINING_KEY e PAYMENT_METHOD_KEY: Mantêm no browser do cliente, temporariamente, o estado das escolhas do pagamento da reserva.
+- LocalStorage admin_convites_avulsos: Armazenamento do histórico local dos bilhetes/convites avulsos gerados pelos administradores no Back-office.
+- LocalStorage VISTA_KEY: Mantém no admin as preferências de vista de calendário (mensal vs semanal).
+As cookies de terceira parte cingem-se ao Iframe do Google Maps na secção de contactos.
+
+6. Rastreamento (Tracking) e Analytics
+A base de código fonte inspecionada não contém qualquer implementação de scripts de rastreamento. Inexistem pixéis sociais (Meta/Facebook Pixel, TikTok) ou plataformas de análise de tráfego web como Google Analytics (GA4) ou Tag Manager. A performance orgânica é, desta forma, indetetável via cliente pelo website em si.
+
+7. Integrações de Terceiros e APIs Externas (3rd Party Services)
+- Supabase (Backend/Database): Armazena em cloud todos os dados submetidos.
+- Resend (Gateway de Emails): Subcontratado para envio transacional de todas as interações. O endereço de email, nomes e respetivas mensagens transitam via os servidores da Resend.
+- Google Maps (Iframe MapSection.tsx): Transfere o IP e Request Head do visitante quando a secção dos mapas é instanciada para os servidores da Alphabet Inc.
+
+8. Processamento de Pagamentos
+O site não processa de forma digital/instantânea nenhum pagamento. A gestão de transações é meramente informativa, operando com pagamento presencial no parque, transferências via IBAN estático (visualizado no front-end) e requisições no MB WAY feitas off-site. Conclui-se que não há passagem de dados de cartões bancários em momento nenhum.
+
+9. Fluxos de Dados e Ciclo de Vida
+1. Cliente B2C aciona formulário de reserva -> 2. Inserção Base na tabela reservas do Supabase via chamada .rpc() -> 3. Edge Function deteta e despacha email (via Resend) contendo URL único com um Token Opaco -> 4. O cliente acede ao ReservaClient.tsx através desse URL -> 5. Envia um OTP submetendo para o Supabase -> 6. Desbloqueia o formulário detalhado, injetando aí nomes dos aniversariantes e personalizações, salvando iterativamente na mesma linha.
+
+10. Tratamento de Dados de Menores e Dados Sensíveis
+- Dados de Menores: A aplicação recolhe diretamente o primeiro nome e a idade das crianças alvo da festa de aniversário (tanto em reservas efetuadas pelo encarregado de educação como pelos administradores nos convites avulsos).
+- Dados Sensíveis Relacionados a Saúde: O sistema propicia, de forma indireta, a recolha de dados médicos relacionados à saúde pela presença do campo "Notas Adicionais" no customizador do Menu (usado de forma recorrente neste setor para reportar alergias alimentares, espectro de autismo ou incapacidades motoras que careçam de tratamento singular).
+
+11. Segurança e Proteção de Dados
+O sistema acopla medidas como:
+- Row Level Security (RLS) no banco de dados do Supabase para bloquear consultas anónimas e blindar acessos.
+- Sessões protegidas por UUID tokens irrepetíveis opacos atrelados às reservas.
+- Proteção "Honeypot" contra bots abusivos no formulário de contacto que oculta campos (spambots que o preencham originam descartes da mensagem), diminuindo o ruído sem usar reCaptcha externos pesados e que implicam tracking.
+
+12. Bases Legais Observadas (No contexto RGPD)
+- Diligências pré-contratuais e execução de contrato: Validação da base legal nas reservas, seleção de bolos e marcação da festa.
+- Consentimento expresso: Necessário ser formulado legalmente (checkbox) nos formulários de contacto (atualmente submetido pela inferência da ação explícita).
+- Interesse legítimo: Guarda do histórico de convites em LocalStorage para admins e proteção de segurança anti-spam.
+
+13. Identificação do Controlador e Subcontratantes (Data Processors)
+- Responsável pelo Tratamento: Leni's FunPark.
+- Subcontratantes de Dados:
+  - Supabase Inc (Cloud Database)
+  - Resend (Mailing)
+  - Fornecedor de Alojamento Cloud (Vercel/Netlify).
+  - Google Ireland Limited (Google Maps embed).
+
+14. Comunicações Transacionais e de Marketing
+A aplicação realiza estritamente comunicações transacionais via API: Envios de códigos OTP para segurança, confirmações de submissão do formulário de evento, e disparo da ferramenta de PDFs/Imagens para "Convite Digital". Não existem funis ou mecânicas de subscrição de Newsletter no frontend.
+
+15. Retenção e Eliminação de Dados
+Ao nível da aplicação front-end, as chaves do LocalStorage não têm expiração programada por tempo (persistência na API Web Storage), devendo os avisos no lado cliente informar que os dados locais só são limpos se apagados pelas configurações do browser. Dados mantidos na base de dados (Supabase) não demonstraram lógica de eliminação temporal automatizada no frontend, recaindo a gestão do ciclo de eliminação total do lado dos processos internos do parque B2B.
+
+16. Checklist de Completude e Limitações
+- Cobertura da Base de Código: O mapeamento de fluxos via React e Vite foi executado exaustivamente no projeto.
+- Ausências/Limitações: Como o backend opera via Serverless Functions do Supabase e PL/pgSQL RPCs, a lógica transacional exata do script de email encontra-se em /supabase/functions não totalmente mapeada em profundidade no report do front-end, confirmando-se no entanto o papel único da mesma (envio de emails OTP e e-mails administrativos via Resend).
+- Conclusão da Avaliação: Completa e livre de suposições infundadas.

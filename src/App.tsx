@@ -7,6 +7,7 @@ import { AnimatePresence } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingScreen from './components/LoadingScreen';
 import { preloadAllPublicRoutes } from './utils/preload';
+import { CookieConsentProvider } from './lib/cookieConsent';
 
 // Rotas Públicas com Lazy Loading direto sem atrasos artificiais
 const Home = lazy(() => import('./pages/Home'));
@@ -16,6 +17,8 @@ const Contactos = lazy(() => import('./pages/Contactos'));
 const ReservaClient = lazy(() => import('./pages/ReservaClient'));
 const PoliticaPrivacidade = lazy(() => import('./pages/PoliticaPrivacidade'));
 const TermosCondicoes = lazy(() => import('./pages/TermosCondicoes'));
+const PoliticaCookies = lazy(() => import('./pages/PoliticaCookies'));
+const Regulamento = lazy(() => import('./pages/Regulamento'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Rotas Administrativas com Lazy Loading
@@ -43,6 +46,8 @@ function AppRoutes() {
           <Route path="/reserva/:token" element={<ReservaClient />} />
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
           <Route path="/termos-condicoes" element={<TermosCondicoes />} />
+          <Route path="/politica-cookies" element={<PoliticaCookies />} />
+          <Route path="/regulamento" element={<Regulamento />} />
 
           {/* Autenticação Admin */}
           <Route path="/admin/login" element={<Login />} />
@@ -86,23 +91,25 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
-      {previewLoader === 'route' ? (
-        <LoadingScreen isRouteTransition />
-      ) : (
-        <AnimatePresence>
-          {(isInitialLoading || previewLoader === 'initial') && (
-            <LoadingScreen
-              isInitial
-              onFinished={handleInitialFinish}
-            />
-          )}
-        </AnimatePresence>
-      )}
-      <ScrollToTop />
-      <MainLayout>
-        <AppRoutes />
-      </MainLayout>
-    </BrowserRouter>
+    <CookieConsentProvider>
+      <BrowserRouter>
+        {previewLoader === 'route' ? (
+          <LoadingScreen isRouteTransition />
+        ) : (
+          <AnimatePresence>
+            {(isInitialLoading || previewLoader === 'initial') && (
+              <LoadingScreen
+                isInitial
+                onFinished={handleInitialFinish}
+              />
+            )}
+          </AnimatePresence>
+        )}
+        <ScrollToTop />
+        <MainLayout>
+          <AppRoutes />
+        </MainLayout>
+      </BrowserRouter>
+    </CookieConsentProvider>
   );
 }

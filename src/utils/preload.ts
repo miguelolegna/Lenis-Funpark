@@ -5,6 +5,8 @@ const routeImports: Record<string, () => Promise<unknown>> = {
   '/contactos': () => import('../pages/Contactos'),
   '/politica-privacidade': () => import('../pages/PoliticaPrivacidade'),
   '/termos-condicoes': () => import('../pages/TermosCondicoes'),
+  '/politica-cookies': () => import('../pages/PoliticaCookies'),
+  '/regulamento': () => import('../pages/Regulamento'),
   '/admin/login': () => import('../pages/admin/Login'),
 };
 
