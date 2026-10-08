@@ -22,7 +22,7 @@ export default function HeroSection({}: HeroSectionProps) {
           animate={{ y: 0, opacity: 1 }}
           className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
         >
-          Onde a Diversão Encontra a Segurança.
+          Onde a Diversão Encontra a Segurança
         </motion.h1>
         <motion.p 
            initial={{ y: 50, opacity: 0 }}
@@ -30,7 +30,7 @@ export default function HeroSection({}: HeroSectionProps) {
            transition={{ delay: 0.1 }}
           className="text-xl md:text-2xl text-surface font-medium"
         >
-          Conheça os 400m² do Leni's FunPark.
+          Conheça os 400m² do Leni's FunPark
         </motion.p>
       </div>
     </section>

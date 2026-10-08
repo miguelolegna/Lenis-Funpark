@@ -17,7 +17,7 @@ export default function HeroSection({}: HeroSectionProps) {
           animate={{ y: 0, opacity: 1 }}
           className="text-4xl md:text-6xl font-black text-white mb-6 drop-shadow-lg"
         >
-          Momentos Inesquecíveis, Zero Preocupações.
+          Momentos Inesquecíveis, Zero Preocupações
         </motion.h1>
         <motion.p 
            initial={{ y: 50, opacity: 0 }}
@@ -25,7 +25,7 @@ export default function HeroSection({}: HeroSectionProps) {
            transition={{ delay: 0.1 }}
           className="text-xl md:text-2xl text-surface font-medium"
         >
-          O nosso serviço chave-na-mão para aniversários e eventos de grupo.
+          Nós tratamos de tudo para os seus aniversários e eventos de grupo
         </motion.p>
       </div>
     </section>

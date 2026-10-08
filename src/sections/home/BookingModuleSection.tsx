@@ -18,6 +18,8 @@ import {
   Banknote,
   Wallet,
   Cake,
+  AlertCircle,
+  MessageCircle,
 } from "lucide-react";
 import { rotuloHorario, type ResumoDia } from "../../lib/horarios";
 import {
@@ -401,41 +403,75 @@ export default function BookingModuleSection({
               </h3>
 
               {mostrarMbway && (
-                <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-center gap-4">
+                <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-start gap-4">
                   <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-primary shadow-sm shrink-0">
                     <Smartphone className="w-6 h-6" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-secondary/70 uppercase">
                       MB WAY
                     </p>
                     <p className="text-xl font-black text-secondary tracking-wide">
                       {MBWAY_NUMERO}
                     </p>
+                    <p className="text-[11px] text-secondary/60 font-semibold mt-1">
+                      Indique o dia e hora da festa na mensagem do envio
+                    </p>
                   </div>
                 </div>
               )}
 
               {mostrarIban && (
-                <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-center gap-4">
+                <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-start gap-4">
                   <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-secondary shadow-sm shrink-0">
                     <CreditCard className="w-6 h-6" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-secondary/70 uppercase">
                       Transferência / IBAN
                     </p>
                     <p className="text-sm sm:text-lg font-black text-secondary font-mono tracking-tight truncate">
                       {IBAN}
                     </p>
+                    <p className="text-[11px] text-secondary/60 font-semibold mt-1">
+                      Indique o dia e hora da festa no descritivo da transferência
+                    </p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="mt-8 p-4 bg-primary/10 text-secondary text-sm rounded-xl font-medium border border-primary/20 text-center">
-              Após o pagamento, envie o comprovativo pelo WhatsApp para
-              validarmos a sua reserva de imediato!
+            <div className="mt-8 p-5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-left shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm sm:text-base font-black text-amber-950 mb-1">
+                    Obrigatório envio do comprovativo via WhatsApp
+                  </h4>
+                  <p className="text-xs sm:text-sm text-amber-900 font-medium leading-relaxed">
+                    Para identificarmos de quem é o pagamento e validarmos a sua reserva, é <strong>obrigatório o envio do comprovativo via WhatsApp com indicação expressa do dia e hora da festa</strong> (e nome do aniversariante).
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3.5 border-t border-amber-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <span className="text-xs font-bold text-amber-900 text-center sm:text-left">
+                  WhatsApp: (+351) 920 259 886
+                </span>
+                <a
+                  href={`https://wa.me/351920259886?text=${encodeURIComponent(
+                    "Olá! Envio em anexo o comprovativo de pagamento da caução para a reserva da festa no Leni's FunPark."
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Enviar Comprovativo no WhatsApp</span>
+                </a>
+              </div>
             </div>
 
             <button
@@ -718,10 +754,22 @@ export default function BookingModuleSection({
                     })}
                   </div>
                   {metodoEscolhido === "dinheiro" && (
-                    <p className="mt-2 text-xs font-medium text-secondary/70">
-                      Depois de enviar o pedido, terá 24 horas para se dirigir
-                      ao parque e pagar a caução na receção.
-                    </p>
+                    <div className="mt-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs font-medium flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-amber-950 font-bold">Atenção:</strong>{" "}
+                        Depois de enviar o pedido, terá <strong>24 horas</strong> para se dirigir ao parque e pagar a caução <strong>de 50€</strong> na receção.
+                      </div>
+                    </div>
+                  )}
+                  {(metodoEscolhido === "mbway" || metodoEscolhido === "transferencia") && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs font-medium flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-amber-950 font-bold">Atenção:</strong>{" "}
+                        Após o pagamento da caução <strong>de 50€</strong>, é <u>obrigatório o envio do comprovativo via WhatsApp</u> com indicação do <strong>dia e hora da festa</strong> (e nome do aniversariante) para identificarmos a sua reserva.
+                      </div>
+                    </div>
                   )}
                 </fieldset>
 

@@ -11,7 +11,7 @@ export default function SobrePreviewSection({}: SobrePreviewSectionProps) {
           <div>
             <h2 className="text-4xl font-black text-secondary mb-6">O Melhor <span className="text-primary">Parque de Diversões</span> Indoor</h2>
             <p className="text-lg text-secondary/70 mb-8 leading-relaxed">
-              O Leni's Funpark é a referência de lazer infantil em Portugal (Cova da Beira). Com mais de 1000m² dedicados à diversão e centenas de festas de aniversário de sucesso por ano, oferecemos o espaço mais seguro, 100% climatizado e desenhado para as famílias.
+              O Leni's Funpark é a referência de lazer infantil em Portugal (Cova da Beira). Com mais de 400m² dedicados à diversão e centenas de festas de aniversário de sucesso por ano, oferecemos o espaço mais seguro, 100% climatizado e desenhado para as famílias.
             </p>
             <ul className="space-y-4">
               {[
