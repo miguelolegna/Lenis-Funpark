@@ -16,6 +16,7 @@ const Contactos = lazy(() => import('./pages/Contactos'));
 const ReservaClient = lazy(() => import('./pages/ReservaClient'));
 const PoliticaPrivacidade = lazy(() => import('./pages/PoliticaPrivacidade'));
 const TermosCondicoes = lazy(() => import('./pages/TermosCondicoes'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Rotas Administrativas com Lazy Loading
 const Login = lazy(() => import('./pages/admin/Login'));
@@ -59,6 +60,9 @@ function AppRoutes() {
               <Route path="admins" element={<AdminsPage />} />
             </Route>
           </Route>
+
+          {/* Rota 404 de Captura Geral (deve ficar estritamente no final) */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
     </Suspense>
