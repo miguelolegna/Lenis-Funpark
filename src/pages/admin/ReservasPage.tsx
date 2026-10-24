@@ -424,7 +424,7 @@ export default function ReservasPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-secondary">Reservas & Marcações</h1>
           <p className="text-sm text-secondary/60 font-medium mt-1">
-            Gestão operacional por fluxo Kanban e tabela integral com exportação
+            Gestão operacional por fluxo Kanban e tabela integral
           </p>
         </div>
 

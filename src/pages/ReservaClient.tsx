@@ -1264,7 +1264,7 @@ export default function ReservaClient() {
           Acesso à Reserva
         </h2>
         <p className="text-secondary/70 text-xs sm:text-sm font-medium mb-6">
-          Solicite o seu código de validação de 6 dígitos enviado por SMS/Email.
+          Solicite o seu código de validação de 6 dígitos enviado por Email.
         </p>
 
         {error && (
