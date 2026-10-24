@@ -633,7 +633,7 @@ export default function BookingModuleSection({
                       minLength={2}
                       maxLength={100}
                       autoComplete="name"
-                      placeholder="O seu nome completo"
+                      placeholder="Primeio nome do aniversariante"
                       className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all"
                     />
                   </div>
