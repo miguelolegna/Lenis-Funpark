@@ -420,7 +420,7 @@ export default function BookingModuleSection({
                   </div>
                 </div>
               )}
-
+{/* nome */}
               {mostrarIban && (
                 <div className="bg-surface-alt rounded-xl p-4 border border-primary/20 flex items-start gap-4">
                   <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-secondary shadow-sm shrink-0">
@@ -625,7 +625,7 @@ export default function BookingModuleSection({
                   <div>
                     <label className="block text-sm font-bold text-secondary mb-2 flex items-center gap-1.5">
                       <User className="w-4 h-4 text-primary" />
-                      Nome *
+                      Nome do Aniversariante *
                     </label>
                     <input
                       name="client_name"

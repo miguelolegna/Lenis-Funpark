@@ -1,29 +1,35 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resvg, initWasm } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
-import { backgroundBase64, fontBase64 } from "./consts.ts";
+import { backgroundBase64, fontCorpoBase64, fontTituloBase64 } from "./consts.ts";
 
 let wasmInitialized = false;
-let fontBuffer: Uint8Array | null = null;
+let fontCorpoBuffer: Uint8Array | null = null;
+let fontTituloBuffer: Uint8Array | null = null;
 let initPromise: Promise<void> | null = null;
 
+function decodeB64ToBuffer(b64: string): Uint8Array | null {
+  const b64Data = b64.includes(',') ? b64.split(',')[1] : b64;
+  if (!b64Data) return null;
+  const binaryStr = atob(b64Data);
+  const len = binaryStr.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  return bytes;
+}
+
 async function ensureWasmAndFont() {
-  if (wasmInitialized && fontBuffer) return;
+  if (wasmInitialized && fontCorpoBuffer && fontTituloBuffer) return;
   if (!initPromise) {
     initPromise = (async () => {
       const wasmRes = await fetch("https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm");
       await initWasm(wasmRes);
       
-      const b64Data = fontBase64.split(',')[1];
-      if (b64Data) {
-        const binaryStr = atob(b64Data);
-        const len = binaryStr.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binaryStr.charCodeAt(i);
-        }
-        fontBuffer = bytes;
-      }
+      fontCorpoBuffer = decodeB64ToBuffer(fontCorpoBase64);
+      fontTituloBuffer = decodeB64ToBuffer(fontTituloBase64);
+
       wasmInitialized = true;
     })();
   }
@@ -146,7 +152,9 @@ serve(async (req: Request) => {
   const nomeDisplay = primeiroNome.toUpperCase();
   
   // Ajuste dinâmico de tamanho de fonte para acomodar nomes longos na faixa (base: 48px)
-  const nomeFontSize = nomeDisplay.length > 20 ? 36 : (nomeDisplay.length > 14 ? 42 : 48);
+  // Aumento substancial dos valores base de renderização
+  // Ajuste dinâmico com escala significativamente maior
+  const nomeFontSize = nomeDisplay.length > 20 ? 65 : (nomeDisplay.length > 14 ? 85 : 110);
 
   // Divisão do endereço para duas linhas no espaço "LOCAL"
   let localLinha1 = parkLocation;
@@ -172,8 +180,14 @@ serve(async (req: Request) => {
       <defs>
         <style>
           @font-face {
+            font-family: 'TituloFont';
+            src: url('${fontTituloBase64}') format('truetype');
+            font-weight: 900;
+            font-style: normal;
+          }
+          @font-face {
             font-family: 'Obelix Pro';
-            src: url('${fontBase64}') format('truetype');
+            src: url('${fontCorpoBase64}') format('truetype');
             font-weight: 900;
             font-style: normal;
           }
@@ -184,9 +198,9 @@ serve(async (req: Request) => {
       </defs>
       
       <image href="${backgroundBase64}" width="1080" height="1527" />
-      
-      <!-- NOME DO ANIVERSARIANTE -->
-      <text x="576" y="460" font-family="'Obelix Pro', sans-serif" font-size="65" font-weight="900" fill="#FFFFFF" stroke="#000000" stroke-width="3" filter="url(#shadow3d)" text-anchor="middle" letter-spacing="2">
+
+      <!-- NOME DO ANIVERSARIANTE (TITULO) -->
+      <text x="576" y="465" font-family="'TituloFont', sans-serif" font-size="${nomeFontSize}" font-weight="900" fill="#FFFFFF" stroke="#000000" stroke-width="5" filter="url(#shadow3d)" text-anchor="middle" letter-spacing="2">
         ${escapeXml(nomeDisplay)}
       </text>
       
@@ -240,7 +254,7 @@ serve(async (req: Request) => {
       fitTo: { mode: 'original' },
       font: {
         loadSystemFonts: false,
-        fontBuffers: fontBuffer ? [fontBuffer] : [],
+        fontBuffers: [fontCorpoBuffer, fontTituloBuffer].filter(Boolean) as Uint8Array[],
         defaultFontFamily: 'sans-serif'
       }
     });
