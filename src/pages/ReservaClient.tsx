@@ -819,17 +819,7 @@ export default function ReservaClient() {
                   );
                 })}
               </div>
-
-              {pizzaBloqueada && (
-                <div className="mt-4 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
-                  <p>
-                    A pizza não está disponível porque a sua festa é a um
-                    domingo e a pizzaria está fechada nesse dia.
-                  </p>
-                </div>
-              )}
-            </div>
+             </div>
 
             {/* Bloco 5: Animação & Decoração */}
             <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
