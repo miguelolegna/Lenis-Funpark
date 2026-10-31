@@ -18,9 +18,11 @@ import {
   Ticket,
   AlertCircle,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { exportarReservaPDF } from "../lib/exportarReservaPDF";
+import { dayjs, TIMEZONE } from "../lib/dateUtils";
 import OpcaoDropdown from "../components/OpcaoDropdown";
 
 const OPCOES_MASSA = [
@@ -39,6 +41,10 @@ const OPCOES_RECHEIO_COBERTURA = [
   { value: "Chocolate", label: "Chocolate" },
   { value: "Fruta variada", label: "Fruta variada" },
 ];
+
+// A pizzaria fornecedora está fechada ao domingo: a pizza não pode ser pedida para festas nesse dia
+const festaAoDomingo = (dataEvento: unknown) =>
+  typeof dataEvento === "string" && dayjs(dataEvento).tz(TIMEZONE).day() === 0;
 
 export default function ReservaClient() {
   const { token } = useParams<{ token: string }>();
@@ -154,6 +160,7 @@ export default function ReservaClient() {
       if (fetchError) throw fetchError;
 
       if (reservaData) {
+        const pizzaBloqueada = festaAoDomingo(reservaData.data_evento);
         setReservaServidor(reservaData);
         setConviteToken(reservaData.convite_token);
         setFormData({
@@ -163,7 +170,7 @@ export default function ReservaClient() {
           tipo_convite: reservaData.tipo_convite || "nenhum",
           tema_convite: reservaData.tema_convite || "",
           opcao_menu: reservaData.opcao_menu || "com_menu",
-          extra_pizza: reservaData.extra_pizza || false,
+          extra_pizza: pizzaBloqueada ? false : reservaData.extra_pizza || false,
           extra_cachorro: reservaData.extra_cachorro || false,
           extra_doces: reservaData.extra_doces || false,
           extra_fruta: reservaData.extra_fruta || false,
@@ -223,7 +230,7 @@ export default function ReservaClient() {
     tema_convite:
       formData.tipo_convite === "tematico" ? formData.tema_convite : "",
     opcao_menu: formData.opcao_menu,
-    extra_pizza: formData.extra_pizza,
+    extra_pizza: festaAoDomingo(reservaServidor.data_evento) ? false : formData.extra_pizza,
     extra_cachorro: formData.extra_cachorro,
     extra_doces: formData.extra_doces,
     extra_fruta: formData.extra_fruta,
@@ -444,6 +451,7 @@ export default function ReservaClient() {
   // ECRÃ 2: PREENCHIMENTO DOS DETALHES DA FESTA (STEP 3)
   // -------------------------------------------------------------
   if (step === 3) {
+    const pizzaBloqueada = festaAoDomingo(reservaServidor.data_evento);
     return (
       <div className="min-h-screen bg-surface py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
         <div className="max-w-3xl w-full">
@@ -760,28 +768,41 @@ export default function ReservaClient() {
                     price: "+1,00€ / criança",
                   },
                 ].map((item) => {
-                  const isChecked = (formData as any)[item.field];
+                  const bloqueado =
+                    item.field === "extra_pizza" && pizzaBloqueada;
+                  const isChecked = !bloqueado && (formData as any)[item.field];
                   return (
                     <button
                       key={item.field}
                       type="button"
+                      disabled={bloqueado}
+                      aria-disabled={bloqueado}
                       onClick={() => {
                         const nextVal = !isChecked;
                         handleInputChange(item.field, nextVal);
                         handleBlur(item.field, nextVal);
                       }}
                       className={`p-4 rounded-2xl text-left border-2 transition-all flex items-center justify-between ${
-                        isChecked
-                          ? "bg-emerald-50 border-emerald-400 text-emerald-950 shadow-xs"
-                          : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
+                        bloqueado
+                          ? "bg-surface-alt/40 border-surface text-secondary/40 cursor-not-allowed"
+                          : isChecked
+                            ? "bg-emerald-50 border-emerald-400 text-emerald-950 shadow-xs"
+                            : "bg-surface-alt/60 hover:bg-surface-alt border-surface text-secondary/80"
                       }`}
                     >
                       <div>
                         <p className="font-extrabold text-sm">{item.name}</p>
-                        <p className="text-[11px] font-bold text-emerald-700">
-                          {item.price}
+                        <p
+                          className={`text-[11px] font-bold ${
+                            bloqueado ? "text-secondary/50" : "text-emerald-700"
+                          }`}
+                        >
+                          {bloqueado ? "Indisponível ao domingo" : item.price}
                         </p>
                       </div>
+                      {bloqueado ? (
+                        <Lock className="w-4 h-4 shrink-0 text-secondary/40" />
+                      ) : (
                       <div
                         className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
                           isChecked
@@ -793,10 +814,21 @@ export default function ReservaClient() {
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         )}
                       </div>
+                      )}
                     </button>
                   );
                 })}
               </div>
+
+              {pizzaBloqueada && (
+                <div className="mt-4 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                  <p>
+                    A pizza não está disponível porque a sua festa é a um
+                    domingo e a pizzaria está fechada nesse dia.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Bloco 5: Animação & Decoração */}
