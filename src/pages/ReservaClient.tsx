@@ -471,7 +471,7 @@ export default function ReservaClient() {
 
           <div className="space-y-8">
             {/* Bloco 1: Aniversariante */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
                 <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black shrink-0">
                   <User className="w-5 h-5" />
@@ -551,7 +551,7 @@ export default function ReservaClient() {
             </div>
 
             {/* Bloco 2: Convite Digital */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
                 <div className="w-10 h-10 rounded-2xl bg-accent/15 flex items-center justify-center text-accent font-black shrink-0">
                   <Ticket className="w-5 h-5" />
@@ -607,7 +607,7 @@ export default function ReservaClient() {
                         }`}
                       >
                         {formData.tipo_convite === opt.id && (
-                          <Check className="w-3 h-3 stroke-[3]" />
+                          <Check className="w-3 h-3 stroke-3" />
                         )}
                       </div>
                     </div>
@@ -652,7 +652,7 @@ export default function ReservaClient() {
             </div>
 
             {/* Bloco 3: Opção de Menu */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/15 flex items-center justify-center text-amber-600 font-black shrink-0">
                   <Utensils className="w-5 h-5" />
@@ -712,7 +712,7 @@ export default function ReservaClient() {
                         }`}
                       >
                         {formData.opcao_menu === menu.id && (
-                          <Check className="w-4 h-4 stroke-[3]" />
+                          <Check className="w-4 h-4 stroke-3" />
                         )}
                       </div>
                     </div>
@@ -725,7 +725,7 @@ export default function ReservaClient() {
             </div>
 
             {/* Bloco 4: Extras de Menu */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-emerald-600 font-black shrink-0">
                   <Gift className="w-5 h-5" />
@@ -811,7 +811,7 @@ export default function ReservaClient() {
                         }`}
                       >
                         {isChecked && (
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <Check className="w-3.5 h-3.5 stroke-3" />
                         )}
                       </div>
                       )}
@@ -819,10 +819,19 @@ export default function ReservaClient() {
                   );
                 })}
               </div>
-             </div>
+
+              {pizzaBloqueada && (
+                <div className="mt-4 p-3.5 rounded-2xl bg-primary/10 border-2 border-primary/25 text-secondary flex items-start gap-2.5 text-xs font-bold">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                  <p>
+                    A pizza não está disponível porque a sua festa é a um domingo e a pizzaria está fechada nesse dia.
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Bloco 5: Animação & Decoração */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 shadow-xl border-2 border-surface-alt">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-surface-alt">
                 <div className="w-10 h-10 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-600 font-black shrink-0">
                   <Palette className="w-5 h-5" />
