@@ -15,7 +15,7 @@ export default function PoliticaPrivacidade() {
       descricao="Como o Leni's FunPark recolhe, usa e protege os seus dados pessoais, nos termos do RGPD."
       url="/politica-privacidade"
       icon={ShieldCheck}
-      ultimaAtualizacao="outubro de 2026"
+      ultimaAtualizacao="novembro de 2026"
     >
       <Seccao titulo="1. Quem somos">
         <p>
@@ -38,19 +38,19 @@ export default function PoliticaPrivacidade() {
           linhas={[
             [
               'Formulário de contacto',
-              'Nome, email, telemóvel (se escolher contacto por WhatsApp ou chamada), assunto e mensagem',
+              'Nome do aniversariante, email, telemóvel (se escolher contacto por WhatsApp ou chamada), assunto e mensagem',
               'Responder ao seu pedido',
               'Diligências pré-contratuais e interesse legítimo em responder a quem nos contacta',
             ],
             [
               'Pedido de reserva',
-              'Nome do responsável, telemóvel, email, data e hora, idade da criança, método de pagamento da caução e observações',
+              'Nome do aniversariante, telemóvel, email, data e hora, idade da criança, método de pagamento da caução e observações',
               'Gerir e confirmar a reserva',
               'Execução do contrato',
             ],
             [
               'Personalização da festa',
-              'Primeiro nome e idade do aniversariante, n.º de crianças, menu, bolo, decoração e notas',
+              'Primeiro nome do aniversariante e idade do aniversariante, n.º de crianças, menu, bolo, decoração e notas',
               'Preparar a festa',
               'Execução do contrato',
             ],
@@ -84,7 +84,7 @@ export default function PoliticaPrivacidade() {
       <Seccao titulo="3. Dados de crianças">
         <p>
           Os dados das crianças (primeiro nome e idade) são fornecidos pelo pai, mãe ou responsável legal que faz a
-          reserva, e servem apenas para organizar a festa. Pedimos só o mínimo necessário.
+          reserva, e servem apenas para organizar a festa. Pedimos estritamente o mínimo necessário.
         </p>
       </Seccao>
 

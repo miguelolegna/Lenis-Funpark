@@ -36,6 +36,6 @@ dist-ssr
 # Ensure Supabase functions are tracked
 !supabase/functions/
 
-.claude
-.ai
-.antigravity
+.claude/
+.ai/
+.antigravity/
