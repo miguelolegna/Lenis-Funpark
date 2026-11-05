@@ -19,6 +19,7 @@ import {
   Wallet,
   Cake,
   AlertCircle,
+  AlertTriangle,
   MessageCircle,
 } from "lucide-react";
 import { rotuloHorario, type ResumoDia } from "../../lib/horarios";
@@ -239,6 +240,8 @@ export default function BookingModuleSection({
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [metodoEscolhido, setMetodoEscolhido] =
     useState<MetodoPagamento | null>(null);
+  const [conhecimentoAcompanhamento, setConhecimentoAcompanhamento] =
+    useState<boolean>(false);
   const [concordaTermos, setConcordaTermos] = useState<boolean>(false);
 
   useEffect(() => {
@@ -787,6 +790,49 @@ export default function BookingModuleSection({
                   ></textarea>
                 </div>
 
+                <label
+                  htmlFor="booking-conhecimento-acompanhamento"
+                  className={`group relative flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer select-none ${
+                    conhecimentoAcompanhamento
+                      ? "bg-amber-100/80 border-amber-500 text-amber-950 shadow-xs"
+                      : "bg-amber-50/90 hover:bg-amber-100/60 border-amber-300 text-amber-950"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id="booking-conhecimento-acompanhamento"
+                    name="conhecimento_acompanhamento"
+                    value="true"
+                    checked={conhecimentoAcompanhamento}
+                    onChange={(e) =>
+                      setConhecimentoAcompanhamento(e.target.checked)
+                    }
+                    required
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-5 h-5 mt-0.5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
+                      conhecimentoAcompanhamento
+                        ? "bg-amber-600 border-amber-600 text-white scale-105"
+                        : "bg-white border-amber-400 group-hover:border-amber-600"
+                    }`}
+                  >
+                    {conhecimentoAcompanhamento && (
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    )}
+                  </div>
+                  <AlertTriangle className="w-5 h-5 mt-0.5 text-amber-600 shrink-0" />
+                  <span className="text-xs sm:text-sm font-semibold text-amber-950 leading-snug">
+                    Tomei conhecimento de que:{" "}
+                    <strong className="font-extrabold">
+                      &ldquo;Por motivos de segurança e bem-estar, as crianças
+                      com patologias específicas necessitam de acompanhamento
+                      obrigatório por parte de um adulto responsável.&rdquo;
+                    </strong>{" "}
+                    <span className="text-amber-700 font-black">*</span>
+                  </span>
+                </label>
+
                 <PrivacyTermsCheckbox
                   id="booking-privacy-terms"
                   checked={concordaTermos}
@@ -802,6 +848,7 @@ export default function BookingModuleSection({
                   !selectedDate ||
                   !selectedTime ||
                   !metodoEscolhido ||
+                  !conhecimentoAcompanhamento ||
                   !concordaTermos ||
                   isSubmitting
                 }
@@ -809,6 +856,7 @@ export default function BookingModuleSection({
                   selectedDate &&
                   selectedTime &&
                   metodoEscolhido &&
+                  conhecimentoAcompanhamento &&
                   concordaTermos &&
                   !isSubmitting
                     ? "bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/20 cursor-pointer"
@@ -823,9 +871,11 @@ export default function BookingModuleSection({
                       ? "Selecione um Horário acima"
                       : !metodoEscolhido
                         ? "Escolha o método de pagamento"
-                        : !concordaTermos
-                          ? "Aceite a Política e Termos"
-                          : "Pedir Confirmação"}
+                        : !conhecimentoAcompanhamento
+                          ? "Confirme o aviso de acompanhamento"
+                          : !concordaTermos
+                            ? "Aceite a Política e Termos"
+                            : "Pedir Confirmação"}
               </motion.button>
 
               <div className="mt-4 p-4 bg-surface-alt text-secondary text-sm rounded-xl text-center font-medium border border-surface">

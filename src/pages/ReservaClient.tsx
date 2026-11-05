@@ -17,7 +17,6 @@ import {
   Check,
   Ticket,
   AlertCircle,
-  AlertTriangle,
   Loader2,
   Lock,
 } from "lucide-react";
@@ -113,7 +112,6 @@ export default function ReservaClient() {
     bolo_com_imagem: false,
     bolo_composicao: "",
     notas_adicionais: "",
-    conhecimento_acompanhamento: false,
     consentimento_saude: false,
     termos_veracidade: false,
     convite_token: "",
@@ -145,7 +143,7 @@ export default function ReservaClient() {
     setLoading(true);
     setError("");
     try {
-      const { data: reservaId, error: rpcError } = await supabase.rpc(
+      const { data: validacao, error: rpcError } = await supabase.rpc(
         "validar_otp_b2c",
         {
           p_token_opaco: token,
@@ -153,7 +151,23 @@ export default function ReservaClient() {
         },
       );
       if (rpcError) throw rpcError;
-      if (!reservaId) throw new Error("Falha na extração do ID da reserva.");
+
+      const reservaIdExtraido =
+        typeof validacao === "string"
+          ? validacao
+          : validacao && typeof validacao === "object"
+            ? validacao.ok
+              ? validacao.reserva_id
+              : (() => {
+                  throw new Error(
+                    validacao.erro || "Código Inválido ou Expirado.",
+                  );
+                })()
+            : null;
+
+      if (!reservaIdExtraido) {
+        throw new Error("Falha na extração do ID da reserva.");
+      }
 
       const { data: reservaData, error: fetchError } = await supabase.rpc(
         "obter_reserva_b2c",
@@ -188,14 +202,13 @@ export default function ReservaClient() {
           bolo_com_imagem: reservaData.bolo_cobertura === "Imagem",
           bolo_composicao: reservaData.bolo_composicao || "",
           notas_adicionais: reservaData.notas_adicionais || "",
-          conhecimento_acompanhamento: Boolean(reservaData.termos_veracidade),
           consentimento_saude: reservaData.consentimento_saude || false,
           termos_veracidade: reservaData.termos_veracidade || false,
           convite_token: reservaData.convite_token || "",
         });
       }
 
-      setReservaId(reservaId);
+      setReservaId(reservaIdExtraido);
       setStep(3);
     } catch (err: any) {
       setError(err.message || "Código Inválido ou Expirado.");
@@ -274,12 +287,6 @@ export default function ReservaClient() {
     if (!formData.nome_aniversariante) {
       setError(
         "O Primeiro Nome do Aniversariante é estritamente obrigatório para concluir.",
-      );
-      return;
-    }
-    if (!formData.conhecimento_acompanhamento) {
-      setError(
-        "É obrigatório confirmar que tomou conhecimento do acompanhamento obrigatório para crianças com patologias específicas.",
       );
       return;
     }
@@ -1169,45 +1176,6 @@ export default function ReservaClient() {
                 placeholder="Ex: 2 crianças com intolerância ao glúten, horário de chegada dos pais..."
                 className="w-full bg-surface-alt/70 hover:bg-surface-alt border-2 border-surface focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 rounded-2xl px-4 py-3.5 font-medium text-secondary placeholder:text-secondary/40 outline-none transition-all resize-none"
               ></textarea>
-
-              {/* Aviso obrigatório sobre acompanhamento de crianças com patologias específicas */}
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={formData.conhecimento_acompanhamento}
-                aria-required="true"
-                onClick={() => {
-                  const nextVal = !formData.conhecimento_acompanhamento;
-                  handleInputChange("conhecimento_acompanhamento", nextVal);
-                }}
-                className={`w-full mt-4 p-4 rounded-2xl text-left border-2 transition-all flex items-start gap-3 cursor-pointer ${
-                  formData.conhecimento_acompanhamento
-                    ? "bg-amber-100/80 border-amber-500 text-amber-950 shadow-xs"
-                    : "bg-amber-50/90 hover:bg-amber-100/60 border-amber-300 text-amber-950"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 mt-0.5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    formData.conhecimento_acompanhamento
-                      ? "bg-amber-600 border-amber-600 text-white"
-                      : "bg-white border-amber-400"
-                  }`}
-                >
-                  {formData.conhecimento_acompanhamento && (
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  )}
-                </div>
-                <AlertTriangle className="w-5 h-5 mt-0.5 text-amber-600 shrink-0" />
-                <span className="text-xs sm:text-sm font-semibold text-amber-950 leading-snug">
-                  Tomei conhecimento de que:{" "}
-                  <strong className="font-extrabold">
-                    &ldquo;Por motivos de segurança e bem-estar, as crianças com
-                    patologias específicas necessitam de acompanhamento
-                    obrigatório por parte de um adulto responsável.&rdquo;
-                  </strong>{" "}
-                  <span className="text-amber-700 font-black">*</span>
-                </span>
-              </button>
 
               {/* Consentimento opcional para dados de saúde (RGPD art. 9.º) */}
               <button

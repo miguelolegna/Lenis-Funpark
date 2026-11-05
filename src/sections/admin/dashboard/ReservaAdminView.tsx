@@ -327,12 +327,27 @@ export default function ReservaAdminView({
             <p className="text-sm text-secondary font-medium whitespace-pre-wrap">
               {reserva.notas_adicionais || "—"}
             </p>
-            <p className="text-xs font-semibold text-secondary/60 mt-3">
-              Dados de saúde:{" "}
-              {reserva.consentimento_saude
-                ? `tratamento autorizado${reserva.consentimento_saude_em ? ` em ${new Date(reserva.consentimento_saude_em).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}` : ""}`
-                : "sem autorização"}
-            </p>
+            <div className="mt-3 pt-3 border-t border-surface-alt space-y-1.5 text-xs font-semibold text-secondary/60">
+              <p>
+                Acompanhamento obrigatório (patologias específicas):{" "}
+                {reserva.conhecimento_acompanhamento ? (
+                  <span className="text-amber-800 font-bold">
+                    tomou conhecimento
+                    {reserva.conhecimento_acompanhamento_em
+                      ? ` em ${new Date(reserva.conhecimento_acompanhamento_em).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}`
+                      : ""}
+                  </span>
+                ) : (
+                  "pendente"
+                )}
+              </p>
+              <p>
+                Dados de saúde:{" "}
+                {reserva.consentimento_saude
+                  ? `tratamento autorizado${reserva.consentimento_saude_em ? ` em ${new Date(reserva.consentimento_saude_em).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}` : ""}`
+                  : "sem autorização"}
+              </p>
+            </div>
           </div>
 
           {/* Secção 8 — Termos */}

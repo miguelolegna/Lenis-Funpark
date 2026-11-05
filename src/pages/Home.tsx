@@ -184,7 +184,8 @@ export default function Home() {
           idade: parseInt(idadeStr, 10) || null,
           notas_adicionais: notas,
           tipo_convite: 'nenhum',
-          metodo_pagamento: metodo
+          metodo_pagamento: metodo,
+          conhecimento_acompanhamento: formData.get('conhecimento_acompanhamento') === 'true',
         }
       ]);
 

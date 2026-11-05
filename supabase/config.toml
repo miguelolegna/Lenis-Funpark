@@ -4,7 +4,6 @@ enable_signup = false
 [functions.dispatch_b2c_otp]
 enabled = true
 verify_jwt = false
-import_map = "./functions/dispatch_b2c_otp/deno.json"
 entrypoint = "./functions/dispatch_b2c_otp/index.ts"
 
 [functions.convite_digital]
@@ -22,11 +21,3 @@ entrypoint = "./functions/manage_admins/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/enviar_codigo_mensagem/index.ts"
-
-[auth.email.template.magic_link]
-subject = "Código de Acesso Admin - Lenis Funpark"
-content_path = "./supabase/templates/magic_link.html"
-
-[auth.email.template.confirmation]
-subject = "Código de Acesso Admin - Lenis Funpark"
-content_path = "./supabase/templates/confirmation.html"

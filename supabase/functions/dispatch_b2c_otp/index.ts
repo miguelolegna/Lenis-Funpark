@@ -65,7 +65,12 @@ serve(async (req) => {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
+        await supabase
+          .from('verification_tokens')
+          .delete()
+          .eq('identifier', String(token_opaco))
+          .eq('token_type', 'FORM_ACCESS');
+        const errData = await res.json().catch(() => ({}));
         console.error('Erro Resend:', errData);
         throw new Error('Falha ao enviar email.');
       }

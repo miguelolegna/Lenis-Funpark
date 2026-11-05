@@ -120,6 +120,7 @@ export async function exportarReservaPDF(reserva: Reserva, { variante = "admin" 
       : [["Inclui Bolo", "Não"]]],
     ["6. Notas & Termos", [
       ["Notas Adicionais", reserva.notas_adicionais || "—"],
+      ["Acompanhamento (Patologias)", reserva.conhecimento_acompanhamento ? "Tomou conhecimento (confirmado pelo cliente)" : "Pendente"],
       ["Dados de Saúde", reserva.consentimento_saude ? "Tratamento autorizado pelo cliente" : "Sem autorização"],
       ["Termos & Condições", termos ? "Aceites pelo cliente" : "Pendentes"],
     ]],
