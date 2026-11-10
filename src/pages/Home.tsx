@@ -245,7 +245,7 @@ export default function Home() {
     >
       <SEO 
         title="Leni's Funpark - O melhor parque de diversões infantil em Portugal"
-        description="O Leni's Funpark é o maior parque de diversões indoor de Portugal. Trampolins, escorregas, festas de aniversário inesquecíveis e muita diversão para toda a família."
+        description="O Leni's Funpark é o melhor parque de diversões indoor de Portugal. Trampolins, escorregas, festas de aniversário inesquecíveis e muita diversão para toda a família."
         url="https://lenisfunpark.com/"
       />
       <HeroSection 
